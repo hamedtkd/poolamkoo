@@ -1,0 +1,180 @@
+"use client";
+
+import {
+  columnFilteringFeature,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  filterFn_includesString,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
+import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpDownLine, RiArrowUpSLine, RiSearch2Line } from "react-icons/ri";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+export const dataTableFeatures = tableFeatures({
+  rowSortingFeature,
+  rowPaginationFeature,
+  columnFilteringFeature,
+  globalFilteringFeature,
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  filteredRowModel: createFilteredRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+  filterFns: {
+    includesString: filterFn_includesString,
+  },
+});
+
+export type DataTableFeatures = typeof dataTableFeatures;
+
+export function DataTable<TData>({
+  data,
+  columns,
+  searchPlaceholder = "جست‌وجو...",
+  mobileCard,
+  emptyText = "داده‌ای ثبت نشده است.",
+}: {
+  data: TData[];
+  columns: ColumnDef<DataTableFeatures, TData, unknown>[];
+  searchPlaceholder?: string;
+  mobileCard?: (row: TData) => React.ReactNode;
+  emptyText?: string;
+}) {
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const table = useTable(
+    {
+      features: dataTableFeatures,
+      data,
+      columns,
+      globalFilterFn: "includesString",
+      initialState: { pagination: { pageIndex: 0, pageSize: 8 } },
+    },
+    (state) => state,
+  );
+
+  const visibleRows = table.getRowModel().rows;
+  const filter = String(table.state.globalFilter ?? "");
+
+  return (
+    <div className="space-y-3">
+      <div className="relative max-w-sm">
+        <RiSearch2Line className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={filter}
+          onChange={(event) => table.setGlobalFilter(event.target.value)}
+          placeholder={searchPlaceholder}
+          className="pe-9"
+        />
+      </div>
+
+      {isMobile && mobileCard ? (
+        <div className="space-y-2">
+          {visibleRows.length ? (
+            visibleRows.map((row) => (
+              <Card key={row.id} className="overflow-hidden">
+                {mobileCard(row.original)}
+              </Card>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">{emptyText}</div>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => {
+                    const sorted = header.column.getIsSorted();
+                    const SortIcon = sorted === "asc" ? RiArrowUpSLine : sorted === "desc" ? RiArrowDownSLine : RiArrowUpDownLine;
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                          <button
+                            type="button"
+                            className="inline-flex w-full items-center gap-1.5 text-start font-medium transition-colors hover:text-foreground"
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <table.FlexRender header={header} />
+                            <SortIcon className="size-3.5 opacity-60" />
+                          </button>
+                        ) : (
+                          <span className="font-medium">
+                            <table.FlexRender header={header} />
+                          </span>
+                        )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {visibleRows.length ? (
+                visibleRows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getAllCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        <table.FlexRender cell={cell} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-28 text-center text-muted-foreground">
+                    {emptyText}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>
+          صفحه {new Intl.NumberFormat("fa-IR").format(table.state.pagination.pageIndex + 1)} از{" "}
+          {new Intl.NumberFormat("fa-IR").format(Math.max(1, table.getPageCount()))}
+        </span>
+        <div className="flex gap-1">
+          <Button
+            size="icon"
+            variant="outline"
+            className="size-8"
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            aria-label="صفحه قبل"
+          >
+            <RiArrowRightSLine />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            className="size-8"
+            disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            aria-label="صفحه بعد"
+          >
+            <RiArrowLeftSLine />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
