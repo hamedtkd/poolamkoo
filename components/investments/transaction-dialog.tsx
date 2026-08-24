@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 import { db } from "@/lib/db";
-import { assetUsesManualPrice } from "@/lib/assets";
+import { assetRequiresManualPrice } from "@/lib/assets";
 import { dateToISO, formatMoney, formatNumber } from "@/lib/format";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
 import type { AppSettings, Asset, PlanItem } from "@/lib/types";
@@ -70,7 +70,7 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, availableQty
       planItemId: planItem?.id,
       createdAt: now,
     });
-    if (assetUsesManualPrice(asset.kind)) await db.assets.update(asset.id, { manualPriceToman: values.price, updatedAt: now });
+    if (assetRequiresManualPrice(asset.kind, asset.marketId)) await db.assets.update(asset.id, { manualPriceToman: values.price, updatedAt: now });
     if (planItem?.id && values.type === "buy") await syncInvestmentPlanItem(planItem.id);
     onClose();
   });

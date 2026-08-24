@@ -1,34 +1,70 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { BrsApiProvider } from "@/lib/market/brsapi";
+import { mergeMarketQuotes, needsCoreFallback } from "@/lib/market/priority";
+import { TindexProvider } from "@/lib/market/tindex";
+import type { MarketQuote } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const key = process.env.BRS_API_KEY;
-  if (!key) {
-    return NextResponse.json({
-      mode: "unconfigured",
-      quotes: [],
-      warning: "\u06a9\u0644\u06cc\u062f BrsApi \u062a\u0646\u0638\u06cc\u0645 \u0646\u0634\u062f\u0647 \u0627\u0633\u062a.",
-      fetchedAt: new Date().toISOString(),
-    });
+function issueText(source: string, error: unknown) {
+  return `${source}: ${error instanceof Error ? error.message : "در دسترس نیست."}`;
+}
+
+export async function GET(request: NextRequest) {
+  const brsKey = process.env.BRS_API_KEY?.trim();
+  const tindexToken = process.env.TINDEX_API_TOKEN?.trim();
+  const tindexIds = request.nextUrl.searchParams.getAll("tindex").filter(Boolean).slice(0, 20);
+  const warnings: string[] = [];
+  let primary: MarketQuote[] = [];
+  let fallback: MarketQuote[] = [];
+  let exchange: MarketQuote[] = [];
+  let brsIssue: string | undefined;
+
+  if (brsKey) {
+    try {
+      primary = await new BrsApiProvider(brsKey).getQuotes();
+    } catch (error) {
+      brsIssue = issueText("BrsApi", error);
+    }
+  } else {
+    brsIssue = "کلید BrsApi تنظیم نشده است.";
   }
 
-  try {
-    const provider = new BrsApiProvider(key);
-    const quotes = await provider.getQuotes();
-    return NextResponse.json({
-      mode: quotes.length ? "live" : "unavailable",
-      quotes,
-      warning: quotes.length ? undefined : "\u0642\u06cc\u0645\u062a \u0645\u0639\u062a\u0628\u0631\u06cc \u0627\u0632 BrsApi \u062f\u0631\u06cc\u0627\u0641\u062a \u0646\u0634\u062f.",
-      fetchedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    return NextResponse.json({
-      mode: "unavailable",
-      quotes: [],
-      warning: error instanceof Error ? error.message : "\u0633\u0631\u0648\u06cc\u0633 \u0628\u0627\u0632\u0627\u0631 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a.",
-      fetchedAt: new Date().toISOString(),
-    }, { status: 502 });
+  const tindex = tindexToken ? new TindexProvider(tindexToken) : null;
+  if (needsCoreFallback(primary)) {
+    if (tindex) {
+      try {
+        fallback = await tindex.getFallbackQuotes();
+      } catch (error) {
+        warnings.push(issueText("Tindex fallback", error));
+      }
+      if (needsCoreFallback(mergeMarketQuotes({ fallback, primary }))) {
+        if (brsIssue) warnings.push(brsIssue);
+        warnings.push("بعضی نرخ‌های پایه از هیچ Provider فعالی دریافت نشدند.");
+      }
+    } else {
+      if (brsIssue) warnings.push(brsIssue);
+      warnings.push("توکن Tindex تنظیم نشده؛ منبع پشتیبان بازار فعال نیست.");
+    }
   }
+
+  if (tindex && tindexIds.length) {
+    try {
+      exchange = await tindex.getQuotes(tindexIds);
+      if (exchange.length < tindexIds.length) warnings.push("قیمت بعضی نمادهای بورسی دریافت نشد.");
+    } catch (error) {
+      warnings.push(issueText("Tindex", error));
+    }
+  } else if (tindexIds.length && !tindexToken) {
+    warnings.push("توکن Tindex تنظیم نشده؛ قیمت سهام و صندوق‌های بورسی دستی می‌ماند.");
+  }
+
+  const quotes = mergeMarketQuotes({ fallback, primary, exchange });
+  const configured = Boolean(brsKey || tindexToken);
+  return NextResponse.json({
+    mode: quotes.length ? "live" : configured ? "unavailable" : "unconfigured",
+    quotes,
+    warning: warnings.length ? warnings.join(" ") : undefined,
+    fetchedAt: new Date().toISOString(),
+  });
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
-import type { MarketQuote, MarketSnapshot } from "@/lib/types";
+import type { Asset, MarketQuote, MarketSnapshot } from "@/lib/types";
 
 type MarketResponse = {
   mode?: string;
@@ -11,19 +11,28 @@ type MarketResponse = {
   fetchedAt?: string;
 };
 
-let inFlight: Promise<MarketResponse> | null = null;
+let inFlight: { key: string; promise: Promise<MarketResponse> } | null = null;
 
-async function requestMarket() {
-  if (!inFlight) {
-    inFlight = fetch("/api/market", { cache: "no-store" })
+function targetIds(assets: Asset[]) {
+  return [...new Set(assets.filter((asset) => asset.marketSource === "tindex" && asset.marketId).map((asset) => asset.marketId as string))].sort();
+}
+
+async function requestMarket(ids: readonly string[]) {
+  const key = ids.join(",");
+  if (!inFlight || inFlight.key !== key) {
+    const params = new URLSearchParams();
+    for (const id of ids) params.append("tindex", id);
+    const url = params.size ? `/api/market?${params}` : "/api/market";
+    const promise = fetch(url, { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok && !Array.isArray(data.quotes)) throw new Error(data.warning || "market request failed");
         return data as MarketResponse;
       })
-      .finally(() => { inFlight = null; });
+      .finally(() => { if (inFlight?.promise === promise) inFlight = null; });
+    inFlight = { key, promise };
   }
-  return inFlight;
+  return inFlight.promise;
 }
 
 async function latestCachedQuotes() {
@@ -33,7 +42,9 @@ async function latestCachedQuotes() {
   return [...latest.values()];
 }
 
-export function useMarket() {
+export function useMarket(assets: Asset[] = []) {
+  const ids = useMemo(() => targetIds(assets), [assets]);
+  const idsKey = ids.join(",");
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState("loading");
@@ -58,16 +69,15 @@ export function useMarket() {
     await db.marketSnapshots.bulkAdd(rows.map((quote) => ({ ...quote, capturedAt })));
     const count = await db.marketSnapshots.count();
     if (count > 5000) {
-      const ids = await db.marketSnapshots.orderBy("capturedAt").limit(count - 5000).primaryKeys();
-      await db.marketSnapshots.bulkDelete(ids as number[]);
+      const oldIds = await db.marketSnapshots.orderBy("capturedAt").limit(count - 5000).primaryKeys();
+      await db.marketSnapshots.bulkDelete(oldIds as number[]);
     }
   }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await requestMarket();
-      await applyResponse(data);
+      await applyResponse(await requestMarket(ids));
     } catch {
       const cached = await latestCachedQuotes();
       setQuotes(cached);
@@ -77,7 +87,7 @@ export function useMarket() {
     } finally {
       setLoading(false);
     }
-  }, [applyResponse]);
+  }, [applyResponse, ids]);
 
   useEffect(() => {
     let active = true;
@@ -88,25 +98,17 @@ export function useMarket() {
         setMode("offline");
         setLastUpdated(cached[0]?.capturedAt ?? null);
       }
-
       try {
-        const data = await requestMarket();
-        if (!active) return;
-        await applyResponse(data);
+        const data = await requestMarket(ids);
+        if (active) await applyResponse(data);
       } catch {
-        if (!active) return;
-        const fallback = cached.length ? cached : await latestCachedQuotes();
-        if (!active) return;
-        setQuotes(fallback);
-        setMode(fallback.length ? "offline" : "unavailable");
-        setLastUpdated(fallback[0]?.capturedAt ?? null);
-        setWarning("دریافت قیمت جدید ناموفق بود.");
+        if (active) setWarning("دریافت قیمت جدید ناموفق بود.");
       } finally {
         if (active) setLoading(false);
       }
     });
     return () => { active = false; };
-  }, [applyResponse]);
+  }, [applyResponse, ids, idsKey]);
 
   return { quotes, loading, mode, lastUpdated, warning, refresh };
 }

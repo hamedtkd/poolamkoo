@@ -4,6 +4,9 @@ export type LifestylePreset = "growth" | "balanced" | "comfort" | "safety" | "cu
 export type BucketKey = "life" | "safety" | "growth";
 export type AssetKind = "gold" | "currency" | "crypto" | "stock" | "fund" | "custom";
 export type MarketSymbol = "USD" | "IR_GOLD_18K" | "BTC" | "USDT";
+export type MarketSource = "brsapi" | "tindex" | "local";
+export type MarketHistoryRange = "1m" | "3m";
+export type ExchangeMarketSource = "tindex";
 export type PlanTargetType = "life" | "fund" | "asset" | "bucket";
 
 export interface AllocationRule {
@@ -65,6 +68,8 @@ export interface Asset {
   name: string;
   kind: AssetKind;
   symbol?: MarketSymbol | string;
+  marketId?: string;
+  marketSource?: ExchangeMarketSource;
   targetPct: number;
   manualPriceToman?: number;
   icon: string;
@@ -94,12 +99,30 @@ export interface MarketQuote {
   changePercent: number;
   changeValueToman: number;
   asOf: string;
-  source: "brsapi" | "local";
+  source: MarketSource;
+}
+
+
+export interface MarketInstrument {
+  id: string;
+  symbol: string;
+  name: string;
+  priceToman?: number;
+  changePercent?: number;
+  source: ExchangeMarketSource;
 }
 
 export interface MarketSnapshot extends MarketQuote {
   id?: number;
   capturedAt: string;
+}
+
+export interface MarketCandle {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
 }
 
 export interface AppSettings {

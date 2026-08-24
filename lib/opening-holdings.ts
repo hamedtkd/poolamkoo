@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { assetUsesManualPrice } from "@/lib/assets";
+import { assetRequiresManualPrice } from "@/lib/assets";
 import type { InvestmentTransaction } from "@/lib/types";
 
 export interface OpeningHoldingInput {
@@ -29,7 +29,7 @@ export async function saveOpeningHolding(input: OpeningHoldingInput) {
   const now = new Date().toISOString();
   await db.transaction("rw", db.transactions, db.assets, async () => {
     await db.transactions.add(openingHoldingTransaction(input, now));
-    if (assetUsesManualPrice(asset.kind)) {
+    if (assetRequiresManualPrice(asset.kind, asset.marketId)) {
       await db.assets.update(asset.id!, { manualPriceToman: input.unitPriceToman, updatedAt: now });
     }
   });

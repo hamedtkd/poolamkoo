@@ -70,7 +70,7 @@ npm run build
 - [ ] Restore داده نسخه قدیمی
 - [ ] Reload بدون از دست رفتن داده
 - [ ] Repair flow برای Plan Item ناقص
-- [ ] API key داخل repository یا backup عمومی commit نشده باشد
+- [ ] API key و `TINDEX_API_TOKEN` داخل repository، backup عمومی یا `NEXT_PUBLIC_*` commit نشده باشند
 
 ## 7. Release
 
@@ -93,3 +93,12 @@ git push origin vX.Y.Z
 - [ ] پاک کردن بازه، حالت «همه زمان» را برگرداند
 - [ ] Drawer موبایل با کشیدن دستگیره به پایین بسته شود
 - [ ] Bottom Navigation روی محتوای روشن و تاریک خوانا بماند
+
+## 9. Market providers
+
+- [ ] بدون `TINDEX_API_TOKEN` ساخت سهام/ETF با قیمت دستی همچنان کار کند
+- [ ] با توکن معتبر، جست‌وجوی «عیار» و «سیمین» نتیجه واقعی برگرداند
+- [ ] قیمت بورس از ریال به تومان تبدیل شود
+- [ ] Refresh فقط نمادهای بورسی متصل به سبد را درخواست کند
+- [ ] در قطع Provider، آخرین Snapshot واقعی یا fallback دستی نمایش داده شود
+- [ ] هیچ توکن market-data داخل response یا client bundle دیده نشود

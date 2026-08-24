@@ -34,7 +34,7 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
 }) {
   return useMemo(() => {
     const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
-    const positions = assets.map((asset) => ({ asset, ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman : asset.manualPriceToman) }));
+    const positions = assets.map((asset) => ({ asset, ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman ?? asset.manualPriceToman : asset.manualPriceToman) }));
     const portfolio = positions.reduce((sum, position) => sum + position.currentValue, 0);
     const performance: PerformanceRow[] = positions.map((position) => ({
       name: position.asset.name,

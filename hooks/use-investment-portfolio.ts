@@ -6,6 +6,7 @@ import type { Asset, InvestmentTransaction, MarketQuote } from "@/lib/types";
 
 export interface PositionRow {
   asset: Asset;
+  quote?: MarketQuote;
   qty: number;
   cost: number;
   avgPrice: number;
@@ -18,10 +19,14 @@ export interface PositionRow {
 
 export function useInvestmentPortfolio(assets: Asset[], transactions: InvestmentTransaction[], quotes: MarketQuote[]) {
   const quoteMap = useMemo(() => new Map(quotes.map((quote) => [quote.symbol, quote])), [quotes]);
-  const positions = useMemo<PositionRow[]>(() => assets.map((asset) => ({
-    asset,
-    ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman : asset.manualPriceToman),
-  })), [assets, transactions, quoteMap]);
+  const positions = useMemo<PositionRow[]>(() => assets.map((asset) => {
+    const quote = asset.symbol ? quoteMap.get(asset.symbol) : undefined;
+    return {
+      asset,
+      quote,
+      ...portfolioPosition(asset, transactions, quote?.priceToman ?? asset.manualPriceToman),
+    };
+  }), [assets, transactions, quoteMap]);
 
   const totals = useMemo(() => ({
     value: positions.reduce((sum, row) => sum + row.currentValue, 0),

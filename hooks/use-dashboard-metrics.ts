@@ -16,7 +16,7 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
     const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
     const positions = assets.map((asset) => ({
       asset,
-      ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman : asset.manualPriceToman),
+      ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman ?? asset.manualPriceToman : asset.manualPriceToman),
     }));
     const portfolio = positions.reduce((sum, position) => sum + position.currentValue, 0);
     const investedCost = positions.reduce((sum, position) => sum + position.cost, 0);

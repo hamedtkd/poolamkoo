@@ -42,7 +42,9 @@ Core personal-finance data is stored locally in the user's browser through Index
 
 - Gold, currency, crypto, stocks/exchange, investment funds, and custom assets
 - Record real buy and sell transactions
-- Manual current prices for stocks, investment funds, and custom assets until a dedicated provider is connected
+- Bulk historical investment import from CSV with preview and validation
+- Search and link Tehran Stock Exchange stocks/ETFs to live Tindex/TSETMC quotes
+- Manual fallback prices for linked exchange assets and manual pricing for custom assets
 - Link purchases back to an incoming-money plan
 - Average purchase price and cost basis
 - Current value and unrealized P/L
@@ -58,10 +60,14 @@ Core personal-finance data is stored locally in the user's browser through Index
 
 ### Market data
 
-- BrsApi market pricing using the user's API key
+- BrsApi-first pricing for gold, currency, and crypto with Tindex fallback for core quotes
+- Tindex pricing and search for Tehran Stock Exchange stocks and ETFs
+- Linked Tindex source attribution wherever Tindex quotes are displayed
 - One shared market store across the application
 - One initial fetch plus explicit manual refresh
 - Real snapshots stored locally
+- Real 1-month and 3-month Tindex history for USD, 18K gold, and linked TSE stocks/ETFs
+- Line history for public indicators and real exchange candlesticks, with local snapshots as fallback
 - No fake historical market series
 
 ### Reports
@@ -150,9 +156,9 @@ http://localhost:3000
 
 ## Market data
 
-Add a BrsApi key through the environment variable documented in `.env.example` to enable live market prices.
+Configure both BrsApi and a Tindex developer token. BrsApi remains primary for public market quotes; Tindex supplies missing core USD, 18K gold, and BTC quotes and serves linked Tehran Stock Exchange assets. The exact server-side environment variable names are documented in `.env.example`.
 
-If market access is unavailable, Poolamco must not fabricate historical prices. Previously stored real snapshots may be used for local/offline presentation.
+Exchange quotes are returned by Tindex from TSETMC data and converted from rial to toman for Poolamco calculations. Poolamco also uses Tindex candle/history endpoints for 1-month and 3-month USD, 18K gold, and linked exchange charts, with quota-aware server caching. If market access is unavailable, Poolamco must not fabricate historical prices; previously stored real snapshots remain the chart fallback.
 
 ## Quality gate
 

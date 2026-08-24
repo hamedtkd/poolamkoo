@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, defaultSettings } from "@/lib/db";
-import { assetUsesManualPrice } from "@/lib/assets";
+import { assetRequiresManualPrice } from "@/lib/assets";
 import { futureFocusPercent } from "@/lib/calculations";
 import { dateToISO } from "@/lib/format";
 import { openingHoldingTransaction } from "@/lib/opening-holdings";
@@ -101,7 +101,7 @@ export function useOnboarding(onDone: () => void) {
           await db.transactions.bulkAdd(holdings.map((item) => openingHoldingTransaction({ assetId: item.assetId, quantity: item.quantity, unitPriceToman: item.price, happenedAt: dateToISO(item.date) }, now)));
           for (const item of holdings) {
             const asset = assets.find((candidate) => candidate.id === item.assetId);
-            if (asset && assetUsesManualPrice(asset.kind) && asset.id) await db.assets.update(asset.id, { manualPriceToman: item.price, updatedAt: now });
+            if (asset && assetRequiresManualPrice(asset.kind, asset.marketId) && asset.id) await db.assets.update(asset.id, { manualPriceToman: item.price, updatedAt: now });
           }
         }
       });

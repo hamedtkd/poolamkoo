@@ -56,6 +56,26 @@ const [directFundsSource, relatedSelectSource, onboardingHoldingsSource, uiArchi
   read("scripts/check-ui-architecture.mjs"),
 ]);
 
+
+const [historyImportDialogSource, historicalImportSource, assetDialogSource, tindexProviderSource, marketSearchSource, portfolioSource, exchangePickerSource, marketPrioritySource, marketSourceLabelSource] = await Promise.all([
+  read("components/investments/history-import-dialog.tsx"),
+  read("lib/historical-import.ts"),
+  read("components/investments/asset-dialog.tsx"),
+  read("lib/market/tindex.ts"),
+  read("app/api/market/search/route.ts"),
+  read("hooks/use-investment-portfolio.ts"),
+  read("components/investments/exchange-instrument-picker.tsx"),
+  read("lib/market/priority.ts"),
+  read("components/market/market-source-label.tsx"),
+]);
+
+const [marketHistoryApiSource, marketChartCardSource, financialChartSource, selectSource] = await Promise.all([
+  read("app/api/market/history/route.ts"),
+  read("components/investments/market-chart-card.tsx"),
+  read("components/charts/financial-chart.tsx"),
+  read("components/ui/select.tsx"),
+]);
+
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -70,8 +90,8 @@ const checks = [
   [newMoneyHook.includes('rebalanceAllocation') && newMoneyHook.includes('allocationChanged'), "Per-income allocation override logic is missing"],
   [marketProvider.includes('Gold_Currency.php') && !marketProvider.includes('Cryptocurrency.php'), "Free market refresh must use one BrsApi request"],
   [!marketApi.includes('demoMarketQuotes') && !marketHistoryHook.includes('demoCandles'), "Fake market/history data must never be returned"],
-  [!marketHook.includes('setInterval') && marketHook.includes('latestCachedQuotes().then') && marketHook.includes('requestMarket()'), "Market data must load once on mount and refresh manually"],
-  [!marketHistoryHook.includes('fetch('), "Market history must use only locally stored real snapshots"],
+  [!marketHook.includes('setInterval') && marketHook.includes('latestCachedQuotes().then') && marketHook.includes('requestMarket(ids)'), "Market data must load once on mount and refresh manually"],
+  [marketHistoryHook.includes("snapshotsToCandles"), "Market history must keep real locally stored snapshots as fallback"],
   [db.includes('planItems:') && db.includes('planItemId'), "Plan execution schema is missing"],
   [txDialog.includes('planItemId') && txDialog.includes('initialAmount'), "Planned purchases must prefill and link transactions"],
   [pendingPlans.includes('planRemaining') && pendingPlans.includes('onBuy'), "Pending planned purchases UI is missing"],
@@ -107,7 +127,7 @@ const checks = [
   [arcGaugeSource.includes("gapRatio = 0") && arcGaugeSource.includes("safeGap"), "ArcGauge must render a complete ring by default across the app"],
   [dashboardMetricsSource.includes("futureFocusPercent(rule.safetyPct, rule.growthPct)") && onboardingHookSource.includes("futureFocusPercent(safety, growth)") && calculationsSource.includes("Math.round(safetyPct + growthPct)") && !calculationsSource.includes("/ 85"), "Future-focus gauges must show the real safety + growth share without hidden normalization"],
   [appTopbar.includes("-mt-3") && appTopbar.includes("h-16") && desktopSidebar.includes("h-16"), "Desktop topbar must align vertically with the sidebar brand header"],
-  [types.includes('"stock"') && db.includes('kind: "stock"') && txDialog.includes("assetUsesManualPrice") && investmentsSource.includes("?? activeAsset.manualPriceToman"), "Stock assets must exist as a first-class manually priced portfolio type"],
+  [types.includes('"stock"') && db.includes('kind: "stock"') && txDialog.includes("assetRequiresManualPrice") && investmentsSource.includes("?? activeAsset.manualPriceToman"), "Stock assets must exist as a first-class portfolio type with market/manual price fallback"],
   [reportsSection.includes("RiMoneyDollarCircleLine") && reportsSection.includes("RiFileList3Line") && reportsSection.includes("KpiIcon"), "Report KPI cards must use distinct semantic icons"],
   [todayDateSource.includes("useHydrated") && !todayDateSource.includes("setToday"), "TodayDate must hydrate without a synchronous setState effect"],
   [!allocationDonutSource.includes("let offset") && !allocationDonutSource.includes("offset +="), "AllocationDonut must not mutate render-local offsets inside map"],
@@ -119,6 +139,23 @@ const checks = [
   [newMoney.includes("NewMoneyDirectFunds") && directFundsSource.includes("برای برنامه‌ریزی می‌ماند") && newMoneyHook.includes("remainingAfterDirect") && newMoneyHook.includes("executedToman: amountToman"), "New money must support direct fund allocation before percentage planning"],
   [relatedSelectSource.includes("createLabel") && quickPlan.includes("RelatedEntitySelect") && planEdit.includes("RelatedEntitySelect") && openingHoldingSource.includes("RelatedEntitySelect") && onboardingHoldingsSource.includes("RelatedEntitySelect"), "Entity selectors must offer in-context create shortcuts"],
   [uiArchitectureSource.includes('replaceAll("\\\\", "/")'), "UI architecture paths must be normalized for Windows quality checks"],
+
+  [investmentsSource.includes("HistoryImportDialog") && investmentsSource.includes("ورود سوابق CSV") && historyImportDialogSource.includes("HistoryImportPreview"), "Investments must expose the historical CSV import flow"],
+  [historicalImportSource.includes("parseHistoricalCsv") && historicalImportSource.includes("validateSellAvailability") && historicalImportSource.includes("transactionFingerprint") && historicalImportSource.includes("persianDateToIso"), "Historical import must validate dates, duplicates and sell availability before persistence"],
+  [historyImportDialogSource.includes("downloadTemplate") && historyImportDialogSource.includes("missingAssets") && assetDialogSource.includes("initialName"), "Historical import must offer a template and in-context creation for missing assets"],
+  [marketApi.includes("TINDEX_API_TOKEN") && marketApi.includes("tindexIds") && marketSearchSource.includes("new TindexProvider") && marketSearchSource.includes('search(query)'), "Iran exchange market search/quotes must be wired through the server-only Tindex provider"],
+  [tindexProviderSource.includes("stocks/by-category/stock-energy") && tindexProviderSource.includes("rialToToman") && tindexProviderSource.includes("stock-market/symbol"), "Tindex integration must search exchange instruments and normalize rial prices to toman"],
+  [assetDialogSource.includes("ExchangeInstrumentPicker") && assetDialogSource.includes('marketSource') && assetDialogSource.includes('marketId') && exchangePickerSource.includes("MarketSourceLabel"), "Stock and fund creation must support in-context exchange linking with source attribution"],
+  [portfolioSource.includes("quote?.priceToman ?? asset.manualPriceToman") && marketHook.includes('marketSource === "tindex"') && marketHook.includes('params.append("tindex"'), "Linked exchange assets must use live quotes with safe manual fallback and request only their market IDs"],
+  [marketApi.includes("needsCoreFallback") && marketApi.includes("getFallbackQuotes") && marketPrioritySource.includes("for (const quote of primary)"), "BrsApi must remain primary while Tindex supplies only missing core quotes"],
+  [tindexProviderSource.includes("/boards") && tindexProviderSource.includes("USD-EXCHANGE-RATE") && tindexProviderSource.includes("GOLD-18K") && tindexProviderSource.includes("btc"), "Tindex fallback must cover core dollar, gold and bitcoin quotes in one boards request"],
+  [marketSourceLabelSource.includes("منبع داده: Tindex") && marketSourceLabelSource.includes("https://tindex.app") && exchangePickerSource.includes("MarketSourceLabel"), "Tindex data must carry visible linked source attribution"],
+  [marketHistoryApiSource.includes("getExchangeCandles") && marketHistoryApiSource.includes("getIndicatorCandles") && marketHistoryApiSource.includes("s-maxage=3600"), "Market history API must fetch real Tindex candles with quota-aware server caching"],
+  [marketHistoryHook.includes("/api/market/history") && marketHistoryHook.includes("snapshotsToCandles") && marketHistoryHook.includes("memoryCache"), "Market history must prefer remote candles while retaining real local Snapshot fallback"],
+  [tindexProviderSource.includes("parseTindexCandlesPayload") && tindexProviderSource.includes("/candles") && tindexProviderSource.includes("unitScale"), "Tindex candle history must decode delta dates and normalize exchange rial prices"],
+  [marketChartCardSource.includes('"1m"') && marketChartCardSource.includes('"3m"') && marketChartCardSource.includes("MarketSourceLabel") && financialChartSource.includes("LineSeries") && financialChartSource.includes("CandlestickSeries"), "Market charts must expose real 1m/3m history, source attribution, line indicators and exchange candles"],
+  [marketChartCardSource.includes('<RangePicker value={range} onChange={setRange} />\n      </div>\n      {candles.length >= 2 ? <>'), "Market history range picker must stay visible in loading and empty states"],
+  [selectSource.includes("collisionPadding={12}") && selectSource.includes("min(16rem, calc(var(--radix-select-content-available-height) - 3.5rem))") && selectSource.includes("overflow-y-auto"), "Shared Select dropdowns must stay within the viewport and scroll when options are long"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],

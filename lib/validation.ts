@@ -1,4 +1,4 @@
-import { assetUsesManualPrice } from "@/lib/assets";
+import { assetRequiresManualPrice } from "@/lib/assets";
 import { z } from "zod";
 
 const requiredNumber = (message: string) => z.number({ error: message });
@@ -23,6 +23,8 @@ export const assetSchema = z.object({
     .max(60, "نام دارایی نباید بیشتر از ۶۰ حرف باشد."),
   kind: z.enum(["gold", "currency", "crypto", "stock", "fund", "custom"], { error: "نوع دارایی را انتخاب کن." }),
   symbol: z.string({ error: "نماد بازار معتبر نیست." }).trim().max(40, "نماد بازار نباید بیشتر از ۴۰ حرف باشد.").optional(),
+  marketId: z.string({ error: "شناسه بازار معتبر نیست." }).trim().max(80, "شناسه بازار معتبر نیست.").optional(),
+  marketSource: z.enum(["tindex"], { error: "منبع بازار معتبر نیست." }).optional(),
   targetPct: requiredNumber("سهم هدف را انتخاب کن.")
     .min(0, "درصد نمی‌تواند منفی باشد.")
     .max(100, "درصد نمی‌تواند بیشتر از ۱۰۰ باشد."),
@@ -31,8 +33,8 @@ export const assetSchema = z.object({
     .nullable()
     .optional(),
 }).superRefine((value, ctx) => {
-  if (assetUsesManualPrice(value.kind) && !value.manualPriceToman) {
-    ctx.addIssue({ code: "custom", path: ["manualPriceToman"], message: "برای این دارایی قیمت فعلی را وارد کن." });
+  if (assetRequiresManualPrice(value.kind, value.marketId) && !value.manualPriceToman) {
+    ctx.addIssue({ code: "custom", path: ["manualPriceToman"], message: "اگر دارایی به بازار وصل نیست، قیمت فعلی را وارد کن." });
   }
 });
 

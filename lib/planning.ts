@@ -52,7 +52,7 @@ export function buildGrowthPlan(amountToman: number, assets: Asset[], transactio
 
   const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote.priceToman]));
   const rows = targets.map((asset) => {
-    const price = asset.symbol ? quoteMap.get(asset.symbol) : asset.manualPriceToman;
+    const price = asset.symbol ? quoteMap.get(asset.symbol) ?? asset.manualPriceToman : asset.manualPriceToman;
     const position = portfolioPosition(asset, transactions, price);
     return { asset, currentValue: position.currentValue, normalized: asset.targetPct / targetSum };
   });

@@ -6,7 +6,7 @@ PoolamCo is local-first. Personal finance records are stored in the browser's In
 
 ## Secrets
 
-`BRS_API_KEY` and `BRS_API_PRO_KEY` are server environment variables. Do not expose them through `NEXT_PUBLIC_*` variables.
+`BRS_API_KEY`, `BRS_API_PRO_KEY`, and `TINDEX_API_TOKEN` are server environment variables. Do not expose them through `NEXT_PUBLIC_*` variables or client bundles.
 
 ## Backups
 

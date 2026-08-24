@@ -10,7 +10,7 @@ Next.js App Router، React، TypeScript و shadcn/ui New York.
 
 ## Market
 
-Market Provider فقط یک بار داده را دریافت می‌کند. Routeها از Store مشترک استفاده می‌کنند.
+Market Store بین همه Routeها مشترک است. BrsApi منبع اصلی نرخ طلا/ارز/رمزارز است؛ اگر Quoteهای اصلی ناقص باشند Tindex با یک درخواست Boards به‌عنوان fallback نرخ دلار، طلای ۱۸ عیار و BTC را می‌دهد. Tindex همچنین نمادهای بورسی متصل به سبد را از داده TSETMC دریافت می‌کند. Snapshot واقعی روی دستگاه cache می‌شود و قیمت مصنوعی تولید نمی‌شود. Quoteهای Tindex در UI با لینک منبع داده مشخص می‌شوند.
 
 ## Flow
 
