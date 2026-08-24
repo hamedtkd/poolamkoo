@@ -75,7 +75,7 @@ export function FinancialChart({ candles, height = 330 }: { candles: Candle[]; h
   }, [candles, height, themeRevision]);
 
   if (!candles.length) {
-    return <div className="grid min-h-[280px] place-items-center rounded-xl border border-dashed text-sm text-muted-foreground">هنوز داده کافی برای نمودار وجود ندارد.</div>;
+    return <div className="grid min-h-[280px] place-items-center rounded-xl border border-dashed type-body text-muted-foreground">هنوز داده کافی برای نمودار وجود ندارد.</div>;
   }
 
   return (

@@ -64,7 +64,7 @@ export function NewMoneyDialog(props: Props) {
               <button type="button" onClick={() => field.onChange(!field.value)} className={cn("flex w-full items-start gap-3 rounded-2xl border p-4 text-start transition", field.value ? "border-primary/30 bg-primary/6" : "bg-muted/30")}>
                 <span className={cn("mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border", field.value ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{field.value && <RiCheckLine />}</span>
                 <span>
-                  <span className="flex items-center gap-2 text-sm font-bold"><RiShieldCheckLine className="text-primary" />پیشنهاد هوشمند امنیت</span>
+                  <span className="flex items-center gap-2 text-sm type-strong"><RiShieldCheckLine className="text-primary" />پیشنهاد هوشمند امنیت</span>
                   <span className="mt-1 block text-xs leading-6 text-muted-foreground">تا وقتی صندوق اضطراری کامل نشده، بخشی از رشد به امنیت منتقل شود.</span>
                 </span>
               </button>
@@ -101,10 +101,10 @@ export function NewMoneyDialog(props: Props) {
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return <div className="space-y-2"><label className="block text-sm font-bold">{label}</label>{children}{error && <p className="text-xs text-destructive">{error}</p>}</div>;
+  return <div className="space-y-2"><label className="block text-sm type-strong">{label}</label>{children}{error && <p className="text-xs text-destructive">{error}</p>}</div>;
 }
 
 function PlanList({ title, items, settings }: { title: string; items: Array<{ key: string; title: string; subtitle: string; amount: number }>; settings: AppSettings }) {
   if (!items.length) return null;
-  return <div className="mt-5 rounded-2xl border bg-muted/25 p-4"><div className="mb-3 font-bold">{title}</div><div className="space-y-2">{items.map((item) => <div key={item.key} className="flex items-center justify-between rounded-xl bg-background/70 px-3 py-2 text-sm"><div><div className="font-semibold">{item.title}</div><div className="text-[10px] text-muted-foreground">{item.subtitle}</div></div><strong className="text-primary">{formatMoney(item.amount, settings.displayUnit)}</strong></div>)}</div></div>;
+  return <div className="mt-5 rounded-2xl border bg-muted/25 p-4"><div className="mb-3 type-strong">{title}</div><div className="space-y-2">{items.map((item) => <div key={item.key} className="flex items-center justify-between rounded-xl bg-background/70 px-3 py-2 text-sm"><div><div className="type-label">{item.title}</div><div className="text-[10px] text-muted-foreground">{item.subtitle}</div></div><strong className="text-primary">{formatMoney(item.amount, settings.displayUnit)}</strong></div>)}</div></div>;
 }

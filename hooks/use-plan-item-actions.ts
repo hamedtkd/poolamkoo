@@ -13,12 +13,12 @@ export function usePlanItemActions({
   funds,
 }: {
   income?: IncomeEvent;
-  planItems: PlanItem[];
+  planItems?: PlanItem[];
   assets: Asset[];
   funds: GoalFund[];
 }) {
   const incomeItems = useMemo(
-    () => planItems.filter((item) => item.incomeId === income?.id),
+    () => (planItems ?? []).filter((item) => item.incomeId === income?.id),
     [income?.id, planItems],
   );
   const plannedTotal = useMemo(
@@ -51,6 +51,30 @@ export function usePlanItemActions({
     await syncIncomeAllocationsFromPlan(income.id);
   }, [income]);
 
+  const updatePlanItem = useCallback(async (item: PlanItem, values: QuickPlanFormValues) => {
+    if (!income?.id || !item.id) throw new Error("کارت برنامه برای ویرایش پیدا نشد.");
+    const current = await db.planItems.where("incomeId").equals(income.id).toArray();
+    const otherTotal = current.filter((row) => row.id !== item.id).reduce((sum, row) => sum + row.plannedToman, 0);
+    const maxAmount = Math.max(0, income.amountToman - otherTotal);
+    const amount = Math.round(values.amount);
+    if (amount > maxAmount) {
+      throw new Error(`حداکثر مبلغ قابل برنامه‌ریزی برای این کارت ${new Intl.NumberFormat("fa-IR").format(maxAmount)} تومان است.`);
+    }
+    if (amount < item.executedToman) {
+      throw new Error(`مبلغ برنامه نمی‌تواند از ${new Intl.NumberFormat("fa-IR").format(item.executedToman)} تومان اجراشده کمتر باشد.`);
+    }
+    const lockedTarget = item.executedToman > 0;
+    await db.planItems.update(item.id, {
+      label: values.label.trim(),
+      plannedToman: amount,
+      bucket: lockedTarget ? item.bucket : values.bucket,
+      targetType: lockedTarget ? item.targetType : values.targetType,
+      targetId: lockedTarget ? item.targetId : values.targetType === "bucket" ? undefined : values.targetId ?? undefined,
+      updatedAt: new Date().toISOString(),
+    });
+    await syncIncomeAllocationsFromPlan(income.id);
+  }, [income]);
+
   const deletePlanItem = useCallback(async (item: PlanItem) => {
     if (!item.id) return;
     await db.transaction("rw", db.planItems, db.transactions, async () => {
@@ -72,5 +96,5 @@ export function usePlanItemActions({
     [funds],
   );
 
-  return { availableToman, createPlanItem, deletePlanItem, assetOptions, fundOptions };
+  return { availableToman, createPlanItem, updatePlanItem, deletePlanItem, assetOptions, fundOptions };
 }

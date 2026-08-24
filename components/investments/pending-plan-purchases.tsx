@@ -28,11 +28,11 @@ export function PendingPlanPurchases({ planItems, incomes, assets, settings, onB
   if (!rows.length) return null;
 
   return <Card className="border-primary/20 bg-primary/[.025]">
-    <CardHeader><CardTitle className="flex items-center gap-2"><RiShoppingBag3Line className="text-primary" />{T.title}</CardTitle><p className="mt-1 text-xs text-muted-foreground">{T.desc}</p></CardHeader>
+    <CardHeader><CardTitle className="flex items-center gap-2"><RiShoppingBag3Line className="text-primary" />{T.title}</CardTitle><p className="mt-1 type-caption text-muted-foreground">{T.desc}</p></CardHeader>
     <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {rows.map(({ item, asset, income }) => <div key={item.id} className="rounded-2xl border bg-background/65 p-4">
-        <div className="flex items-start justify-between gap-3"><div><div className="font-black">{asset.name}</div><div className="mt-1 text-[10px] text-muted-foreground">{income?.title ?? "-"}{income?.happenedAt ? ` - ${toPersianDate(income.happenedAt)}` : ""}</div></div><RiArrowLeftLine className="mt-1 text-primary" /></div>
-        <div className="mt-4 rounded-xl bg-muted/45 p-3"><div className="text-[10px] text-muted-foreground">{T.remaining}</div><div className="mt-1 text-lg font-black">{formatMoney(planRemaining(item), settings.displayUnit)}</div></div>
+        <div className="flex items-start justify-between gap-3"><div><div className="type-strong">{asset.name}</div><div className="mt-1 text-[10px] text-muted-foreground">{income?.title ?? "-"}{income?.happenedAt ? ` - ${toPersianDate(income.happenedAt)}` : ""}</div></div><RiArrowLeftLine className="mt-1 text-primary" /></div>
+        <div className="mt-4 rounded-xl bg-muted/45 p-3"><div className="text-[10px] text-muted-foreground">{T.remaining}</div><div className="mt-1 text-lg type-strong">{formatMoney(planRemaining(item), settings.displayUnit)}</div></div>
         <Button className="mt-3 w-full" onClick={() => onBuy(item, asset)}>{T.buy}</Button>
       </div>)}
     </CardContent>

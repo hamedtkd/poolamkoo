@@ -14,11 +14,20 @@ import {
   tableFeatures,
   useTable,
   type ColumnDef,
+  type RowData,
+  type Table as TanStackTable,
 } from "@tanstack/react-table";
-import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpDownLine, RiArrowUpSLine, RiSearch2Line } from "react-icons/ri";
-import { Input } from "@/components/ui/input";
+import {
+  RiArrowDownSLine,
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiArrowUpDownLine,
+  RiArrowUpSLine,
+  RiSearch2Line,
+} from "react-icons/ri";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -30,18 +39,13 @@ export const dataTableFeatures = tableFeatures({
   sortedRowModel: createSortedRowModel(),
   paginatedRowModel: createPaginatedRowModel(),
   filteredRowModel: createFilteredRowModel(),
-  sortFns: {
-    alphanumeric: sortFn_alphanumeric,
-    text: sortFn_text,
-  },
-  filterFns: {
-    includesString: filterFn_includesString,
-  },
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
+  filterFns: { includesString: filterFn_includesString },
 });
 
 export type DataTableFeatures = typeof dataTableFeatures;
 
-export function DataTable<TData>({
+export function DataTable<TData extends RowData>({
   data,
   columns,
   searchPlaceholder = "جست‌وجو...",
@@ -67,7 +71,7 @@ export function DataTable<TData>({
   );
 
   const visibleRows = table.getRowModel().rows;
-  const filter = String(table.state.globalFilter ?? "");
+  const filter = String(table.store.state.globalFilter ?? "");
 
   return (
     <div className="space-y-3">
@@ -83,14 +87,10 @@ export function DataTable<TData>({
 
       {isMobile && mobileCard ? (
         <div className="space-y-2">
-          {visibleRows.length ? (
-            visibleRows.map((row) => (
-              <Card key={row.id} className="overflow-hidden">
-                {mobileCard(row.original)}
-              </Card>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">{emptyText}</div>
+          {visibleRows.length ? visibleRows.map((row) => (
+            <Card key={row.id} className="overflow-hidden">{mobileCard(row.original)}</Card>
+          )) : (
+            <EmptyState text={emptyText} />
           )}
         </div>
       ) : (
@@ -104,19 +104,22 @@ export function DataTable<TData>({
                     const SortIcon = sorted === "asc" ? RiArrowUpSLine : sorted === "desc" ? RiArrowDownSLine : RiArrowUpDownLine;
                     return (
                       <TableHead key={header.id} colSpan={header.colSpan}>
-                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                          <button
-                            type="button"
-                            className="inline-flex w-full items-center gap-1.5 text-start font-medium transition-colors hover:text-foreground"
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <table.FlexRender header={header} />
-                            <SortIcon className="size-3.5 opacity-60" />
-                          </button>
-                        ) : (
-                          <span className="font-medium">
-                            <table.FlexRender header={header} />
-                          </span>
+                        {header.isPlaceholder ? null : (
+                          <div className="flex min-h-9 items-center gap-1.5">
+                            <span className="min-w-0 flex-1 type-body-strong">
+                              <table.FlexRender header={header} />
+                            </span>
+                            {header.column.getCanSort() && (
+                              <button
+                                type="button"
+                                className="grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                onClick={header.column.getToggleSortingHandler()}
+                                aria-label="مرتب‌سازی ستون"
+                              >
+                                <SortIcon className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </TableHead>
                     );
@@ -125,55 +128,43 @@ export function DataTable<TData>({
               ))}
             </TableHeader>
             <TableBody>
-              {visibleRows.length ? (
-                visibleRows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getAllCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        <table.FlexRender cell={cell} />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-28 text-center text-muted-foreground">
-                    {emptyText}
-                  </TableCell>
+              {visibleRows.length ? visibleRows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getAllCells().map((cell) => (
+                    <TableCell key={cell.id}><table.FlexRender cell={cell} /></TableCell>
+                  ))}
                 </TableRow>
+              )) : (
+                <TableRow><TableCell colSpan={columns.length} className="h-28 text-center text-muted-foreground">{emptyText}</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>
-          صفحه {new Intl.NumberFormat("fa-IR").format(table.state.pagination.pageIndex + 1)} از{" "}
-          {new Intl.NumberFormat("fa-IR").format(Math.max(1, table.getPageCount()))}
-        </span>
-        <div className="flex gap-1">
-          <Button
-            size="icon"
-            variant="outline"
-            className="size-8"
-            disabled={!table.getCanPreviousPage()}
-            onClick={() => table.previousPage()}
-            aria-label="صفحه قبل"
-          >
-            <RiArrowRightSLine />
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="size-8"
-            disabled={!table.getCanNextPage()}
-            onClick={() => table.nextPage()}
-            aria-label="صفحه بعد"
-          >
-            <RiArrowLeftSLine />
-          </Button>
-        </div>
+      <Pagination table={table} />
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <div className="rounded-2xl border border-dashed p-10 text-center type-body text-muted-foreground">{text}</div>;
+}
+
+function Pagination<TData extends RowData>({ table }: { table: TanStackTable<DataTableFeatures, TData> }) {
+  return (
+    <div className="flex items-center justify-between type-caption text-muted-foreground">
+      <span>
+        صفحه {new Intl.NumberFormat("fa-IR").format(table.store.state.pagination.pageIndex + 1)} از{" "}
+        {new Intl.NumberFormat("fa-IR").format(Math.max(1, table.getPageCount()))}
+      </span>
+      <div className="flex gap-1">
+        <Button size="icon" variant="outline" className="size-8" disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()} aria-label="صفحه قبل">
+          <RiArrowRightSLine />
+        </Button>
+        <Button size="icon" variant="outline" className="size-8" disabled={!table.getCanNextPage()} onClick={() => table.nextPage()} aria-label="صفحه بعد">
+          <RiArrowLeftSLine />
+        </Button>
       </div>
     </div>
   );

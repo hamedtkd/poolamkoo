@@ -3,6 +3,7 @@
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
 import { ensureSeedData } from "@/lib/db";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 function PwaBootstrap() {
   useEffect(() => {
@@ -16,5 +17,5 @@ function PwaBootstrap() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange><PwaBootstrap />{children}</ThemeProvider>;
+  return <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange><TooltipProvider delayDuration={260}><PwaBootstrap />{children}</TooltipProvider></ThemeProvider>;
 }

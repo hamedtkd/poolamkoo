@@ -7,7 +7,7 @@ import { db, defaultSettings, ensureSeedData } from "@/lib/db";
 export function useAppData() {
   useEffect(() => { void ensureSeedData(); }, []);
   const settingsQuery = useLiveQuery(() => db.settings.get("settings"), []);
-  const settings = settingsQuery ?? defaultSettings;
+  const settings = settingsQuery ? { ...defaultSettings, ...settingsQuery } : defaultSettings;
   const ready = settingsQuery !== undefined;
   const rule = useLiveQuery(() => db.allocationRules.filter((item) => item.isActive).first(), []);
   const incomes = useLiveQuery(() => db.incomes.orderBy("happenedAt").reverse().toArray(), []) ?? [];

@@ -108,6 +108,8 @@ export interface AppSettings {
   palette: ThemePalette;
   darkMode: "light" | "dark" | "system";
   onboardingComplete: boolean;
+  guideComplete: boolean;
+  hideFinancialData: boolean;
   emergencyMonths: number;
   monthlyEssentialToman: number;
   incomeStability: "stable" | "variable" | "irregular";

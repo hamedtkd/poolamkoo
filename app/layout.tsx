@@ -3,13 +3,14 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "پولم‌کو — تصمیم‌یار مالی شخصی",
+  title: "پولم‌کو",
   description: "مدیریت پول‌های ورودی، صندوق‌های هدف و سرمایه‌گذاری به‌صورت Local-First",
   applicationName: "پولم‌کو",
+  icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }], apple: "/icon-192.png" },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "پولم‌کو" },
 };
 
-export const viewport: Viewport = { themeColor: "#f43f5e", width: "device-width", initialScale: 1, viewportFit: "cover" };
+export const viewport: Viewport = { themeColor: "#9a6f0a", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

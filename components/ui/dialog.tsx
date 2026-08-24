@@ -37,9 +37,9 @@ export function DialogHeader({ children, className }: { children: React.ReactNod
 }
 
 export function DialogTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <DialogPrimitive.Title className={cn("text-lg font-bold", className)}>{children}</DialogPrimitive.Title>;
+  return <DialogPrimitive.Title className={cn("type-section-title", className)}>{children}</DialogPrimitive.Title>;
 }
 
 export function DialogDescription({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <DialogPrimitive.Description className={cn("text-sm leading-6 text-muted-foreground", className)}>{children}</DialogPrimitive.Description>;
+  return <DialogPrimitive.Description className={cn("type-body type-muted", className)}>{children}</DialogPrimitive.Description>;
 }

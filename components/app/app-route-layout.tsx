@@ -7,12 +7,14 @@ import { NewMoneyDialog } from "@/components/new-money-dialog";
 import { Onboarding } from "@/components/onboarding";
 import { FullAppSkeleton } from "@/components/skeletons/page-skeleton";
 import { useAppData } from "@/hooks/use-app-data";
+import { useAppDateFilter } from "@/hooks/use-app-date-filter";
 import { useMarket } from "@/hooks/use-market";
 
 export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const [newMoneyOpen, setNewMoneyOpen] = useState(false);
   const data = useAppData();
   const market = useMarket();
+  const dateFilter = useAppDateFilter(data);
 
   useEffect(() => {
     const open = () => setNewMoneyOpen(true);
@@ -24,8 +26,8 @@ export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   if (!data.settings.onboardingComplete) return <Onboarding onDone={() => undefined} />;
 
   return (
-    <AppRuntimeProvider value={{ data, market }}>
-      <AppShell settings={data.settings} onNewMoney={() => setNewMoneyOpen(true)}>{children}</AppShell>
+    <AppRuntimeProvider value={{ data, market, dateFilter }}>
+      <AppShell settings={data.settings} market={market} onNewMoney={() => setNewMoneyOpen(true)}>{children}</AppShell>
       <NewMoneyDialog
         open={newMoneyOpen}
         onOpenChange={setNewMoneyOpen}

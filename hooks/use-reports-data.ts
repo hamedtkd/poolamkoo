@@ -30,7 +30,7 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
   assets: Asset[];
   transactions: InvestmentTransaction[];
   quotes: MarketQuote[];
-  planItems: PlanItem[];
+  planItems?: PlanItem[];
 }) {
   return useMemo(() => {
     const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
@@ -51,10 +51,11 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
     const invested = performance.filter((row) => row.value > 0 || Math.abs(row.pnl) > 0);
     const best = [...invested].sort((a, b) => b.pnlPct - a.pnlPct)[0];
     const worst = [...invested].sort((a, b) => a.pnlPct - b.pnlPct)[0];
-    const overallPlan = incomePlanProgress(planItems);
+    const safePlanItems = planItems ?? [];
+    const overallPlan = incomePlanProgress(safePlanItems);
     const planRows: PlanAdherenceRow[] = incomes.flatMap((income) => {
       if (!income.id) return [];
-      const progress = incomePlanProgress(planItems.filter((item) => item.incomeId === income.id));
+      const progress = incomePlanProgress(safePlanItems.filter((item) => item.incomeId === income.id));
       if (progress.planned <= 0) return [];
       return [{ incomeId: income.id, title: income.title, happenedAt: income.happenedAt, ...progress }];
     }).sort((a, b) => b.happenedAt.localeCompare(a.happenedAt));

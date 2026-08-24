@@ -25,7 +25,7 @@ export function ArcGauge({ value, label = "تحقق هدف", size = 190, stroke 
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${progress} ${rest + c - usable}`} style={{ transition: "stroke-dasharray 650ms cubic-bezier(.2,.8,.2,1)" }} />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">
-        <div><div className="text-4xl font-black tabular-nums">{new Intl.NumberFormat("fa-IR").format(Math.round(pct))}٪</div><div className="mt-1 text-xs text-muted-foreground">{label}</div></div>
+        <div><div className="text-4xl type-strong tabular-nums">{new Intl.NumberFormat("fa-IR").format(Math.round(pct))}٪</div><div className="mt-1 type-caption text-muted-foreground">{label}</div></div>
       </div>
     </div>
   );

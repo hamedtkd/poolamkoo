@@ -77,15 +77,15 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, availableQty
   return <Dialog open={!!asset} onOpenChange={(open) => !open && onClose()}>
     <DialogContent>
       <DialogHeader><DialogTitle>{T.title} {asset?.name}</DialogTitle><DialogDescription>{T.desc}</DialogDescription></DialogHeader>
-      {planItem && <div className="rounded-xl border border-primary/25 bg-primary/7 p-3 text-xs leading-6"><div className="font-bold text-primary">{T.plan}</div><div className="mt-1 text-muted-foreground">{T.suggested}: {formatMoney(planRemaining(planItem), settings.displayUnit)}</div></div>}
+      {planItem && <div className="rounded-xl border border-primary/25 bg-primary/7 p-3 text-xs leading-6"><div className="type-strong text-primary">{T.plan}</div><div className="mt-1 text-muted-foreground">{T.suggested}: {formatMoney(planRemaining(planItem), settings.displayUnit)}</div></div>}
       <form onSubmit={save} className="space-y-4">
         <Controller name="type" control={form.control} render={({ field }) => <Field label={T.type}><Select value={field.value} onValueChange={field.onChange} options={planItem ? [{ value: "buy", label: T.buy }] : [{ value: "buy", label: T.buy }, { value: "sell", label: T.sell }]} /></Field>} />
-        {type === "sell" && <div className="rounded-xl bg-muted/45 p-3 text-xs text-muted-foreground">{T.available}: <strong dir="ltr" className="text-foreground">{formatNumber(availableQty, 8)}</strong></div>}
+        {type === "sell" && <div className="rounded-xl bg-muted/45 p-3 type-caption text-muted-foreground">{T.available}: <strong dir="ltr" className="text-foreground">{formatNumber(availableQty, 8)}</strong></div>}
         <Controller name="amount" control={form.control} render={({ field, fieldState }) => <Field label={T.amount} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
         <Controller name="price" control={form.control} render={({ field, fieldState }) => <Field label={T.price} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
         <Controller name="date" control={form.control} render={({ field, fieldState }) => <Field label={T.date} error={fieldState.error?.message}><DatePicker value={field.value} onValueChange={(date) => date && field.onChange(date)} /></Field>} />
         <div className="rounded-xl bg-muted/45 p-3 text-sm"><span className="text-muted-foreground">{T.qty}: </span><strong dir="ltr">{formatNumber(quantity, 8)}</strong></div>
-        {overSelling && <div className="rounded-xl border border-destructive/25 bg-destructive/8 p-3 text-xs font-semibold text-destructive">{T.over}</div>}
+        {overSelling && <div className="rounded-xl border border-destructive/25 bg-destructive/8 p-3 type-caption type-body-strong text-destructive">{T.over}</div>}
         <Button type="submit" className="w-full" disabled={overSelling}><RiMoneyDollarCircleLine /> {T.submit} {type === "buy" ? T.buy : T.sell}</Button>
       </form>
     </DialogContent>
@@ -93,5 +93,5 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, availableQty
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return <div className="space-y-2"><label className="text-sm font-bold">{label}</label>{children}{error && <p className="text-xs text-destructive">{error}</p>}</div>;
+  return <div className="space-y-2"><label className="text-sm type-strong">{label}</label>{children}{error && <p className="text-xs text-destructive">{error}</p>}</div>;
 }

@@ -29,19 +29,19 @@ export function MarketChartCard({ settings, snapshots, quotes }: { settings: App
 
   return <Card className="overflow-hidden">
     <CardHeader className="gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
-      <div><CardTitle className="flex items-center gap-2"><RiLineChartLine className="text-primary" />{T.title}</CardTitle><p className="mt-1 text-xs text-muted-foreground">{T.desc}</p></div>
+      <div><CardTitle className="flex items-center gap-2"><RiLineChartLine className="text-primary" />{T.title}</CardTitle><p className="mt-1 type-caption text-muted-foreground">{T.desc}</p></div>
       <div className="w-full sm:w-44"><Select value={symbol} onValueChange={setSymbol} options={[{ value: "USD", label: "\u062f\u0644\u0627\u0631" }, { value: "IR_GOLD_18K", label: "\u0637\u0644\u0627\u06cc \u06f1\u06f8 \u0639\u06cc\u0627\u0631" }, { value: "BTC", label: "\u0628\u06cc\u062a\u200c\u06a9\u0648\u06cc\u0646" }, { value: "USDT", label: "\u062a\u062a\u0631" }]} /></div>
     </CardHeader>
     <CardContent>
       {candles.length >= 2 ? <>
-        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div className="text-[10px] text-muted-foreground">{T.local}</div><div className="flex rounded-xl bg-muted/55 p-1">{([30, 60, 90] as const).map((value) => <button key={value} type="button" onClick={() => setDays(value)} className={cn("min-w-14 rounded-lg px-2 py-1.5 text-[10px] font-bold transition", days === value ? "bg-background text-primary shadow-sm" : "text-muted-foreground")}>{new Intl.NumberFormat("fa-IR").format(value)} {"\u0631\u0648\u0632"}</button>)}</div></div>
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div className="text-[10px] text-muted-foreground">{T.local}</div><div className="flex rounded-xl bg-muted/55 p-1">{([30, 60, 90] as const).map((value) => <button key={value} type="button" onClick={() => setDays(value)} className={cn("min-w-14 rounded-lg px-2 py-1.5 text-[10px] type-strong transition", days === value ? "bg-background text-primary shadow-sm" : "text-muted-foreground")}>{new Intl.NumberFormat("fa-IR").format(value)} {"\u0631\u0648\u0632"}</button>)}</div></div>
         {last && <div className="hide-scrollbar mb-3 flex gap-2 overflow-x-auto pb-1" dir="ltr"><Ohlc label="O" value={last.open} settings={settings} /><Ohlc label="H" value={last.high} settings={settings} /><Ohlc label="L" value={last.low} settings={settings} /><Ohlc label="C" value={last.close} settings={settings} /></div>}
         <FinancialChart candles={candles} />
-      </> : <div className="grid min-h-72 place-items-center rounded-2xl border border-dashed bg-muted/15 p-6 text-center"><div className="max-w-xl"><RiInformationLine className="mx-auto size-8 text-primary" /><div className="mt-3 font-black">{T.emptyTitle}</div><p className="mt-2 text-xs leading-6 text-muted-foreground">{T.emptyDesc}</p>{currentQuote && <div className="mx-auto mt-4 w-fit rounded-xl border bg-background/65 px-4 py-3"><div className="text-[10px] text-muted-foreground">{T.current}</div><div className="mt-1 font-black">{formatMoney(currentQuote.priceToman, settings.displayUnit)}</div></div>}</div></div>}
+      </> : <div className="grid min-h-72 place-items-center rounded-2xl border border-dashed bg-muted/15 p-6 text-center"><div className="max-w-xl"><RiInformationLine className="mx-auto size-8 text-primary" /><div className="mt-3 type-strong">{T.emptyTitle}</div><p className="mt-2 text-xs leading-6 text-muted-foreground">{T.emptyDesc}</p>{currentQuote && <div className="mx-auto mt-4 w-fit rounded-xl border bg-background/65 px-4 py-3"><div className="text-[10px] text-muted-foreground">{T.current}</div><div className="mt-1 type-strong">{formatMoney(currentQuote.priceToman, settings.displayUnit)}</div></div>}</div></div>}
     </CardContent>
   </Card>;
 }
 
 function Ohlc({ label, value, settings }: { label: string; value: number; settings: AppSettings }) {
-  return <div className="min-w-[112px] rounded-xl border bg-background/55 px-3 py-2 text-left"><div className="text-[9px] font-bold text-muted-foreground">{label}</div><div className="mt-0.5 text-xs font-black tabular-nums">{formatMoney(value, settings.displayUnit, true)}</div></div>;
+  return <div className="min-w-[112px] rounded-xl border bg-background/55 px-3 py-2 text-left"><div className="text-[9px] type-strong text-muted-foreground">{label}</div><div className="mt-0.5 text-xs type-strong tabular-nums">{formatMoney(value, settings.displayUnit, true)}</div></div>;
 }

@@ -39,7 +39,7 @@ export function PlanExecutionDialog({ item, settings, onClose }: { item: PlanIte
     <DialogContent>
       <DialogHeader><DialogTitle>{T.title}</DialogTitle><DialogDescription>{item?.label} - {T.desc}</DialogDescription></DialogHeader>
       <form onSubmit={submit} className="space-y-4">
-        <Controller name="amount" control={form.control} render={({ field, fieldState }) => <div className="space-y-2"><label className="text-sm font-bold">{T.amount}</label><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} />{fieldState.error && <p className="text-xs text-destructive">{fieldState.error.message}</p>}</div>} />
+        <Controller name="amount" control={form.control} render={({ field, fieldState }) => <div className="space-y-2"><label className="text-sm type-strong">{T.amount}</label><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} />{fieldState.error && <p className="text-xs text-destructive">{fieldState.error.message}</p>}</div>} />
         <Button type="submit" className="w-full">{T.submit}</Button>
       </form>
     </DialogContent>

@@ -32,11 +32,11 @@ export function AlertDialogHeader({ children, className }: { children: React.Rea
 }
 
 export function AlertDialogTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <AlertDialogPrimitive.Title className={cn("text-lg font-black", className)}>{children}</AlertDialogPrimitive.Title>;
+  return <AlertDialogPrimitive.Title className={cn("type-section-title", className)}>{children}</AlertDialogPrimitive.Title>;
 }
 
 export function AlertDialogDescription({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <AlertDialogPrimitive.Description className={cn("text-sm leading-7 text-muted-foreground", className)}>{children}</AlertDialogPrimitive.Description>;
+  return <AlertDialogPrimitive.Description className={cn("type-body text-muted-foreground", className)}>{children}</AlertDialogPrimitive.Description>;
 }
 
 export function AlertDialogFooter({ children, className }: { children: React.ReactNode; className?: string }) {

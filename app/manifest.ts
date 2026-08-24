@@ -4,12 +4,12 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "پولم‌کو",
     short_name: "پولم‌کو",
-    description: "تصمیم‌یار مالی Local-First",
+    description: "برنامه‌ریزی پول‌های ورودی، صندوق‌ها و سرمایه‌گذاری به‌صورت Local-First",
     start_url: "/",
     display: "standalone",
     orientation: "portrait-primary",
     background_color: "#0d0e13",
-    theme_color: "#f43f5e",
+    theme_color: "#9a6f0a",
     lang: "fa",
     dir: "rtl",
     icons: [

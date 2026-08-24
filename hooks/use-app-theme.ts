@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { useTheme } from "next-themes";
 import { db } from "@/lib/db";
@@ -13,13 +13,14 @@ type TransitionDocument = Document & {
 
 export function useAppTheme(settings: AppSettings) {
   const { resolvedTheme, theme, setTheme } = useTheme();
+  const transitioning = useRef(false);
 
   useEffect(() => {
     document.documentElement.dataset.palette = settings.palette;
   }, [settings.palette]);
 
   useEffect(() => {
-    setTheme(settings.darkMode);
+    if (!transitioning.current) setTheme(settings.darkMode);
   }, [settings.darkMode, setTheme]);
 
   useEffect(() => {
@@ -43,36 +44,48 @@ export function useAppTheme(settings: AppSettings) {
   }
 
   async function toggleTheme(origin?: ThemeOrigin) {
+    if (transitioning.current) return;
     const next = resolvedTheme === "dark" ? "light" : "dark";
     const root = document.documentElement;
     const transitionDoc = document as TransitionDocument;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 767px)").matches;
     const canAnimate = !!origin && !!transitionDoc.startViewTransition && !reduceMotion;
     const apply = () => {
       root.classList.remove("light", "dark");
       root.classList.add(next);
       root.style.colorScheme = next;
-      setTheme(next);
+      flushSync(() => setTheme(next));
     };
 
     if (!canAnimate || !origin) {
       apply();
-      await persistAppearance(next);
+      void persistAppearance(next);
       return;
     }
 
-    const radius = Math.hypot(
+    const radius = Math.ceil(Math.hypot(
       Math.max(origin.x, window.innerWidth - origin.x),
       Math.max(origin.y, window.innerHeight - origin.y),
-    );
+    ));
     root.style.setProperty("--theme-transition-x", `${origin.x}px`);
     root.style.setProperty("--theme-transition-y", `${origin.y}px`);
     root.style.setProperty("--theme-transition-radius", `${radius}px`);
+    root.dataset.themeMotion = mobile ? "mobile" : "desktop";
     root.classList.add("theme-transitioning");
+    transitioning.current = true;
 
-    const transition = transitionDoc.startViewTransition!(() => flushSync(apply));
-    void transition.finished.finally(() => root.classList.remove("theme-transitioning")).catch(() => root.classList.remove("theme-transitioning"));
-    await persistAppearance(next);
+    const transition = transitionDoc.startViewTransition!(apply);
+    void transition.finished.finally(() => {
+      root.classList.remove("theme-transitioning");
+      delete root.dataset.themeMotion;
+      transitioning.current = false;
+    }).catch(() => {
+      root.classList.remove("theme-transitioning");
+      delete root.dataset.themeMotion;
+      transitioning.current = false;
+    });
+    void persistAppearance(next);
   }
 
   return { resolvedTheme, theme, setAppearance, setPalette, toggleTheme };

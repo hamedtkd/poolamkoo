@@ -65,8 +65,13 @@ export function useNewMoney({ open, rule, settings, funds, assets, transactions,
     mode: "onChange",
   });
   const values = form.watch();
-  const allocationValues = allocationForm.watch();
   const activeRule = rule ?? fallbackRule;
+  const watchedAllocation = allocationForm.watch();
+  const allocationValues: AllocationRuleFormValues = {
+    life: watchedAllocation.life ?? activeRule.lifePct,
+    safety: watchedAllocation.safety ?? activeRule.safetyPct,
+    growth: watchedAllocation.growth ?? activeRule.growthPct,
+  };
   const emergency = funds.find((fund) => fund.category === "emergency");
 
   useEffect(() => {
@@ -118,50 +123,59 @@ export function useNewMoney({ open, rule, settings, funds, assets, transactions,
   async function save() {
     const [moneyValid, allocationValid] = await Promise.all([form.trigger(), allocationForm.trigger()]);
     if (!moneyValid || !allocationValid) return;
-    const data = form.getValues();
+    const data = newMoneySchema.parse(form.getValues());
     const allocation = splitIncome(data.amount, eventRule);
-    const fundPlan = buildSafetyPlan(allocation.safety, funds);
-    const assetPlan = buildGrowthPlan(allocation.growth, assets, transactions, quotes);
+    const lifeAmount = Number(allocation.life ?? 0);
+    const safetyAmount = Number(allocation.safety ?? 0);
+    const growthAmount = Number(allocation.growth ?? 0);
+    const fundPlan = buildSafetyPlan(safetyAmount, funds);
+    const assetPlan = buildGrowthPlan(growthAmount, assets, transactions, quotes);
     const now = new Date().toISOString();
 
+    let savedIncomeId: number | undefined;
     await db.transaction("rw", db.incomes, db.allocations, db.planItems, async () => {
-      const incomeId = await db.incomes.add({
+      const incomeIdKey = await db.incomes.add({
         amountToman: data.amount,
         title: data.title.trim(),
         happenedAt: dateToISO(data.date),
         createdAt: now,
       });
+      if (typeof incomeIdKey !== "number") throw new Error("ثبت پول ورودی انجام نشد. دوباره تلاش کنید.");
+      const incomeId = incomeIdKey;
+      savedIncomeId = incomeId;
+
       await db.allocations.bulkAdd([
-        { incomeId, bucket: "life", amountToman: allocation.life, createdAt: now },
-        { incomeId, bucket: "safety", amountToman: allocation.safety, createdAt: now },
-        { incomeId, bucket: "growth", amountToman: allocation.growth, createdAt: now },
+        { incomeId, bucket: "life", amountToman: lifeAmount, createdAt: now },
+        { incomeId, bucket: "safety", amountToman: safetyAmount, createdAt: now },
+        { incomeId, bucket: "growth", amountToman: growthAmount, createdAt: now },
       ]);
 
       const plans: PlanItem[] = [];
-      if (allocation.life > 0) {
-        plans.push({ incomeId, bucket: "life" as const, targetType: "life" as const, label: "\u0632\u0646\u062f\u06af\u06cc \u0627\u06cc\u0646 \u062f\u0648\u0631\u0647", plannedToman: allocation.life, executedToman: 0, createdAt: now, updatedAt: now });
+      if (lifeAmount > 0) {
+        plans.push({ incomeId, bucket: "life", targetType: "life", label: "زندگی این دوره", plannedToman: lifeAmount, executedToman: 0, createdAt: now, updatedAt: now });
       }
       let safetyAssigned = 0;
       for (const item of fundPlan) {
         if (item.amountToman <= 0) continue;
         safetyAssigned += item.amountToman;
-        plans.push({ incomeId, bucket: "safety" as const, targetType: item.fund.id ? "fund" as const : "bucket" as const, targetId: item.fund.id, label: item.fund.name, plannedToman: item.amountToman, executedToman: 0, createdAt: now, updatedAt: now });
+        const fundId = typeof item.fund.id === "number" ? item.fund.id : undefined;
+        plans.push({ incomeId, bucket: "safety", targetType: fundId ? "fund" : "bucket", targetId: fundId, label: item.fund.name, plannedToman: item.amountToman, executedToman: 0, createdAt: now, updatedAt: now });
       }
-      if (allocation.safety - safetyAssigned > 0) {
-        plans.push({ incomeId, bucket: "safety" as const, targetType: "bucket" as const, label: "\u0627\u0645\u0646\u06cc\u062a \u0648 \u067e\u0633\u200c\u0627\u0646\u062f\u0627\u0632", plannedToman: allocation.safety - safetyAssigned, executedToman: 0, createdAt: now, updatedAt: now });
+      if (safetyAmount - safetyAssigned > 0) {
+        plans.push({ incomeId, bucket: "safety", targetType: "bucket", label: "امنیت و پس‌انداز", plannedToman: safetyAmount - safetyAssigned, executedToman: 0, createdAt: now, updatedAt: now });
       }
       let growthAssigned = 0;
       for (const item of assetPlan) {
-        if (!item.asset.id || item.amountToman <= 0) continue;
+        if (typeof item.asset.id !== "number" || item.amountToman <= 0) continue;
         growthAssigned += item.amountToman;
-        plans.push({ incomeId, bucket: "growth" as const, targetType: "asset" as const, targetId: item.asset.id, label: item.asset.name, plannedToman: item.amountToman, executedToman: 0, createdAt: now, updatedAt: now });
+        plans.push({ incomeId, bucket: "growth", targetType: "asset", targetId: item.asset.id, label: item.asset.name, plannedToman: item.amountToman, executedToman: 0, createdAt: now, updatedAt: now });
       }
-      if (allocation.growth - growthAssigned > 0) {
-        plans.push({ incomeId, bucket: "growth" as const, targetType: "bucket" as const, label: "\u0631\u0634\u062f \u0648 \u0633\u0631\u0645\u0627\u06cc\u0647\u200c\u06af\u0630\u0627\u0631\u06cc", plannedToman: allocation.growth - growthAssigned, executedToman: 0, createdAt: now, updatedAt: now });
+      if (growthAmount - growthAssigned > 0) {
+        plans.push({ incomeId, bucket: "growth", targetType: "bucket", label: "رشد و سرمایه‌گذاری", plannedToman: growthAmount - growthAssigned, executedToman: 0, createdAt: now, updatedAt: now });
       }
       if (plans.length) await db.planItems.bulkAdd(plans);
     });
-    onSaved(incomeId);
+    if (savedIncomeId !== undefined) onSaved(savedIncomeId);
   }
 
   return {

@@ -81,7 +81,7 @@ export function DatePicker({
   const resolvedConfirm = confirmMode === "auto" ? (isDrawer ? "explicit" : "immediate") : confirmMode;
   const formattedValue = value ? formatPersianDate(value) : null;
   const trigger = renderTrigger?.({ value, formattedValue, open }) ?? (
-    <Button type="button" variant="outline" disabled={disabled} className={cn("w-full justify-start gap-2 font-normal", !value && "text-muted-foreground", className)}>
+    <Button type="button" variant="outline" disabled={disabled} className={cn("w-full justify-start gap-2 type-body", !value && "text-muted-foreground", className)}>
       <RiCalendarLine className="size-4" />
       <span className="flex-1 text-start">{formattedValue ?? placeholder}</span>
     </Button>

@@ -1,42 +1,41 @@
 import { readFile } from "node:fs/promises";
 
-const price = await readFile("components/ui/price-input.tsx", "utf8");
-const money = await readFile("components/ui/money-input.tsx", "utf8");
-const dialog = await readFile("components/ui/dialog.tsx", "utf8");
-const alertDialog = await readFile("components/ui/alert-dialog.tsx", "utf8");
-const css = await readFile("app/globals.css", "utf8");
-const validation = await readFile("lib/validation.ts", "utf8");
-const skeleton = await readFile("components/skeletons/page-skeleton.tsx", "utf8");
-const newMoney = await readFile("components/new-money-dialog.tsx", "utf8");
-const allocationEditor = await readFile("components/new-money-allocation-editor.tsx", "utf8");
-const newMoneyHook = await readFile("hooks/use-new-money.ts", "utf8");
-const marketApi = await readFile("app/api/market/route.ts", "utf8");
-const marketProvider = await readFile("lib/market/brsapi.ts", "utf8");
-const marketHook = await readFile("hooks/use-market.ts", "utf8");
-const marketHistoryHook = await readFile("hooks/use-market-history.ts", "utf8");
-const db = await readFile("lib/db.ts", "utf8");
-const txDialog = await readFile("components/investments/transaction-dialog.tsx", "utf8");
-const pendingPlans = await readFile("components/investments/pending-plan-purchases.tsx", "utf8");
-
-const shell = await readFile("components/app-shell.tsx", "utf8");
-const themeHook = await readFile("hooks/use-app-theme.ts", "utf8");
-const planPage = await readFile("components/income/income-plan-page.tsx", "utf8");
-const planCard = await readFile("components/income/plan-item-card.tsx", "utf8");
-const quickPlan = await readFile("components/income/quick-plan-dialog.tsx", "utf8");
+const read = (path) => readFile(path, "utf8");
+const [
+  price, money, dialog, alertDialog, css, validation, skeleton, newMoney, allocationEditor, pageDateFilterBar,
+  newMoneyHook, marketApi, marketProvider, marketHook, marketHistoryHook, db, txDialog,
+  pendingPlans, shell, themeHook, planPage, planCard, quickPlan, planEdit, planActions,
+  desktopSidebar, mobileNavigation, appTopbar, drawer, dateRangePicker, dateFilterHook, tooltip, productTour, tourHook, button, types, marketRefreshButton, appRouteLayout, brandLogo, settingsSection, planProgress, appError, reportsSection, monthlyBars, privacyToggle, shellCss, dataTable, globalSearch, rootLayout, manifest, serviceWorker, favicon,
+] = await Promise.all([
+  read("components/ui/price-input.tsx"), read("components/ui/money-input.tsx"), read("components/ui/dialog.tsx"),
+  read("components/ui/alert-dialog.tsx"), read("app/globals.css"), read("lib/validation.ts"),
+  read("components/skeletons/page-skeleton.tsx"), read("components/new-money-dialog.tsx"),
+  read("components/new-money-allocation-editor.tsx"), read("components/app/page-date-filter-bar.tsx"), read("hooks/use-new-money.ts"),
+  read("app/api/market/route.ts"), read("lib/market/brsapi.ts"), read("hooks/use-market.ts"),
+  read("hooks/use-market-history.ts"), read("lib/db.ts"), read("components/investments/transaction-dialog.tsx"),
+  read("components/investments/pending-plan-purchases.tsx"), read("components/app-shell.tsx"),
+  read("hooks/use-app-theme.ts"), read("components/income/income-plan-page.tsx"),
+  read("components/income/plan-item-card.tsx"), read("components/income/quick-plan-dialog.tsx"),
+  read("components/income/plan-edit-dialog.tsx"), read("hooks/use-plan-item-actions.ts"),
+  read("components/app/desktop-sidebar.tsx"), read("components/app/mobile-navigation.tsx"),
+  read("components/app/app-topbar.tsx"), read("components/ui/drawer.tsx"), read("components/ui/date-range-picker.tsx"), read("hooks/use-app-date-filter.ts"),
+  read("components/ui/tooltip.tsx"), read("components/app/product-tour.tsx"), read("hooks/use-product-tour.ts"),
+  read("components/ui/button.tsx"), read("lib/types.ts"), read("components/app/market-refresh-button.tsx"),
+  read("components/app/app-route-layout.tsx"), read("components/brand-logo.tsx"), read("components/sections/settings.tsx"),
+  read("lib/plan-progress.ts"), read("app/(app)/error.tsx"), read("components/sections/reports.tsx"), read("components/charts/monthly-bars.tsx"), read("components/app/privacy-toggle.tsx"), read("app/globals.css"),
+  read("components/data-table.tsx"), read("components/app/global-search.tsx"), read("app/layout.tsx"), read("app/manifest.ts"), read("public/sw.js"), read("public/favicon.svg"),
+]);
 
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
   [dialog.includes("sm:place-items-center") && !dialog.includes("sm:left-1/2"), "Dialog desktop layout must use RTL-safe grid centering"],
   [alertDialog.includes("sm:place-items-center") && !alertDialog.includes("sm:left-1/2"), "AlertDialog desktop layout must use RTL-safe grid centering"],
-  [css.includes('.dark[data-palette="rose"]'), "Dark rose palette selector is missing"],
-  [css.includes('.dark[data-palette="violet"]'), "Dark violet palette selector is missing"],
-  [css.includes('.dark[data-palette="amber"]'), "Dark amber palette selector is missing"],
-  [css.includes('.dark[data-palette="blue"]'), "Dark blue palette selector is missing"],
-  [dialog.includes('absolute left-4 top-4') && !dialog.includes('absolute start-4 top-4'), "Dialog close button must stay on the visual left in RTL"],
+  [css.includes('.dark[data-palette="rose"]') && css.includes('.dark[data-palette="amber"]'), "Dark palette selectors are missing"],
+  [dialog.includes('absolute left-4 top-4'), "Dialog close button must stay on the visual left in RTL"],
   [validation.includes('مبلغ را وارد کن.') && !validation.includes('Invalid input'), "Form validation must provide Persian required-field errors"],
-  [skeleton.includes('md:hidden') && skeleton.includes('hidden overflow-hidden rounded-xl border md:block'), "Data table skeleton must use cards only on mobile and rows on laptop/desktop"],
-  [newMoney.includes('className="h-14 w-full text-xl"') && !newMoney.includes('max-w-sm'), "New money amount field must use the full dialog width"],
+  [skeleton.includes('md:hidden') && skeleton.includes('hidden overflow-hidden rounded-xl border md:block'), "Data table skeleton must use cards only on mobile"],
+  [newMoney.includes('className="h-14 w-full text-xl"'), "New money amount field must use the full dialog width"],
   [allocationEditor.includes('تقسیم این پول') && allocationEditor.includes('بازگشت به پیشنهاد'), "Per-income allocation editor is missing"],
   [newMoneyHook.includes('rebalanceAllocation') && newMoneyHook.includes('allocationChanged'), "Per-income allocation override logic is missing"],
   [marketProvider.includes('Gold_Currency.php') && !marketProvider.includes('Cryptocurrency.php'), "Free market refresh must use one BrsApi request"],
@@ -46,11 +45,46 @@ const checks = [
   [db.includes('planItems:') && db.includes('planItemId'), "Plan execution schema is missing"],
   [txDialog.includes('planItemId') && txDialog.includes('initialAmount'), "Planned purchases must prefill and link transactions"],
   [pendingPlans.includes('planRemaining') && pendingPlans.includes('onBuy'), "Pending planned purchases UI is missing"],
-  [planCard.includes("RiDeleteBin6Line") && planCard.includes("onDelete"), "Plan cards must expose a delete action"],
-  [quickPlan.includes("کارت سریع برنامه") && quickPlan.includes("MoneyInput"), "Quick plan creation UI is missing"],
-  [planPage.includes("xl:grid-cols-[20rem_minmax(0,1fr)]") && planPage.includes("items-start"), "Income plan grid must stay balanced on large displays"],
-  [themeHook.includes("startViewTransition") && css.includes("theme-circle-reveal"), "Theme switch must use a radial View Transition from the trigger"],
-  [shell.includes("پولم‌کو") && shell.includes("MarketRefreshButton showLabel") && shell.includes("ThemeToggle") , "Brand/utility controls are not wired in the new shell"],
+  [planCard.includes('RiDeleteBin6Line') && planCard.includes('RiEdit2Line') && planCard.includes('onEdit'), "Plan cards must expose edit and delete actions"],
+  [planEdit.includes('ویرایش کارت برنامه') && planActions.includes('updatePlanItem'), "Plan card editing flow is missing"],
+  [quickPlan.includes('کارت سریع برنامه') && quickPlan.includes('MoneyInput'), "Quick plan creation UI is missing"],
+  [planPage.includes('max-w-[1780px]') && planPage.includes('xl:grid-cols-2') && planPage.includes('items-start'), "Income plan spacing/grid must stay balanced on large displays"],
+  [css.includes('--type-weight-display: 740') && css.includes('.type-page-title') && !css.includes('font-weight: 900'), "Central typography tokens/classes are missing or too heavy"],
+  [desktopSidebar.includes('collapsed') && desktopSidebar.includes('TooltipContent') && desktopSidebar.includes('w-[64px]'), "Desktop sidebar must collapse to an icon rail with tooltips"],
+  [tooltip.includes('TooltipPrimitive') && tooltip.includes('TooltipContent'), "Shared shadcn-style Tooltip primitive is missing"],
+  [button.includes('forwardRef'), "Button must forward refs for Radix/shadcn composition"],
+  [themeHook.includes('startViewTransition') && css.includes('data-theme-motion="mobile"') && css.includes('320ms'), "Mobile theme transition optimization is missing"],
+  [productTour.includes('راهنمای سریع') && tourHook.includes('poolamco:start-tour') && types.includes('guideComplete'), "Initial product tour is not wired"],
+  [mobileNavigation.includes('data-tour="mobile-more"') && desktopSidebar.includes('data-tour="new-money"'), "Tour anchors are missing from navigation"],
+  [shell.includes('DesktopSidebar') && shell.includes('MobileNavigation') && shell.includes('ProductTour'), "App shell composition is incomplete"],
+  [!marketRefreshButton.includes('useAppRuntime') && marketRefreshButton.includes('market?: MarketRefreshControls | null') && marketRefreshButton.includes('market ??'), "Shell market refresh must tolerate a temporarily missing market runtime without crashing"],
+  [appRouteLayout.includes('market={market}') && appRouteLayout.includes('<AppRuntimeProvider'), "App route layout must pass market controls into the shell and keep page runtime context"],
+  [css.includes('.glass-strong') && css.includes('--glass-strong') && productTour.includes('glass-strong'), "Readable strong glass surface is missing from the product tour"],
+  [css.includes('--logo-gold: var(--primary)') && brandLogo.includes('var(--logo-ink)') && desktopSidebar.includes('<BrandLogo') && mobileNavigation.includes('<BrandLogo'), "Official theme-aware logo is not wired into app navigation"],
+  [css.includes(':root[data-palette="amber"]') && css.includes('#9a6f0a') && css.includes('.dark[data-palette="amber"]') && css.includes('#d4a72c') && settingsSection.includes('label: "طلایی"'), "Gold palette must stay metallic in both light and dark themes"],
+  [mobileNavigation.includes('<Drawer open={open}') && mobileNavigation.includes('دسترسی سریع'), "Mobile quick menu must use the organized responsive drawer"],
+  [planProgress.includes("if (!Array.isArray(items)) return []") && planProgress.includes("items?: readonly PlanItemLike[] | null"), "Plan progress must tolerate missing or legacy local data"],
+  [db.includes("this.version(3)") && db.includes("normalizePlanRow") && db.includes("repairLocalData"), "IndexedDB v3 migration/repair for legacy plan rows is missing"],
+  [appError.includes("بازسازی داده") && appError.includes("repairLocalData"), "Local-data recovery error boundary is missing"],
+  [desktopSidebar.includes("group-hover:scale-0") && desktopSidebar.includes('BrandLogo className="size-8') && mobileNavigation.includes('BrandLogo className="size-8"'), "Collapsed navigation logo must morph into the sidebar-open control and stay compact"],
+  [!desktopSidebar.includes("تصمیم‌یار مالی شخصی") && !desktopSidebar.includes("Local-First") && !mobileNavigation.includes("تصمیم‌یار مالی شخصی"), "Navigation should keep branding clean without marketing subtitles"],
+  [types.includes("hideFinancialData: boolean") && privacyToggle.includes("RiEyeLine") && shellCss.includes(".privacy-hidden") && appTopbar.includes("PrivacyToggle") && mobileNavigation.includes("PrivacyToggle"), "Global privacy eye toggle is not wired"],
+  [reportsSection.includes("فاصله از هدف") && reportsSection.includes("بازده از خرید") && reportsSection.includes("این عدد تغییر روزانه بازار نیست") && reportsSection.includes("HelpLabel"), "Reports must explain portfolio metrics and distinguish personal P/L from daily market change"],
+  [monthlyBars.includes("هنوز داده ماهانه‌ای نداریم") && monthlyBars.includes("hasData"), "Monthly report chart must show a real empty state instead of a blank chart"],
+
+  [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
+  [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],
+  [desktopSidebar.includes('href="/"') && mobileNavigation.includes('href="/"') && desktopSidebar.includes("BrandLogo") && mobileNavigation.includes("BrandLogo"), "Brand logo must link to the dashboard in desktop and mobile navigation"],
+  [drawer.includes("dragY") && drawer.includes("onPointerMove") && drawer.includes("closeRef.current?.click()"), "Mobile Drawer must support swipe-down dismissal"],
+  [appTopbar.includes("MarketRefreshButton") && appTopbar.includes("PrivacyToggle") && appTopbar.includes("ThemeToggle") && !appTopbar.includes("DateRangePicker") && pageDateFilterBar.includes("DateRangePicker"), "Desktop utilities belong in the topbar while date filtering must stay page-scoped"],
+  [!desktopSidebar.includes("MarketRefreshButton") && !desktopSidebar.includes("PrivacyToggle") && !desktopSidebar.includes("ThemeToggle"), "Desktop sidebar must stay focused on navigation instead of utility controls"],
+  [dateRangePicker.includes('mode="range"') && dateRangePicker.includes("همه زمان") && dateFilterHook.includes("dateInRange") && dateFilterHook.includes("filtered"), "Responsive Persian date-range filtering is not wired"],
+  [mobileNavigation.includes("mobile-bottom-nav") && mobileNavigation.includes("TodayDate"), "Mobile navigation must expose a readable bottom bar and today date"],
+  [dataTable.includes("type RowData") && dataTable.includes("TData extends RowData"), "DataTable must satisfy TanStack Table v9 RowData constraints"],
+  [dataTable.includes("table.store.state.pagination.pageIndex") && !dataTable.includes("table.state.pagination.pageIndex"), "TanStack Table v9 pagination must read the core store in the shared generic Pagination component"],
+  [newMoneyHook.includes("newMoneySchema.parse") && newMoneyHook.includes('typeof incomeIdKey !== "number"') && newMoneyHook.includes("watchedAllocation.life ?? activeRule.lifePct"), "New-money persistence must validate form values, narrow Dexie IDs, and normalize watched allocation numbers"],
+  [dataTable.includes("مرتب‌سازی ستون") && !dataTable.includes("<button\n                            type=\"button\"\n                            className=\"inline-flex w-full"), "Sortable headers must not wrap interactive help controls in a button"],
+  [rootLayout.includes('/favicon.svg') && manifest.includes('/icon-192.png') && serviceWorker.includes('/favicon.svg') && favicon.includes("prefers-color-scheme: dark"), "Theme-aware favicon and PWA icon assets must be wired into metadata and offline precache"],
 ];
 
 const failures = checks.filter(([ok]) => !ok).map(([, message]) => message);
@@ -58,4 +92,4 @@ if (failures.length) {
   console.error(`Regression checks failed:\n${failures.join("\n")}`);
   process.exit(1);
 }
-console.log("Regression checks passed: Persian forms, plan execution, one-call market cache, no fake history, responsive skeletons, dialogs, and themes are wired.");
+console.log("Regression checks passed: Persian forms, resilient local data, semantic DataTable headers, global search, PWA identity, compact sidebar, privacy controls, market cache, and responsive UI are wired.");

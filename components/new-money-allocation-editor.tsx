@@ -28,7 +28,7 @@ export function NewMoneyAllocationEditor({ amount, values, split, settings, chan
     <section className="mt-5 space-y-3 rounded-2xl border bg-muted/20 p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-bold">تقسیم این پول</h3>
+          <h3 className="type-strong">تقسیم این پول</h3>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">برای همین ورودی قابل تغییر است؛ قانون اصلی تو دست‌نخورده می‌ماند.</p>
         </div>
         {changed && <Button type="button" variant="ghost" size="sm" onClick={onReset}><RiRefreshLine /> بازگشت به پیشنهاد</Button>}
@@ -41,11 +41,11 @@ export function NewMoneyAllocationEditor({ amount, values, split, settings, chan
           <div key={row.key} className="rounded-xl border bg-background/75 p-3">
             <div className="mb-3 flex items-start justify-between gap-4">
               <div>
-                <div className="font-bold">{row.title}</div>
+                <div className="type-strong">{row.title}</div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">{row.hint}</div>
               </div>
               <div className="text-end">
-                <div className="text-base font-black text-primary">{formatPercent(pct, 0)}</div>
+                <div className="text-base type-strong text-primary">{formatPercent(pct, 0)}</div>
                 <div className="text-[11px] text-muted-foreground">{formatMoney(rowAmount, settings.displayUnit)}</div>
               </div>
             </div>

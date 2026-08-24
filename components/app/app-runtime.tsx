@@ -2,14 +2,17 @@
 
 import { createContext, useContext } from "react";
 import type { useAppData } from "@/hooks/use-app-data";
+import type { useAppDateFilter } from "@/hooks/use-app-date-filter";
 import type { useMarket } from "@/hooks/use-market";
 
 type AppData = ReturnType<typeof useAppData>;
 type MarketData = ReturnType<typeof useMarket>;
+type DateFilter = ReturnType<typeof useAppDateFilter>;
 
 interface AppRuntimeValue {
   data: AppData;
   market: MarketData;
+  dateFilter: DateFilter;
 }
 
 const AppRuntimeContext = createContext<AppRuntimeValue | null>(null);

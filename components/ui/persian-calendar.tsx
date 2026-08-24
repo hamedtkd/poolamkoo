@@ -3,6 +3,7 @@
 import * as React from "react";
 import { RiArrowLeftSLine, RiArrowRightSLine } from "react-icons/ri";
 import { Button } from "@/components/ui/button";
+import type { AppDateRange } from "@/lib/date-range";
 import {
   PERSIAN_MONTHS,
   getPersianMonthDays,
@@ -14,9 +15,22 @@ import {
 } from "@/lib/persian-date";
 import { cn } from "@/lib/utils";
 
-export function PersianCalendar({ value, onValueChange }: { value?: Date | null; onValueChange: (value: Date) => void }) {
-  const [month, setMonth] = React.useState(() => startOfPersianMonth(value ?? new Date()));
-  React.useEffect(() => { if (value) setMonth(startOfPersianMonth(value)); }, [value]);
+type SingleProps = {
+  mode?: "single";
+  value?: Date | null;
+  onValueChange: (value: Date) => void;
+};
+
+type RangeProps = {
+  mode: "range";
+  range: AppDateRange;
+  onRangeChange: (value: AppDateRange) => void;
+};
+
+export function PersianCalendar(props: SingleProps | RangeProps) {
+  const selectedDate = props.mode === "range" ? props.range.from : props.value;
+  const [month, setMonth] = React.useState(() => startOfPersianMonth(selectedDate ?? new Date()));
+  React.useEffect(() => { if (selectedDate) setMonth(startOfPersianMonth(selectedDate)); }, [selectedDate]);
 
   const days = getPersianMonthDays(month);
   const parts = getPersianParts(month);
@@ -24,43 +38,67 @@ export function PersianCalendar({ value, onValueChange }: { value?: Date | null;
   const today = new Date();
   const weekDays = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 
+  function selectDay(day: Date) {
+    if (props.mode !== "range") {
+      props.onValueChange(day);
+      return;
+    }
+    const { from, to } = props.range;
+    if (!from || to) {
+      props.onRangeChange({ from: day, to: null });
+      return;
+    }
+    if (day.getTime() < from.getTime()) props.onRangeChange({ from: day, to: from });
+    else props.onRangeChange({ from, to: day });
+  }
+
   return (
     <div className="w-[300px] max-w-full select-none" dir="rtl">
       <div className="mb-3 flex items-center justify-between">
         <Button type="button" variant="ghost" size="icon" className="size-9" onClick={() => setMonth((current) => shiftPersianMonth(current, -1))} aria-label="ماه قبل"><RiArrowRightSLine /></Button>
         <div className="text-center">
-          <div className="text-sm font-black">{PERSIAN_MONTHS[parts.month - 1]} {toPersianDigits(parts.year)}</div>
-          <button type="button" className="mt-0.5 text-[10px] font-semibold text-primary" onClick={() => setMonth(startOfPersianMonth(today))}>امروز</button>
+          <div className="text-sm type-strong">{PERSIAN_MONTHS[parts.month - 1]} {toPersianDigits(parts.year)}</div>
+          <button type="button" className="mt-0.5 text-[10px] type-label text-primary" onClick={() => setMonth(startOfPersianMonth(today))}>امروز</button>
         </div>
         <Button type="button" variant="ghost" size="icon" className="size-9" onClick={() => setMonth((current) => shiftPersianMonth(current, 1))} aria-label="ماه بعد"><RiArrowLeftSLine /></Button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted-foreground">
+      <div className="grid grid-cols-7 gap-1 text-center text-[10px] type-strong text-muted-foreground">
         {weekDays.map((day) => <div key={day} className={cn("py-1", day === "ج" && "text-destructive")}>{day}</div>)}
       </div>
       <div className="mt-1 grid grid-cols-7 gap-1">
         {Array.from({ length: firstWeekday }, (_, index) => <div key={`blank-${index}`} />)}
-        {days.map((day) => {
-          const dayParts = getPersianParts(day);
-          const selected = isSameDay(value, day);
-          const isToday = isSameDay(today, day);
-          const friday = day.getDay() === 5;
-          return (
-            <button
-              key={day.toISOString()}
-              type="button"
-              onClick={() => onValueChange(day)}
-              className={cn(
-                "grid size-9 place-items-center rounded-xl text-xs font-semibold transition hover:bg-accent",
-                friday && !selected && "text-destructive",
-                isToday && !selected && "ring-1 ring-primary/35",
-                selected && "bg-primary text-primary-foreground shadow-sm shadow-primary/20",
-              )}
-            >
-              {toPersianDigits(dayParts.day)}
-            </button>
-          );
-        })}
+        {days.map((day) => <CalendarDay key={day.toISOString()} day={day} today={today} props={props} onSelect={selectDay} />)}
       </div>
     </div>
+  );
+}
+
+function CalendarDay({ day, today, props, onSelect }: { day: Date; today: Date; props: SingleProps | RangeProps; onSelect: (day: Date) => void }) {
+  const dayParts = getPersianParts(day);
+  const friday = day.getDay() === 5;
+  const isToday = isSameDay(today, day);
+  const singleSelected = props.mode !== "range" && isSameDay(props.value, day);
+  const rangeStart = props.mode === "range" && isSameDay(props.range.from, day);
+  const rangeEnd = props.mode === "range" && isSameDay(props.range.to, day);
+  const between = props.mode === "range" && props.range.from && props.range.to
+    ? day.getTime() > props.range.from.getTime() && day.getTime() < props.range.to.getTime()
+    : false;
+  const selected = singleSelected || rangeStart || rangeEnd;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(day)}
+      className={cn(
+        "grid size-9 place-items-center rounded-xl type-caption type-body-strong transition hover:bg-accent",
+        between && "rounded-md bg-primary/10 text-foreground",
+        friday && !selected && !between && "text-destructive",
+        isToday && !selected && !between && "ring-1 ring-primary/35",
+        selected && "bg-primary text-primary-foreground shadow-sm shadow-primary/20",
+      )}
+      aria-pressed={selected || between}
+    >
+      {toPersianDigits(dayParts.day)}
+    </button>
   );
 }

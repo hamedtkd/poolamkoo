@@ -51,7 +51,7 @@ export function QuickPlanDialog({
           </DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={state.submit}>
-          <div className="rounded-xl bg-muted/45 p-3 text-xs text-muted-foreground">
+          <div className="rounded-xl bg-muted/45 p-3 type-caption text-muted-foreground">
             مبلغ آزاد: <strong className="text-foreground">{formatMoney(state.availableToman, settings.displayUnit)}</strong>
           </div>
           <div className="space-y-2">
@@ -90,7 +90,7 @@ export function QuickPlanDialog({
           <Button type="submit" className="w-full" disabled={state.availableToman <= 0 || form.formState.isSubmitting}>
             <RiAddLine className="size-5" /> ساخت کارت
           </Button>
-          {state.availableToman <= 0 && <p className="text-center text-xs text-muted-foreground">برای ساخت کارت جدید، ابتدا یکی از کارت‌های برنامه را حذف کن.</p>}
+          {state.availableToman <= 0 && <p className="text-center type-caption text-muted-foreground">برای ساخت کارت جدید، ابتدا یکی از کارت‌های برنامه را حذف کن.</p>}
         </form>
       </DialogContent>
     </Dialog>
@@ -98,5 +98,5 @@ export function QuickPlanDialog({
 }
 
 function FieldError({ message }: { message?: string }) {
-  return message ? <p className="text-xs font-medium text-destructive">{message}</p> : null;
+  return message ? <p className="text-xs type-body-strong text-destructive">{message}</p> : null;
 }

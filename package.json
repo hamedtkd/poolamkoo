@@ -1,6 +1,6 @@
 {
   "name": "poolamco",
-  "version": "0.2.5",
+  "version": "0.3.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,9 +9,13 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:lines": "node scripts/check-file-lines.mjs",
-    "check": "npm run typecheck && npm run lint && npm run check:lines && npm run check:ui && npm run check:regressions",
+    "check": "npm run clean:obsolete && npm run typecheck && npm run lint && npm test && npm run check:lines && npm run check:ui && npm run check:regressions",
     "check:ui": "node scripts/check-ui-architecture.mjs",
-    "check:regressions": "node scripts/check-regressions.mjs"
+    "check:regressions": "node scripts/check-regressions.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "clean:obsolete": "node scripts/remove-obsolete-routes.mjs",
+    "predev": "npm run clean:obsolete",
+    "prebuild": "npm run clean:obsolete"
   },
   "dependencies": {
     "@tanstack/react-table": "9.1.2",

@@ -11,11 +11,13 @@ export function ThemeToggle({
   onToggle,
   className,
   showLabel = false,
+  dataTour,
 }: {
   resolvedTheme?: string;
   onToggle: (origin?: ThemeOrigin) => void | Promise<void>;
   className?: string;
   showLabel?: boolean;
+  dataTour?: string;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -25,6 +27,7 @@ export function ThemeToggle({
   return (
     <Button
       type="button"
+      data-tour={dataTour}
       variant="ghost"
       size={showLabel ? "default" : "icon"}
       className={cn(showLabel ? "h-10 justify-start gap-2 px-3" : "size-9", className)}

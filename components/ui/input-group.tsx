@@ -27,7 +27,7 @@ export function InputGroupAddon({ children, align = "inline-end", className }: {
       data-slot="input-group-addon"
       data-align={align}
       className={cn(
-        "flex h-full shrink-0 items-center justify-center px-3 text-xs font-semibold text-muted-foreground select-none",
+        "flex h-full shrink-0 items-center justify-center px-3 type-caption type-body-strong text-muted-foreground select-none",
         align === "inline-start" ? "order-first border-e border-input" : "order-last border-s border-input",
         className,
       )}
