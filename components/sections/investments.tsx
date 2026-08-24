@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { RiAddLine } from "react-icons/ri";
+import { RiAddLine, RiFundsLine, RiHistoryLine, RiLineChartLine, RiShoppingBag3Line } from "react-icons/ri";
 import { AssetDialog } from "@/components/investments/asset-dialog";
 import { MarketChartCard } from "@/components/investments/market-chart-card";
+import { OpeningHoldingDialog } from "@/components/investments/opening-holding-dialog";
 import { PendingPlanPurchases } from "@/components/investments/pending-plan-purchases";
 import { PortfolioTables } from "@/components/investments/portfolio-tables";
 import { TransactionDialog } from "@/components/investments/transaction-dialog";
@@ -18,6 +19,7 @@ import type { AppSettings, Asset, IncomeEvent, InvestmentTransaction, MarketQuot
 import { cn } from "@/lib/utils";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { HelpLabel } from "@/components/ui/help-label";
+import { KpiIcon } from "@/components/ui/kpi-icon";
 
 const T = {
   eyebrow: "\u0633\u0628\u062f \u0631\u0634\u062f",
@@ -54,6 +56,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
 }) {
   const portfolio = useInvestmentPortfolio(assets, transactions, quotes);
   const [assetDialogOpen, setAssetDialogOpen] = useState(false);
+  const [openingHoldingOpen, setOpeningHoldingOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [transactionTarget, setTransactionTarget] = useState<TransactionTarget>(null);
   const [archiveTarget, setArchiveTarget] = useState<Asset | null>(null);
@@ -76,19 +79,20 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   const activeAsset = transactionTarget?.asset ?? null;
   const activePlan = transactionTarget?.planItem;
   return <div className="space-y-5">
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><Button onClick={() => { setEditingAsset(null); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div>
-    <div className="grid gap-3 sm:grid-cols-3"><Kpi label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></div>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div>
+    <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl >= 0 ? "primary" : "danger"} label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></div>
     {Math.round(portfolio.targetTotal) !== 100 && <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div>}
     <PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} />
     <MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} />
     <PortfolioTables positions={portfolio.positions} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
     <AssetDialog open={assetDialogOpen} onOpenChange={setAssetDialogOpen} asset={editingAsset} settings={settings} />
-    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activeAsset?.symbol ? portfolio.quoteMap.get(activeAsset.symbol)?.priceToman : activeAsset?.manualPriceToman} availableQty={activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id)?.qty ?? 0 : 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />
+    <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
+    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activeAsset ? (activeAsset.symbol ? portfolio.quoteMap.get(activeAsset.symbol)?.priceToman : undefined) ?? activeAsset.manualPriceToman : undefined} availableQty={activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id)?.qty ?? 0 : 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />
     <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={deleteTransactionId !== null} onOpenChange={(open) => !open && setDeleteTransactionId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.deleteTitle}</AlertDialogTitle><AlertDialogDescription>{T.deleteDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction destructive onClick={() => void deleteTransaction()}>{T.delete}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;
 }
 
-function Kpi({ label, value, help, accent }: { label: string; value: string; help: string; accent?: boolean }) {
-  return <Card><CardContent className="p-4"><div className="type-caption text-muted-foreground"><HelpLabel label={label} help={help} /></div><SensitiveValue className={cn("mt-2 type-section-title", accent !== undefined && (accent ? "text-primary" : "text-destructive"))}>{value}</SensitiveValue></CardContent></Card>;
+function Kpi({ icon, iconTone = "primary", label, value, help, accent }: { icon: React.ReactNode; iconTone?: "primary" | "danger" | "neutral"; label: string; value: string; help: string; accent?: boolean }) {
+  return <Card><CardContent className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground"><HelpLabel label={label} help={help} /></div><SensitiveValue className={cn("mt-2 type-section-title", accent !== undefined && (accent ? "text-primary" : "text-destructive"))}>{value}</SensitiveValue></div><KpiIcon tone={iconTone}>{icon}</KpiIcon></div></CardContent></Card>;
 }

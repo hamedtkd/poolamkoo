@@ -1,3 +1,4 @@
+import { assetUsesManualPrice } from "@/lib/assets";
 import { z } from "zod";
 
 const requiredNumber = (message: string) => z.number({ error: message });
@@ -20,7 +21,7 @@ export const assetSchema = z.object({
     .trim()
     .min(2, "نام دارایی حداقل دو حرف باشد.")
     .max(60, "نام دارایی نباید بیشتر از ۶۰ حرف باشد."),
-  kind: z.enum(["gold", "currency", "crypto", "fund", "custom"], { error: "نوع دارایی را انتخاب کن." }),
+  kind: z.enum(["gold", "currency", "crypto", "stock", "fund", "custom"], { error: "نوع دارایی را انتخاب کن." }),
   symbol: z.string({ error: "نماد بازار معتبر نیست." }).trim().max(40, "نماد بازار نباید بیشتر از ۴۰ حرف باشد.").optional(),
   targetPct: requiredNumber("سهم هدف را انتخاب کن.")
     .min(0, "درصد نمی‌تواند منفی باشد.")
@@ -30,12 +31,22 @@ export const assetSchema = z.object({
     .nullable()
     .optional(),
 }).superRefine((value, ctx) => {
-  if (value.kind === "custom" && !value.manualPriceToman) {
-    ctx.addIssue({ code: "custom", path: ["manualPriceToman"], message: "برای دارایی سفارشی قیمت فعلی را وارد کن." });
+  if (assetUsesManualPrice(value.kind) && !value.manualPriceToman) {
+    ctx.addIssue({ code: "custom", path: ["manualPriceToman"], message: "برای این دارایی قیمت فعلی را وارد کن." });
   }
 });
 
 export type AssetFormValues = z.infer<typeof assetSchema>;
+
+
+export const openingHoldingSchema = z.object({
+  assetId: requiredNumber("دارایی را انتخاب کن.").int("دارایی انتخاب‌شده معتبر نیست.").positive("دارایی انتخاب‌شده معتبر نیست."),
+  quantity: requiredNumber("مقدار دارایی را وارد کن.").positive("مقدار دارایی باید بیشتر از صفر باشد."),
+  price: requiredNumber("میانگین قیمت خرید را وارد کن.").positive("قیمت خرید باید بیشتر از صفر باشد."),
+  date: z.date({ error: "تاریخ خرید را انتخاب کن." }),
+});
+
+export type OpeningHoldingFormValues = z.infer<typeof openingHoldingSchema>;
 
 export const transactionSchema = z.object({
   type: z.enum(["buy", "sell"], { error: "نوع تراکنش را انتخاب کن." }),

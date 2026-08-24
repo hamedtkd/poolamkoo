@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -15,7 +15,7 @@ import { fundMovementSchema, type FundMovementFormValues } from "@/lib/validatio
 export function FundMovement({ fund, onClose, settings }: { fund: GoalFund | null; onClose: () => void; settings: AppSettings }) {
   const form = useForm<FundMovementFormValues>({ resolver: zodResolver(fundMovementSchema), defaultValues: { type: "deposit", amount: undefined }, mode: "onBlur" });
   useEffect(() => { if (fund) form.reset({ type: "deposit", amount: undefined }); }, [form, fund]);
-  const type = form.watch("type");
+  const type = useWatch({ control: form.control, name: "type" }) ?? "deposit";
 
   const save = form.handleSubmit(async (values) => {
     if (!fund?.id) return;

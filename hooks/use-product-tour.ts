@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { db } from "@/lib/db";
 
 export interface TourStep {
@@ -38,7 +39,7 @@ export function useProductTour(guideComplete: boolean) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<TourRect | null>(null);
-  const [mobile, setMobile] = useState(false);
+  const mobile = useMediaQuery("(max-width: 767px)");
   const steps = useMemo(() => mobile ? mobileSteps : desktopSteps, [mobile]);
   const step = steps[Math.min(index, steps.length - 1)];
 
@@ -46,7 +47,7 @@ export function useProductTour(guideComplete: boolean) {
     if (!open || !step) return setRect(null);
     const nodes = [...document.querySelectorAll<HTMLElement>(step.target)];
     const measured = nodes.map((node) => ({ node, rect: node.getBoundingClientRect() }));
-    const visible = measured.find(({ rect }) => rect.width > 0 && rect.height > 0);
+    const visible = measured.find(({ rect: nodeRect }) => nodeRect.width > 0 && nodeRect.height > 0);
     if (!visible) return setRect(null);
     const next = visible.rect;
     setRect({ top: next.top, left: next.left, width: next.width, height: next.height, right: next.right, bottom: next.bottom });
@@ -64,14 +65,6 @@ export function useProductTour(guideComplete: boolean) {
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia("(max-width: 767px)");
-    const sync = () => setMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
-  useEffect(() => {
     const manual = () => start();
     window.addEventListener("poolamco:start-tour", manual);
     return () => window.removeEventListener("poolamco:start-tour", manual);
@@ -85,17 +78,16 @@ export function useProductTour(guideComplete: boolean) {
 
   useEffect(() => {
     if (!open) return;
-    measure();
-    const update = () => requestAnimationFrame(measure);
+    const initialFrame = window.requestAnimationFrame(measure);
+    const update = () => window.requestAnimationFrame(measure);
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
     return () => {
+      window.cancelAnimationFrame(initialFrame);
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
   }, [measure, open]);
-
-  useEffect(() => { measure(); }, [index, measure]);
 
   const next = () => index >= steps.length - 1 ? finish() : setIndex((value) => value + 1);
   const previous = () => setIndex((value) => Math.max(0, value - 1));

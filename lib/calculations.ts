@@ -36,3 +36,7 @@ export function portfolioPosition(asset: Asset, txs: InvestmentTransaction[], ma
 export function emergencyTarget(monthlyEssentialToman: number, months: number) {
   return Math.max(0, monthlyEssentialToman * months);
 }
+
+export function futureFocusPercent(safetyPct: number, growthPct: number) {
+  return Math.min(100, Math.max(0, Math.round(safetyPct + growthPct)));
+}

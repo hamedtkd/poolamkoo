@@ -2,9 +2,10 @@
 
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 import { db } from "@/lib/db";
+import { assetUsesManualPrice } from "@/lib/assets";
 import { dateToISO, formatMoney, formatNumber } from "@/lib/format";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
 import type { AppSettings, Asset, PlanItem } from "@/lib/types";
@@ -43,16 +44,16 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, availableQty
   incomeId?: number;
 }) {
   const form = useForm<TransactionFormValues>({ resolver: zodResolver(transactionSchema), defaultValues: { type: "buy", amount: undefined, price: undefined, date: new Date() }, mode: "onBlur" });
-  const type = form.watch("type");
-  const amount = Number(form.watch("amount")) || 0;
-  const price = Number(form.watch("price")) || 0;
+  const type = useWatch({ control: form.control, name: "type" }) ?? "buy";
+  const amount = Number(useWatch({ control: form.control, name: "amount" })) || 0;
+  const price = Number(useWatch({ control: form.control, name: "price" })) || 0;
   const quantity = amount > 0 && price > 0 ? amount / price : 0;
   const overSelling = type === "sell" && quantity > availableQty + 1e-10;
 
   useEffect(() => {
     if (!asset) return;
-    form.reset({ type: planItem ? "buy" : "buy", amount: initialAmount || undefined, price: suggestedPrice || asset.manualPriceToman || undefined, date: new Date() });
-  }, [asset, form, initialAmount, planItem?.id, suggestedPrice]);
+    form.reset({ type: "buy", amount: initialAmount || undefined, price: suggestedPrice || asset.manualPriceToman || undefined, date: new Date() });
+  }, [asset, form, initialAmount, suggestedPrice]);
 
   const save = form.handleSubmit(async (values) => {
     if (!asset?.id || overSelling) return;
@@ -69,7 +70,7 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, availableQty
       planItemId: planItem?.id,
       createdAt: now,
     });
-    if (asset.kind === "custom") await db.assets.update(asset.id, { manualPriceToman: values.price, updatedAt: now });
+    if (assetUsesManualPrice(asset.kind)) await db.assets.update(asset.id, { manualPriceToman: values.price, updatedAt: now });
     if (planItem?.id && values.type === "buy") await syncInvestmentPlanItem(planItem.id);
     onClose();
   });

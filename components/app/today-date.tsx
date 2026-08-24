@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
 import { RiCalendarLine } from "react-icons/ri";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { formatPersianDate } from "@/lib/persian-date";
 import { cn } from "@/lib/utils";
 
 export function TodayDate({ compact = false, className }: { compact?: boolean; className?: string }) {
-  const [today, setToday] = React.useState<Date | null>(null);
-  React.useEffect(() => setToday(new Date()), []);
+  const hydrated = useHydrated();
+  const today = hydrated ? new Date() : null;
 
   return (
     <div className={cn("flex min-w-0 items-center gap-2", className)}>

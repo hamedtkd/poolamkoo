@@ -40,8 +40,9 @@ Core personal-finance data is stored locally in the user's browser through Index
 
 ### Investments
 
-- Gold, currency, crypto, funds, and custom assets
+- Gold, currency, crypto, stocks/exchange, investment funds, and custom assets
 - Record real buy and sell transactions
+- Manual current prices for stocks, investment funds, and custom assets until a dedicated provider is connected
 - Link purchases back to an incoming-money plan
 - Average purchase price and cost basis
 - Current value and unrealized P/L

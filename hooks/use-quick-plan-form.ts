@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { usePlanItemActions } from "@/hooks/use-plan-item-actions";
 import type { Asset, GoalFund, IncomeEvent, PlanItem } from "@/lib/types";
 import { quickPlanSchema, type QuickPlanFormValues } from "@/lib/validation";
@@ -29,8 +29,8 @@ export function useQuickPlanForm({
     resolver: zodResolver(quickPlanSchema),
     defaultValues: { label: "برنامه جدید", amount: 0, bucket: "growth", targetType: "bucket", targetId: null },
   });
-  const bucket = form.watch("bucket");
-  const targetType = form.watch("targetType");
+  const bucket = useWatch({ control: form.control, name: "bucket" }) ?? "growth";
+  const targetType = useWatch({ control: form.control, name: "targetType" }) ?? "bucket";
 
   useEffect(() => {
     if (!open) return;

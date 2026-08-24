@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { RiMoonLine, RiSunLine } from "react-icons/ri";
 import { Button } from "@/components/ui/button";
 import type { ThemeOrigin } from "@/hooks/use-app-theme";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({
@@ -19,9 +19,8 @@ export function ThemeToggle({
   showLabel?: boolean;
   dataTour?: string;
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const dark = mounted && resolvedTheme === "dark";
+  const hydrated = useHydrated();
+  const dark = hydrated && resolvedTheme === "dark";
   const label = dark ? "حالت روشن" : "حالت تاریک";
 
   return (

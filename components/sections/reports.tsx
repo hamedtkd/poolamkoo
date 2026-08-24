@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { RiArrowDownLine, RiArrowUpLine, RiFocus3Line, RiShieldCheckLine } from "react-icons/ri";
+import { RiArrowDownLine, RiArrowUpLine, RiFileList3Line, RiMoneyDollarCircleLine, RiSafe2Line } from "react-icons/ri";
 import { DataTable, type DataTableFeatures } from "@/components/data-table";
 import { AllocationDonut } from "@/components/charts/allocation-donut";
 import { MonthlyBars } from "@/components/charts/monthly-bars";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HelpLabel } from "@/components/ui/help-label";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
+import { KpiIcon } from "@/components/ui/kpi-icon";
 import { useReportsData, type PerformanceRow, type PlanAdherenceRow } from "@/hooks/use-reports-data";
 import { formatMoney, formatPercent } from "@/lib/format";
 import type { AllocationEntry, AllocationRule, AppSettings, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
@@ -50,11 +51,11 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
   return <div className="space-y-5">
     <div><div className="type-caption type-body-strong text-primary">تحلیل</div><h1 className="mt-1 type-page-title">گزارش‌ها و بینش‌ها</h1><p className="mt-1 type-body text-muted-foreground">اعداد بازده این صفحه مربوط به خریدهای واقعی خودت هستند، نه تغییر قیمت بازار از دیروز.</p></div>
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-      <InsightCard icon={<RiFocus3Line />} label="کل پول ورودی" value={formatMoney(totalIncome, settings.displayUnit)} detail={`${new Intl.NumberFormat("fa-IR").format(incomes.length)} ورودی ثبت‌شده`} />
-      <InsightCard icon={<RiFocus3Line />} label="پایبندی به برنامه" help={HELP.adherence} value={formatPercent(overallPlan.pct, 0)} detail={`${formatMoney(overallPlan.executed, settings.displayUnit, true)} از ${formatMoney(overallPlan.planned, settings.displayUnit, true)}`} />
-      <InsightCard icon={<RiShieldCheckLine />} label="پوشش صندوق‌ها" help={HELP.funds} value={formatPercent(target ? funded / target * 100 : 0, 0)} detail={`${formatMoney(funded, settings.displayUnit, true)} ذخیره شده`} />
+      <InsightCard icon={<RiMoneyDollarCircleLine />} label="کل پول ورودی" value={formatMoney(totalIncome, settings.displayUnit)} detail={`${new Intl.NumberFormat("fa-IR").format(incomes.length)} ورودی ثبت‌شده`} />
+      <InsightCard icon={<RiFileList3Line />} iconTone={overallPlan.pct >= 80 ? "primary" : "neutral"} label="پایبندی به برنامه" help={HELP.adherence} value={formatPercent(overallPlan.pct, 0)} detail={`${formatMoney(overallPlan.executed, settings.displayUnit, true)} از ${formatMoney(overallPlan.planned, settings.displayUnit, true)}`} />
+      <InsightCard icon={<RiSafe2Line />} label="پوشش صندوق‌ها" help={HELP.funds} value={formatPercent(target ? funded / target * 100 : 0, 0)} detail={`${formatMoney(funded, settings.displayUnit, true)} ذخیره شده`} />
       <InsightCard icon={<RiArrowUpLine />} label="بیشترین بازده سبد" help={HELP.return} value={best ? `${best.name} ${signedPercent(best.pnlPct)}` : "—"} detail={best ? `سود/زیان باز شما: ${formatMoney(best.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive />
-      <InsightCard icon={<RiArrowDownLine />} label="کمترین بازده سبد" help={HELP.return} value={worst ? `${worst.name} ${signedPercent(worst.pnlPct)}` : "—"} detail={worst ? `سود/زیان باز شما: ${formatMoney(worst.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive={worst?.pnlPct !== undefined ? worst.pnlPct >= 0 : undefined} />
+      <InsightCard icon={<RiArrowDownLine />} iconTone={worst?.pnlPct !== undefined && worst.pnlPct < 0 ? "danger" : "neutral"} label="کمترین بازده سبد" help={HELP.return} value={worst ? `${worst.name} ${signedPercent(worst.pnlPct)}` : "—"} detail={worst ? `سود/زیان باز شما: ${formatMoney(worst.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive={worst?.pnlPct !== undefined ? worst.pnlPct >= 0 : undefined} />
     </div>
 
     <div className="grid gap-4 lg:grid-cols-2">
@@ -68,8 +69,8 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
   </div>;
 }
 
-function InsightCard({ icon, label, help, value, detail, positive }: { icon: React.ReactNode; label: string; help?: string; value: string; detail: string; positive?: boolean }) {
-  return <Card><CardContent className="p-4"><div className="flex justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground">{help ? <HelpLabel label={label} help={help} /> : label}</div><SensitiveValue className={cn("mt-2 text-lg type-strong", positive !== undefined && (positive ? "text-primary" : "text-destructive"))}>{value}</SensitiveValue><div className="mt-1 text-[10px] text-muted-foreground"><SensitiveValue>{detail}</SensitiveValue></div></div><div className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5">{icon}</div></div></CardContent></Card>;
+function InsightCard({ icon, iconTone = "primary", label, help, value, detail, positive }: { icon: React.ReactNode; iconTone?: "primary" | "danger" | "neutral"; label: string; help?: string; value: string; detail: string; positive?: boolean }) {
+  return <Card><CardContent className="p-4"><div className="flex justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground">{help ? <HelpLabel label={label} help={help} /> : label}</div><SensitiveValue className={cn("mt-2 text-lg type-strong", positive !== undefined && (positive ? "text-primary" : "text-destructive"))}>{value}</SensitiveValue><div className="mt-1 text-[10px] text-muted-foreground"><SensitiveValue>{detail}</SensitiveValue></div></div><KpiIcon tone={iconTone}>{icon}</KpiIcon></div></CardContent></Card>;
 }
 function ReturnValue({ row, settings }: { row: PerformanceRow; settings: AppSettings }) { return <div className={cn("type-strong", row.pnlPct >= 0 ? "text-primary" : "text-destructive")}><SensitiveValue>{signedPercent(row.pnlPct)}</SensitiveValue><div className="type-caption text-[10px]"><SensitiveValue>{formatMoney(row.pnl, settings.displayUnit, true)}</SensitiveValue></div></div>; }
 function DriftValue({ value }: { value: number }) { const label = value > 0.05 ? "بالاتر از هدف" : value < -0.05 ? "کمتر از هدف" : "روی هدف"; return <div><SensitiveValue className="type-strong">{signedPercent(value)}</SensitiveValue><div className="text-[10px] text-muted-foreground">{label}</div></div>; }

@@ -24,7 +24,7 @@ export function AppTopbar({
   hideFinancialData: boolean;
 }) {
   return (
-    <div className="sticky top-0 z-20 -mx-3 mb-4 hidden min-h-16 items-center gap-3 border-b bg-background/88 px-4 py-2 backdrop-blur-xl sm:-mx-5 sm:px-5 md:flex lg:-mx-7 lg:px-7 2xl:-mx-8 2xl:px-8">
+    <div className="sticky top-0 z-20 -mx-3 -mt-3 mb-4 hidden h-16 items-center gap-3 border-b bg-background/88 px-4 backdrop-blur-xl sm:-mx-5 sm:-mt-5 sm:px-5 md:flex lg:-mx-7 lg:-mt-7 lg:px-7 2xl:-mx-8 2xl:-mt-8 2xl:px-8">
       <div className="flex min-w-0 items-center gap-2">
         <TodayDate className="rounded-xl bg-muted/35 px-2.5 py-1.5" />
       </div>

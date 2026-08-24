@@ -32,3 +32,27 @@ test("portfolio return is the user's unrealized P/L, not the provider's daily ma
   assert.equal(position.unrealized, -9_000);
   assert.equal(Number(position.returnPct.toFixed(1)), -0.3);
 });
+
+test("multiple historical holdings aggregate into one current position", () => {
+  const older: InvestmentTransaction = {
+    ...buy,
+    id: 2,
+    amountToman: 12_000_000,
+    quantity: 120,
+    unitPriceToman: 100_000,
+    happenedAt: "2026-06-01T00:00:00.000Z",
+  };
+  const newer: InvestmentTransaction = {
+    ...buy,
+    id: 3,
+    amountToman: 5_500_000,
+    quantity: 50,
+    unitPriceToman: 110_000,
+    happenedAt: "2026-07-01T00:00:00.000Z",
+  };
+  const position = portfolioPosition(asset, [older, newer], 120_000);
+  assert.equal(position.qty, 170);
+  assert.equal(position.cost, 17_500_000);
+  assert.equal(position.currentValue, 20_400_000);
+  assert.equal(position.unrealized, 2_900_000);
+});

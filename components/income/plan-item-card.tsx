@@ -38,6 +38,7 @@ export function PlanItemCard({
   const pct = planProgress(item);
   const remaining = planRemaining(item);
   const isAsset = item.targetType === "asset";
+  const canDelete = item.executedToman <= 0;
 
   return (
     <div className="rounded-[20px] border bg-card p-4 shadow-sm transition hover:border-primary/25 sm:p-5">
@@ -51,7 +52,7 @@ export function PlanItemCard({
             {status === "done" ? LABELS.done : status === "partial" ? LABELS.partial : LABELS.pending}
           </Badge>
           <IconAction label={`ویرایش ${item.label}`} onClick={onEdit}><RiEdit2Line className="size-4" /></IconAction>
-          <IconAction label={`حذف ${item.label}`} destructive onClick={onDelete}><RiDeleteBin6Line className="size-4" /></IconAction>
+          {canDelete && <IconAction label={`حذف ${item.label}`} destructive onClick={onDelete}><RiDeleteBin6Line className="size-4" /></IconAction>}
         </div>
       </div>
       <Progress value={pct} className="mt-5" />

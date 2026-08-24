@@ -69,7 +69,7 @@ function SidebarHeader({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
   return (
     <div className="flex h-16 shrink-0 items-center justify-between border-b px-3">
       <Link href="/" aria-label="رفتن به خانه" className="flex items-center gap-3 rounded-xl px-1.5 py-1 transition hover:bg-accent">
-        <BrandLogo className="h-10 w-11" />
+        <BrandLogo className="h-9 w-[38px]" />
         <div className="min-w-0 type-label">پولم‌کو</div>
       </Link>
       <SidebarTip label="بستن سایدبار">

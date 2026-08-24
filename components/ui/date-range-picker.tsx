@@ -29,7 +29,10 @@ export function DateRangePicker({ value, onValueChange, className }: {
   const mobile = useMediaQuery("(max-width: 799px)");
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<AppDateRange>(value);
-  React.useEffect(() => { if (!open) setDraft(value); }, [open, value]);
+  function setPickerOpen(next: boolean) {
+    setOpen(next);
+    setDraft(value);
+  }
 
   const trigger = (
     <Button type="button" variant="outline" className={cn("h-10 gap-2 bg-background/75", className)}>
@@ -49,7 +52,7 @@ export function DateRangePicker({ value, onValueChange, className }: {
 
   if (mobile) {
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
+      <Drawer open={open} onOpenChange={setPickerOpen}>
         <DrawerTrigger asChild>{trigger}</DrawerTrigger>
         <DrawerContent className="px-4">
           <DrawerTitle className="mb-1 text-start">بازه زمانی</DrawerTitle>
@@ -68,7 +71,7 @@ export function DateRangePicker({ value, onValueChange, className }: {
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setPickerOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">
         <div className="flex items-stretch">

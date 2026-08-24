@@ -26,6 +26,36 @@ const [
   read("components/data-table.tsx"), read("components/app/global-search.tsx"), read("app/layout.tsx"), read("app/manifest.ts"), read("public/sw.js"), read("public/favicon.svg"),
 ]);
 
+const [onboardingSource, onboardingHookSource, openingHoldingSource, investmentsSource, arcGaugeSource, dashboardMetricsSource, appearanceSettingsSource, calculationsSource] = await Promise.all([
+  read("components/onboarding.tsx"),
+  read("hooks/use-onboarding.ts"),
+  read("components/investments/opening-holding-dialog.tsx"),
+  read("components/sections/investments.tsx"),
+  read("components/charts/arc-gauge.tsx"),
+  read("hooks/use-dashboard-metrics.ts"),
+  read("components/settings/appearance-settings-card.tsx"),
+  read("lib/calculations.ts"),
+]);
+
+const [todayDateSource, allocationDonutSource, datePickerSource, persianCalendarSource, themeToggleSource, sidebarStateSource, postcssSource, allocationSettingsSource, safetySettingsSource] = await Promise.all([
+  read("components/app/today-date.tsx"),
+  read("components/charts/allocation-donut.tsx"),
+  read("components/ui/date-picker.tsx"),
+  read("components/ui/persian-calendar.tsx"),
+  read("components/ui/theme-toggle.tsx"),
+  read("hooks/use-sidebar-state.ts"),
+  read("postcss.config.mjs"),
+  read("components/settings/allocation-rule-card.tsx"),
+  read("components/settings/financial-safety-card.tsx"),
+]);
+
+const [directFundsSource, relatedSelectSource, onboardingHoldingsSource, uiArchitectureSource] = await Promise.all([
+  read("components/new-money-direct-funds.tsx"),
+  read("components/ui/related-entity-select.tsx"),
+  read("components/onboarding-holdings-step.tsx"),
+  read("scripts/check-ui-architecture.mjs"),
+]);
+
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -40,7 +70,7 @@ const checks = [
   [newMoneyHook.includes('rebalanceAllocation') && newMoneyHook.includes('allocationChanged'), "Per-income allocation override logic is missing"],
   [marketProvider.includes('Gold_Currency.php') && !marketProvider.includes('Cryptocurrency.php'), "Free market refresh must use one BrsApi request"],
   [!marketApi.includes('demoMarketQuotes') && !marketHistoryHook.includes('demoCandles'), "Fake market/history data must never be returned"],
-  [!marketHook.includes('setInterval') && marketHook.includes('initialRequestStarted'), "Market data must load once per app reload and refresh manually"],
+  [!marketHook.includes('setInterval') && marketHook.includes('latestCachedQuotes().then') && marketHook.includes('requestMarket()'), "Market data must load once on mount and refresh manually"],
   [!marketHistoryHook.includes('fetch('), "Market history must use only locally stored real snapshots"],
   [db.includes('planItems:') && db.includes('planItemId'), "Plan execution schema is missing"],
   [txDialog.includes('planItemId') && txDialog.includes('initialAmount'), "Planned purchases must prefill and link transactions"],
@@ -61,7 +91,7 @@ const checks = [
   [appRouteLayout.includes('market={market}') && appRouteLayout.includes('<AppRuntimeProvider'), "App route layout must pass market controls into the shell and keep page runtime context"],
   [css.includes('.glass-strong') && css.includes('--glass-strong') && productTour.includes('glass-strong'), "Readable strong glass surface is missing from the product tour"],
   [css.includes('--logo-gold: var(--primary)') && brandLogo.includes('var(--logo-ink)') && desktopSidebar.includes('<BrandLogo') && mobileNavigation.includes('<BrandLogo'), "Official theme-aware logo is not wired into app navigation"],
-  [css.includes(':root[data-palette="amber"]') && css.includes('#9a6f0a') && css.includes('.dark[data-palette="amber"]') && css.includes('#d4a72c') && settingsSection.includes('label: "طلایی"'), "Gold palette must stay metallic in both light and dark themes"],
+  [css.includes(':root[data-palette="amber"]') && css.includes('#9a6f0a') && css.includes('.dark[data-palette="amber"]') && css.includes('#d4a72c') && appearanceSettingsSource.includes('label: "طلایی"'), "Gold palette must stay metallic in both light and dark themes"],
   [mobileNavigation.includes('<Drawer open={open}') && mobileNavigation.includes('دسترسی سریع'), "Mobile quick menu must use the organized responsive drawer"],
   [planProgress.includes("if (!Array.isArray(items)) return []") && planProgress.includes("items?: readonly PlanItemLike[] | null"), "Plan progress must tolerate missing or legacy local data"],
   [db.includes("this.version(3)") && db.includes("normalizePlanRow") && db.includes("repairLocalData"), "IndexedDB v3 migration/repair for legacy plan rows is missing"],
@@ -71,6 +101,24 @@ const checks = [
   [types.includes("hideFinancialData: boolean") && privacyToggle.includes("RiEyeLine") && shellCss.includes(".privacy-hidden") && appTopbar.includes("PrivacyToggle") && mobileNavigation.includes("PrivacyToggle"), "Global privacy eye toggle is not wired"],
   [reportsSection.includes("فاصله از هدف") && reportsSection.includes("بازده از خرید") && reportsSection.includes("این عدد تغییر روزانه بازار نیست") && reportsSection.includes("HelpLabel"), "Reports must explain portfolio metrics and distinguish personal P/L from daily market change"],
   [monthlyBars.includes("هنوز داده ماهانه‌ای نداریم") && monthlyBars.includes("hasData"), "Monthly report chart must show a real empty state instead of a blank chart"],
+  [onboardingSource.includes("فعلاً ردش کن") && onboardingSource.includes("OnboardingHoldingsStep") && onboardingSource.includes("gapRatio={0}"), "Onboarding must support fast skip, opening holdings, and complete progress rings"],
+  [onboardingHookSource.includes("openingHoldingTransaction") && onboardingHookSource.includes("onboardingComplete: true") && onboardingHookSource.includes("ONBOARDING_STEPS = 6"), "Onboarding persistence must save historical opening holdings and a six-step flow"],
+  [openingHoldingSource.includes("دارایی قبلی را وارد کن") && investmentsSource.includes("OpeningHoldingDialog") && investmentsSource.includes("دارایی قبلی دارم"), "Investments must expose a post-onboarding opening-holding flow"],
+  [arcGaugeSource.includes("gapRatio = 0") && arcGaugeSource.includes("safeGap"), "ArcGauge must render a complete ring by default across the app"],
+  [dashboardMetricsSource.includes("futureFocusPercent(rule.safetyPct, rule.growthPct)") && onboardingHookSource.includes("futureFocusPercent(safety, growth)") && calculationsSource.includes("Math.round(safetyPct + growthPct)") && !calculationsSource.includes("/ 85"), "Future-focus gauges must show the real safety + growth share without hidden normalization"],
+  [appTopbar.includes("-mt-3") && appTopbar.includes("h-16") && desktopSidebar.includes("h-16"), "Desktop topbar must align vertically with the sidebar brand header"],
+  [types.includes('"stock"') && db.includes('kind: "stock"') && txDialog.includes("assetUsesManualPrice") && investmentsSource.includes("?? activeAsset.manualPriceToman"), "Stock assets must exist as a first-class manually priced portfolio type"],
+  [reportsSection.includes("RiMoneyDollarCircleLine") && reportsSection.includes("RiFileList3Line") && reportsSection.includes("KpiIcon"), "Report KPI cards must use distinct semantic icons"],
+  [todayDateSource.includes("useHydrated") && !todayDateSource.includes("setToday"), "TodayDate must hydrate without a synchronous setState effect"],
+  [!allocationDonutSource.includes("let offset") && !allocationDonutSource.includes("offset +="), "AllocationDonut must not mutate render-local offsets inside map"],
+  [!datePickerSource.includes("useEffect") && !dateRangePicker.includes("useEffect") && !persianCalendarSource.includes("useEffect") && !themeToggleSource.includes("useEffect"), "Date and theme controls must avoid synchronous setState effects"],
+  [dateFilterHook.includes("useSyncExternalStore") && sidebarStateSource.includes("useSyncExternalStore"), "Persisted UI state must hydrate through external-store snapshots instead of mount effects"],
+  [tourHook.includes("requestAnimationFrame(measure)") && !tourHook.includes("useEffect(() => { measure();"), "Product-tour measurement must be scheduled instead of setting state synchronously in an effect"],
+  [!settingsSection.includes("useSettingsManager") && allocationSettingsSource.includes("useWatch") && safetySettingsSource.includes("useWatch"), "Settings forms must keep React Hook Form controls local and use useWatch"],
+  [postcssSource.includes("const config") && postcssSource.includes("export default config"), "PostCSS config must use a named default export"],
+  [newMoney.includes("NewMoneyDirectFunds") && directFundsSource.includes("برای برنامه‌ریزی می‌ماند") && newMoneyHook.includes("remainingAfterDirect") && newMoneyHook.includes("executedToman: amountToman"), "New money must support direct fund allocation before percentage planning"],
+  [relatedSelectSource.includes("createLabel") && quickPlan.includes("RelatedEntitySelect") && planEdit.includes("RelatedEntitySelect") && openingHoldingSource.includes("RelatedEntitySelect") && onboardingHoldingsSource.includes("RelatedEntitySelect"), "Entity selectors must offer in-context create shortcuts"],
+  [uiArchitectureSource.includes('replaceAll("\\\\", "/")'), "UI architecture paths must be normalized for Windows quality checks"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],
@@ -82,7 +130,7 @@ const checks = [
   [mobileNavigation.includes("mobile-bottom-nav") && mobileNavigation.includes("TodayDate"), "Mobile navigation must expose a readable bottom bar and today date"],
   [dataTable.includes("type RowData") && dataTable.includes("TData extends RowData"), "DataTable must satisfy TanStack Table v9 RowData constraints"],
   [dataTable.includes("table.store.state.pagination.pageIndex") && !dataTable.includes("table.state.pagination.pageIndex"), "TanStack Table v9 pagination must read the core store in the shared generic Pagination component"],
-  [newMoneyHook.includes("newMoneySchema.parse") && newMoneyHook.includes('typeof incomeIdKey !== "number"') && newMoneyHook.includes("watchedAllocation.life ?? activeRule.lifePct"), "New-money persistence must validate form values, narrow Dexie IDs, and normalize watched allocation numbers"],
+  [newMoneyHook.includes("newMoneySchema.parse") && newMoneyHook.includes('typeof incomeIdKey !== "number"') && newMoneyHook.includes("watchedLife ?? activeRule.lifePct"), "New-money persistence must validate form values, narrow Dexie IDs, and normalize watched allocation numbers"],
   [dataTable.includes("مرتب‌سازی ستون") && !dataTable.includes("<button\n                            type=\"button\"\n                            className=\"inline-flex w-full"), "Sortable headers must not wrap interactive help controls in a button"],
   [rootLayout.includes('/favicon.svg') && manifest.includes('/icon-192.png') && serviceWorker.includes('/favicon.svg') && favicon.includes("prefers-color-scheme: dark"), "Theme-aware favicon and PWA icon assets must be wired into metadata and offline precache"],
 ];

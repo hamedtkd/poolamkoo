@@ -127,7 +127,13 @@ export async function ensureSeedData() {
       { name: "دلار", kind: "currency", symbol: "USD", targetPct: 30, icon: "dollar", archived: false, createdAt: now, updatedAt: now },
       { name: "بیت‌کوین", kind: "crypto", symbol: "BTC", targetPct: 15, icon: "bitcoin", archived: false, createdAt: now, updatedAt: now },
       { name: "سرمایه‌گذاری سفارشی", kind: "custom", targetPct: 15, manualPriceToman: 1_000_000, icon: "pie", archived: false, createdAt: now, updatedAt: now },
+      { name: "سهام / بورس", kind: "stock", targetPct: 0, icon: "stock", archived: false, createdAt: now, updatedAt: now },
     ]);
+  }
+
+  if ((await db.assets.where("kind").equals("stock").count()) === 0) {
+    const now = new Date().toISOString();
+    await db.assets.add({ name: "سهام / بورس", kind: "stock", targetPct: 0, icon: "stock", archived: false, createdAt: now, updatedAt: now });
   }
 
   await db.marketSnapshots.filter((row) => String((row as { source?: unknown }).source ?? "") === "demo").delete();

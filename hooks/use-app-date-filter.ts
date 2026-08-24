@@ -5,6 +5,7 @@ import type { ReturnTypeOfAppData } from "@/lib/runtime-types";
 import { dateInRange, emptyDateRange, type AppDateRange } from "@/lib/date-range";
 
 const STORAGE_KEY = "poolamco:date-ranges";
+const CHANGE_EVENT = "poolamco:date-ranges-change";
 export type DateFilterScope = "dashboard" | "income" | "reports" | "investments";
 
 type ScopedRanges = Record<DateFilterScope, AppDateRange>;
@@ -37,36 +38,59 @@ function fromStoredRange(range?: { from?: string | null; to?: string | null }): 
   };
 }
 
-export function useAppDateFilter(data: ReturnTypeOfAppData) {
-  const [ranges, setRanges] = React.useState<ScopedRanges>(defaultRanges);
+function getSnapshot() {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
 
-  React.useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (!stored) return;
-      const parsed = JSON.parse(stored) as StoredRanges;
-      setRanges({
-        dashboard: fromStoredRange(parsed.dashboard),
-        income: fromStoredRange(parsed.income),
-        reports: fromStoredRange(parsed.reports),
-        investments: fromStoredRange(parsed.investments),
-      });
-    } catch {
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
-  }, []);
+function subscribe(onChange: () => void) {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY) onChange();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(CHANGE_EVENT, onChange);
+  };
+}
+
+function parseRanges(snapshot: string): ScopedRanges {
+  if (!snapshot) return defaultRanges();
+  try {
+    const parsed = JSON.parse(snapshot) as StoredRanges;
+    return {
+      dashboard: fromStoredRange(parsed.dashboard),
+      income: fromStoredRange(parsed.income),
+      reports: fromStoredRange(parsed.reports),
+      investments: fromStoredRange(parsed.investments),
+    };
+  } catch {
+    return defaultRanges();
+  }
+}
+
+export function useAppDateFilter(data: ReturnTypeOfAppData) {
+  const snapshot = React.useSyncExternalStore(subscribe, getSnapshot, () => "");
+  const ranges = React.useMemo(() => parseRanges(snapshot), [snapshot]);
 
   const setRange = React.useCallback((scope: DateFilterScope, next: AppDateRange) => {
-    setRanges((current) => {
-      const updated = { ...current, [scope]: next };
+    const current = parseRanges(getSnapshot());
+    const updated = { ...current, [scope]: next };
+    try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
         dashboard: toStoredRange(updated.dashboard),
         income: toStoredRange(updated.income),
         reports: toStoredRange(updated.reports),
         investments: toStoredRange(updated.investments),
       }));
-      return updated;
-    });
+    } catch {
+      // Session storage can be unavailable in hardened browsers.
+    }
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
   const filtered = React.useMemo(() => {

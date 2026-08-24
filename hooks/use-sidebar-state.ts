@@ -1,23 +1,40 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "poolamco:sidebar-collapsed";
+const CHANGE_EVENT = "poolamco:sidebar-change";
+
+function readCollapsed() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function subscribe(onChange: () => void) {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY) onChange();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(CHANGE_EVENT, onChange);
+  };
+}
 
 export function useSidebarState() {
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
-    } catch {
-      setCollapsed(false);
-    }
-  }, []);
+  const collapsed = useSyncExternalStore(subscribe, readCollapsed, () => false);
 
   const setAndPersist = useCallback((next: boolean) => {
-    setCollapsed(next);
-    try { localStorage.setItem(STORAGE_KEY, next ? "1" : "0"); } catch { /* localStorage may be unavailable */ }
+    try {
+      localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+    } catch {
+      // localStorage may be unavailable; the UI still keeps its safe default.
+    }
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
   const toggle = useCallback(() => setAndPersist(!collapsed), [collapsed, setAndPersist]);
@@ -28,15 +45,11 @@ export function useSidebarState() {
       const tag = (event.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       event.preventDefault();
-      setCollapsed((current) => {
-        const next = !current;
-        try { localStorage.setItem(STORAGE_KEY, next ? "1" : "0"); } catch { /* noop */ }
-        return next;
-      });
+      setAndPersist(!collapsed);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [collapsed, setAndPersist]);
 
   return { collapsed, toggle, setCollapsed: setAndPersist };
 }

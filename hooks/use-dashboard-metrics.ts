@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { portfolioPosition } from "@/lib/calculations";
+import { futureFocusPercent, portfolioPosition } from "@/lib/calculations";
 import type { AllocationRule, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote } from "@/lib/types";
 
 export function useDashboardMetrics({ rule, incomes, funds, assets, transactions, quotes }: {
@@ -29,7 +29,7 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
     const monthIncome = monthRows.reduce((sum, income) => sum + income.amountToman, 0);
     const emergency = funds.find((fund) => fund.category === "emergency");
     const emergencyPct = emergency?.targetToman ? Math.min(100, emergency.currentToman / emergency.targetToman * 100) : 0;
-    const decisionGauge = rule ? Math.round((rule.safetyPct + rule.growthPct) / 85 * 100) : 0;
+    const futureFocusPct = rule ? futureFocusPercent(rule.safetyPct, rule.growthPct) : 0;
     return {
       positions,
       portfolio,
@@ -39,7 +39,7 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
       monthIncomeCount: monthRows.length,
       emergency,
       emergencyPct,
-      decisionGauge,
+      futureFocusPct,
       chartData: makeInvestedSeries(transactions),
     };
   }, [assets, funds, incomes, quotes, rule, transactions]);

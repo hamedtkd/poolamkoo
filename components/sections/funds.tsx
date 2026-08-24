@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { RiAddLine, RiDeleteBin6Line, RiEditLine, RiGiftLine, RiShieldCheckLine, RiWallet3Line } from "react-icons/ri";
+import { RiAddLine, RiDeleteBin6Line, RiEditLine, RiFocus3Line, RiSafe2Line, RiShieldCheckLine } from "react-icons/ri";
 import { DataTable, type DataTableFeatures } from "@/components/data-table";
 import { FundEditor } from "@/components/funds/fund-editor";
 import { FundMovement } from "@/components/funds/fund-movement";
@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
 import { formatMoney, formatPercent, toPersianDate } from "@/lib/format";
 import type { AppSettings, GoalFund } from "@/lib/types";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
+import { KpiIcon } from "@/components/ui/kpi-icon";
 
 export function FundsSection({ funds, settings }: { funds: GoalFund[]; settings: AppSettings }) {
   const [editorOpen, setEditorOpen] = useState(false);
@@ -41,7 +42,7 @@ export function FundsSection({ funds, settings }: { funds: GoalFund[]; settings:
 
   return <div className="space-y-5">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">امنیت و هزینه‌های آینده</div><h1 className="mt-1 type-page-title">صندوق‌ها</h1><p className="mt-1 type-body text-muted-foreground">دندان‌پزشکی، هدیه، بیمه، سفر و اتفاق‌های قابل‌پیش‌بینی را قبل از موعد آرام‌آرام بساز.</p></div><Button onClick={() => { setEditing(null); setEditorOpen(true); }}><RiAddLine /> صندوق جدید</Button></div>
-    <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiWallet3Line />} label="جمع ذخیره" value={formatMoney(totalCurrent, settings.displayUnit)} /><Kpi icon={<RiGiftLine />} label="جمع هدف‌ها" value={formatMoney(totalTarget, settings.displayUnit)} /><Kpi icon={<RiShieldCheckLine />} label="پیشرفت کل" value={formatPercent(overall, 0)} /></div>
+    <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiSafe2Line />} label="جمع ذخیره" value={formatMoney(totalCurrent, settings.displayUnit)} /><Kpi icon={<RiFocus3Line />} label="جمع هدف‌ها" value={formatMoney(totalTarget, settings.displayUnit)} /><Kpi icon={<RiShieldCheckLine />} label="پیشرفت کل" value={formatPercent(overall, 0)} /></div>
     <Card><CardHeader><CardTitle>همه صندوق‌ها</CardTitle></CardHeader><CardContent><DataTable data={funds} columns={columns} searchPlaceholder="جست‌وجوی صندوق..." mobileCard={(fund) => <FundMobileCard fund={fund} settings={settings} onMove={() => setMoveFund(fund)} onEdit={() => { setEditing(fund); setEditorOpen(true); }} onDelete={() => setDeleteFund(fund)} />} /></CardContent></Card>
     <FundEditor open={editorOpen} onOpenChange={setEditorOpen} fund={editing} settings={settings} />
     <FundMovement fund={moveFund} onClose={() => setMoveFund(null)} settings={settings} />
@@ -51,5 +52,5 @@ export function FundsSection({ funds, settings }: { funds: GoalFund[]; settings:
 
 function categoryLabel(category: GoalFund["category"]) { return category === "emergency" ? "اضطراری" : category === "planned" ? "هزینه پیش‌رو" : "سفارشی"; }
 function ProgressCell({ fund }: { fund: GoalFund }) { const progress = fund.targetToman ? Math.min(100, fund.currentToman / fund.targetToman * 100) : 0; return <div className="min-w-28"><div className="mb-1 text-xs type-strong">{formatPercent(progress, 0)}</div><Progress value={progress} /></div>; }
-function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) { return <Card><CardContent className="p-4"><div className="flex items-center justify-between"><div><div className="type-caption text-muted-foreground">{label}</div><SensitiveValue className="mt-2 type-section-title">{value}</SensitiveValue></div><div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5">{icon}</div></div></CardContent></Card>; }
+function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) { return <Card><CardContent className="p-4"><div className="flex items-center justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground">{label}</div><SensitiveValue className="mt-2 type-section-title">{value}</SensitiveValue></div><KpiIcon>{icon}</KpiIcon></div></CardContent></Card>; }
 function FundMobileCard({ fund, settings, onMove, onEdit, onDelete }: { fund: GoalFund; settings: AppSettings; onMove: () => void; onEdit: () => void; onDelete: () => void }) { const progress = fund.targetToman ? Math.min(100, fund.currentToman / fund.targetToman * 100) : 0; return <div className="p-4"><div className="flex justify-between gap-3"><div><div className="type-strong">{fund.name}</div><Badge className="mt-1">{categoryLabel(fund.category)}</Badge></div><div className="text-end"><div className="type-strong text-primary">{formatPercent(progress, 0)}</div><div className="text-[10px] text-muted-foreground">{fund.dueAt ? toPersianDate(fund.dueAt) : "بدون موعد"}</div></div></div><Progress value={progress} className="mt-4" /><div className="mt-3 flex justify-between text-xs"><SensitiveValue className="text-muted-foreground">{formatMoney(fund.currentToman, settings.displayUnit)}</SensitiveValue><SensitiveValue>{formatMoney(fund.targetToman, settings.displayUnit)}</SensitiveValue></div><div className="mt-3 flex gap-1"><Button size="sm" onClick={onMove}>واریز / برداشت</Button><Button size="sm" variant="ghost" onClick={onEdit}><RiEditLine /> ویرایش</Button><Button size="sm" variant="ghost" className="text-destructive" onClick={onDelete}><RiDeleteBin6Line /></Button></div></div>; }

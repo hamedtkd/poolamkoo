@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { splitIncome } from "../lib/calculations.ts";
+import { futureFocusPercent, splitIncome } from "../lib/calculations.ts";
 import type { AllocationRule } from "../lib/types.ts";
 
 const rule: AllocationRule = {
@@ -23,4 +23,10 @@ test("splitIncome always returns concrete numeric buckets", () => {
 test("splitIncome preserves the full incoming amount", () => {
   const result = splitIncome(12_345_679, rule);
   assert.equal(result.life + result.safety + result.growth, 12_345_679);
+});
+
+
+test("future focus is the real safety + growth share", () => {
+  assert.equal(futureFocusPercent(20, 50), 70);
+  assert.equal(futureFocusPercent(20, 65), 85);
 });

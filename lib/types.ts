@@ -2,7 +2,7 @@ export type MoneyUnit = "toman" | "rial";
 export type ThemePalette = "rose" | "violet" | "amber" | "blue";
 export type LifestylePreset = "growth" | "balanced" | "comfort" | "safety" | "custom";
 export type BucketKey = "life" | "safety" | "growth";
-export type AssetKind = "gold" | "currency" | "crypto" | "fund" | "custom";
+export type AssetKind = "gold" | "currency" | "crypto" | "stock" | "fund" | "custom";
 export type MarketSymbol = "USD" | "IR_GOLD_18K" | "BTC" | "USDT";
 export type PlanTargetType = "life" | "fund" | "asset" | "bucket";
 

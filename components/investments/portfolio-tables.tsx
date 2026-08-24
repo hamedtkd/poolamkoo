@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PositionRow } from "@/hooks/use-investment-portfolio";
 import { formatMoney, formatNumber, formatPercent, toPersianDate } from "@/lib/format";
+import { assetKindLabel } from "@/lib/assets";
 import type { AppSettings, Asset, InvestmentTransaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
@@ -23,7 +24,7 @@ export function PortfolioTables({ positions, transactions, assets, settings, onT
   onDeleteTransaction: (id: number) => void;
 }) {
   const positionColumns: ColumnDef<DataTableFeatures, PositionRow, unknown>[] = [
-    { id: "asset", header: "دارایی", cell: ({ row }) => <div><div className="type-strong">{row.original.asset.name}</div><div className="text-[10px] text-muted-foreground">{row.original.asset.symbol || "دستی"}</div></div> },
+    { id: "asset", header: "دارایی", cell: ({ row }) => <div><div className="type-strong">{row.original.asset.name}</div><div className="text-[10px] text-muted-foreground">{row.original.asset.symbol || assetKindLabel(row.original.asset.kind)}</div></div> },
     { accessorKey: "qty", header: "مقدار", cell: ({ row }) => <span dir="ltr">{formatNumber(row.original.qty, 6)}</span> },
     { accessorKey: "avgPrice", header: "میانگین خرید", cell: ({ row }) => <SensitiveValue>{formatMoney(row.original.avgPrice, settings.displayUnit, true)}</SensitiveValue> },
     { accessorKey: "price", header: "قیمت فعلی", cell: ({ row }) => <SensitiveValue>{formatMoney(row.original.price, settings.displayUnit, true)}</SensitiveValue> },

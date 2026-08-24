@@ -11,7 +11,6 @@ type MarketResponse = {
   fetchedAt?: string;
 };
 
-let initialRequestStarted = false;
 let inFlight: Promise<MarketResponse> | null = null;
 
 async function requestMarket() {
@@ -74,7 +73,7 @@ export function useMarket() {
       setQuotes(cached);
       setMode(cached.length ? "offline" : "unavailable");
       setLastUpdated(cached[0]?.capturedAt ?? null);
-      setWarning("\u062f\u0631\u06cc\u0627\u0641\u062a \u0642\u06cc\u0645\u062a \u062c\u062f\u06cc\u062f \u0646\u0627\u0645\u0648\u0641\u0642 \u0628\u0648\u062f.");
+      setWarning("دریافت قیمت جدید ناموفق بود.");
     } finally {
       setLoading(false);
     }
@@ -82,20 +81,32 @@ export function useMarket() {
 
   useEffect(() => {
     let active = true;
-    latestCachedQuotes().then((cached) => {
-      if (!active || !cached.length) return;
-      setQuotes(cached);
-      setMode("offline");
-      setLastUpdated(cached[0]?.capturedAt ?? null);
+    void latestCachedQuotes().then(async (cached) => {
+      if (!active) return;
+      if (cached.length) {
+        setQuotes(cached);
+        setMode("offline");
+        setLastUpdated(cached[0]?.capturedAt ?? null);
+      }
+
+      try {
+        const data = await requestMarket();
+        if (!active) return;
+        await applyResponse(data);
+      } catch {
+        if (!active) return;
+        const fallback = cached.length ? cached : await latestCachedQuotes();
+        if (!active) return;
+        setQuotes(fallback);
+        setMode(fallback.length ? "offline" : "unavailable");
+        setLastUpdated(fallback[0]?.capturedAt ?? null);
+        setWarning("دریافت قیمت جدید ناموفق بود.");
+      } finally {
+        if (active) setLoading(false);
+      }
     });
-    if (!initialRequestStarted) {
-      initialRequestStarted = true;
-      void refresh();
-    } else {
-      setLoading(false);
-    }
     return () => { active = false; };
-  }, [refresh]);
+  }, [applyResponse]);
 
   return { quotes, loading, mode, lastUpdated, warning, refresh };
 }

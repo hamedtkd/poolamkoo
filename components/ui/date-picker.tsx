@@ -54,23 +54,19 @@ export function DatePicker({
   const mediaMobile = useMediaQuery(`(max-width: ${mobileBreakpoint - 1}px)`);
   const isDrawer = presentation === "drawer" || (presentation === "auto" && mediaMobile);
   const controlled = valueProp !== undefined;
-  const [internalValue, setInternalValue] = React.useState<Date | null>(() => defaultValue instanceof Date ? defaultValue : null);
+  const [internalValue, setInternalValue] = React.useState<Date | null>(() => {
+    if (defaultValue === "today") return new Date();
+    return defaultValue instanceof Date ? defaultValue : null;
+  });
   const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
   const value = controlled ? (valueProp ?? null) : internalValue;
   const open = openProp ?? internalOpen;
   const [draft, setDraft] = React.useState<Date | null>(value);
 
-  React.useEffect(() => {
-    if (defaultValue !== "today" || controlled) return;
-    setInternalValue((current) => current ?? new Date());
-  }, [controlled, defaultValue]);
-
-  React.useEffect(() => { if (!open) setDraft(value); }, [open, value]);
-
   function setOpen(next: boolean) {
     if (openProp === undefined) setInternalOpen(next);
     onOpenChange?.(next);
-    if (next) setDraft(value);
+    setDraft(value);
   }
 
   function commit(next: Date | null) {
@@ -89,7 +85,10 @@ export function DatePicker({
 
   function select(next: Date) {
     setDraft(next);
-    if (resolvedConfirm === "immediate") { commit(next); setOpen(false); }
+    if (resolvedConfirm === "immediate") {
+      commit(next);
+      setOpen(false);
+    }
   }
 
   if (isDrawer) {

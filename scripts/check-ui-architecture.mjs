@@ -16,7 +16,7 @@ for (const root of roots) await walk(root);
 const violations = [];
 for (const file of files) {
   const source = await readFile(file, "utf8");
-  const name = relative(process.cwd(), file);
+  const name = relative(process.cwd(), file).replaceAll("\\", "/");
   if (/<select\b/.test(source)) violations.push(`${name}: raw <select> is forbidden`);
   if (/type\s*=\s*["']date["']/i.test(source)) violations.push(`${name}: native date input is forbidden`);
   if (/<PriceInput\b/.test(source) && name !== "components/ui/money-input.tsx") {

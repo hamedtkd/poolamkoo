@@ -76,7 +76,7 @@ export function usePlanItemActions({
   }, [income]);
 
   const deletePlanItem = useCallback(async (item: PlanItem) => {
-    if (!item.id) return;
+    if (!item.id || item.executedToman > 0) return;
     await db.transaction("rw", db.planItems, db.transactions, async () => {
       const linked = await db.transactions.where("planItemId").equals(item.id!).toArray();
       for (const transaction of linked) {
