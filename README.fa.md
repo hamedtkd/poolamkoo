@@ -100,9 +100,18 @@
 
 - لینک مستقیم GitHub و نمایش تعداد Star با Cache و بدون نیاز به GitHub token در استفاده معمول
 - صفحات عمومی راهنما، درباره پروژه، سیاست داده و ماندگاری/بازیابی داده
+- صفحه عمومی Analytics برای توضیح دقیق داده‌های اندازه‌گیری‌شده و مرزهای حریم خصوصی
 - لینک گزارش مشکل، Security و MIT License
 - حمایت مالی کاملاً اختیاری و بدون قفل‌کردن هیچ قابلیت
 - یادآوری حمایت فقط بعد از حداقل ۷ روز استفاده واقعی با cooldown طولانی
+
+### Analytics اختیاری
+
+- Cloudflare Web Analytics فقط در Production و فقط با توکن صریح مالک استقرار
+- بدون dependency تحلیلی npm و بدون Custom Event مالی
+- اندازه‌گیری Visits، Page Views و Core Web Vitals برای فهم استفاده و کیفیت تجربه
+- بدون ارسال مبلغ، موجودی، نام دارایی شخصی، تراکنش، Search، فرم یا محتوای Backup
+- بدون توکن، هیچ Beacon تحلیلی خارجی Render نمی‌شود
 
 ### تجربه کاربری
 
@@ -145,6 +154,7 @@
 - Recharts و Lightweight Charts در بخش‌های لازم
 - next-themes
 - Motion (`motion/react`) برای micro-interactionهای کنترل‌شده
+- Cloudflare Web Analytics به‌صورت اختیاری و بدون SDK تحلیلی
 - Remix Icons از طریق react-icons
 
 ## ساختار پروژه
@@ -190,11 +200,23 @@ http://localhost:3000
 
 داده بورس از Tindex با منبع پایه TSETMC دریافت می‌شود. نمودارهای ۱ و ۳ ماهه دلار، طلای ۱۸ عیار و نمادهای متصل نیز از endpointهای History/Candles تیندکس می‌آیند و پاسخ تاریخچه برای کاهش مصرف سهمیه در لایه سرور cache می‌شود. شرایط استفاده و نرخ درخواست سرویس Tindex برای انتشار عمومی/تجاری باید رعایت شود.
 
+## Analytics رایگان و Privacy-first
+
+پولم‌کو از نسخه 0.18 امکان اتصال اختیاری به Cloudflare Web Analytics را دارد. برای فعال‌سازی، سایت را در Cloudflare Web Analytics اضافه کن، Token موجود در Snippet را بردار و فقط در Environment مربوط به Production قرار بده:
+
+```env
+NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN=your_site_token
+```
+
+این مقدار Secret حساب Cloudflare نیست؛ Site Token عمومی است که در Beacon مرورگر قرار می‌گیرد. اگر متغیر خالی باشد، هیچ Analytics script خارجی Render نمی‌شود. محیط Development هم حتی با وجود توکن اندازه‌گیری نمی‌شود.
+
+Cloudflare Web Analytics آمار کلی مثل Visits، Page Views، مسیر صفحه، Device/Browser و Core Web Vitals را جمع می‌کند. پولم‌کو هیچ Custom Event برای مبلغ‌ها، تراکنش‌ها، دارایی‌های شخصی، جست‌وجو، فرم‌ها، Backup یا انتقال دستگاه نمی‌سازد. برای جزئیات و Setup کامل: [docs/analytics.md](./docs/analytics.md).
+
 ## هشدارهای بازار و Background Push
 
 هشدارهای محلی بازار بدون Backend کار می‌کنند و هنگام اجرای اپ با Refresh قیمت‌ها بررسی می‌شوند. آزمایش Background Web Push نسخه v0.13.0 از v0.13.1 **عمداً در Backlog قرار گرفته و در Build عادی غیرفعال است** تا پروژه رایگان، Local-First و بدون Redis/Cron اجباری باقی بماند. برای Deploy معمول هیچ VAPID key، Upstash یا `CRON_SECRET` لازم نیست.
 
-کد آزمایشی حذف نشده است؛ جزئیات فنی و روش فعال‌سازی فقط برای توسعه آینده در [docs/backlog/background-push.md](./docs/backlog/background-push.md) نگهداری می‌شود. نقشه راه Open Source/Support، Motion و Analytics رایگان نیز در [docs/ROADMAP.md](./docs/ROADMAP.md) ثبت شده است.
+کد آزمایشی حذف نشده است؛ جزئیات فنی و روش فعال‌سازی فقط برای توسعه آینده در [docs/backlog/background-push.md](./docs/backlog/background-push.md) نگهداری می‌شود. فاز Analytics رایگان در v0.18 تکمیل شده و مراحل بعدی در [docs/ROADMAP.md](./docs/ROADMAP.md) ثبت می‌شوند.
 
 ## Quality Gate
 

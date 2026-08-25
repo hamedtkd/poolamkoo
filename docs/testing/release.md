@@ -112,3 +112,14 @@ git push origin vX.Y.Z
 - [ ] هشدارهای محلی بازار هنگام اجرای اپ همچنان کار کنند
 - [ ] APIهای Push/Cron بدون Feature Flag آزمایشی عملیات Server-side انجام ندهند
 - [ ] کد و تست‌های آزمایشی Push برای Backlog در Repository باقی بمانند
+
+## 11. Privacy-first analytics
+
+- [ ] بدون `NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN` هیچ request به `static.cloudflareinsights.com` دیده نشود
+- [ ] در Development حتی با توکن تنظیم‌شده Beacon اجرا نشود
+- [ ] در Production با توکن معتبر فقط یک Cloudflare Web Analytics script وجود داشته باشد
+- [ ] Page Viewهای routeهای SPA در Cloudflare Web Analytics دیده شوند
+- [ ] Query String در گزارش Analytics ظاهر نشود
+- [ ] هیچ Custom Event یا payload حاوی مبلغ، نام دارایی، تراکنش، Search، فرم یا Backup وجود نداشته باشد
+- [ ] صفحه `/analytics` و `/privacy` وضعیت و مرز داده را به‌درستی توضیح دهند
+- [ ] اگر Cloudflare automatic injection روی دامنه فعال است، manual + automatic هم‌زمان استفاده نشوند

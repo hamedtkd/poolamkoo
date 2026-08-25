@@ -42,12 +42,12 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - No decorative animation that delays data entry or makes financial values harder to scan.
 - Improve dashboard hierarchy, empty/loading transitions, and responsive continuity.
 
-## v0.18 — Privacy-first usage analytics
+## v0.18 — Privacy-first usage analytics ✅
 
-- Optional Cloudflare Web Analytics integration for public deployments.
-- Track only aggregate site/app usage and performance; never financial amounts, asset names, search terms, transactions, or backup contents.
-- No analytics dependency for self-hosters; token/config absent means no beacon.
-- Document the analytics/privacy policy in the app and repository.
+- Optional Cloudflare Web Analytics integration for public deployments, loaded only in production.
+- Track aggregate visits, page views, route paths, device/browser categories and Core Web Vitals; never financial amounts, asset names, search terms, transactions, form contents or backup data.
+- No custom analytics event layer and no analytics npm dependency; token/config absent means no third-party beacon at all.
+- Dedicated in-app Analytics page, Settings status card, privacy documentation and release QA.
 
 ## Backlog — Background alerts while PWA is closed
 

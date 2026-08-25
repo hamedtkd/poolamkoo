@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { RiArrowRightLine, RiBookOpenLine, RiHeart3Line, RiInformationLine, RiShieldCheckLine } from "react-icons/ri";
+import { RiArrowRightLine, RiBookOpenLine, RiHeart3Line, RiInformationLine, RiLineChartLine, RiShieldCheckLine } from "react-icons/ri";
 import { BrandLogo } from "@/components/brand-logo";
 import { GithubLink } from "@/components/community/github-link";
 import { COMMUNITY_LINKS } from "@/lib/community";
@@ -9,6 +9,7 @@ import { COMMUNITY_LINKS } from "@/lib/community";
 const publicNav = [
   { href: "/guide", label: "راهنما", icon: RiBookOpenLine },
   { href: "/privacy", label: "سیاست داده", icon: RiShieldCheckLine },
+  { href: "/analytics", label: "Analytics", icon: RiLineChartLine },
   { href: "/about", label: "درباره", icon: RiInformationLine },
 ] as const;
 
@@ -25,7 +26,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
     <footer className="border-t">
       <div className="mx-auto grid max-w-6xl gap-5 px-4 py-8 text-sm text-muted-foreground sm:px-6 md:grid-cols-[1fr_auto] md:items-center">
         <div><div className="type-strong text-foreground">پولم‌کو رایگان و متن‌باز است.</div><p className="mt-1 leading-6">داده مالی اصلی در مرورگر خودت می‌ماند. برای استفاده جدی، بکاپ منظم را فراموش نکن.</p></div>
-        <div className="flex flex-wrap gap-2"><Link href="/privacy" className="rounded-lg px-2 py-1 hover:text-foreground">حریم خصوصی</Link><Link href="/security" className="rounded-lg px-2 py-1 hover:text-foreground">امنیت</Link><Link href="/license" className="rounded-lg px-2 py-1 hover:text-foreground">مجوز</Link><a href={COMMUNITY_LINKS.issues} target="_blank" rel="noreferrer" className="rounded-lg px-2 py-1 hover:text-foreground">گزارش مشکل</a><a href={COMMUNITY_LINKS.support} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 hover:text-foreground"><RiHeart3Line /> حمایت اختیاری</a></div>
+        <div className="flex flex-wrap gap-2"><Link href="/privacy" className="rounded-lg px-2 py-1 hover:text-foreground">حریم خصوصی</Link><Link href="/analytics" className="rounded-lg px-2 py-1 hover:text-foreground">Analytics</Link><Link href="/security" className="rounded-lg px-2 py-1 hover:text-foreground">امنیت</Link><Link href="/license" className="rounded-lg px-2 py-1 hover:text-foreground">مجوز</Link><a href={COMMUNITY_LINKS.issues} target="_blank" rel="noreferrer" className="rounded-lg px-2 py-1 hover:text-foreground">گزارش مشکل</a><a href={COMMUNITY_LINKS.support} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 hover:text-foreground"><RiHeart3Line /> حمایت اختیاری</a></div>
       </div>
     </footer>
   </div>;

@@ -109,6 +109,14 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Layout-matched skeletons with restrained shimmer
 - Reduced-motion-aware route, KPI, navigation, and toast micro-interactions
 
+### Optional privacy-first analytics
+
+- Cloudflare Web Analytics only in production and only when the deployer supplies a site token
+- No analytics SDK dependency and no custom financial events
+- Visits, page views, route paths, device/browser categories, and Core Web Vitals for coarse product usage
+- No intentional analytics payloads containing amounts, balances, personal asset names, transactions, search text, form values, backups, or device-transfer data
+- No token means no third-party analytics beacon is rendered
+
 ## Open source and support
 
 Poolamco is public at https://github.com/hamedtkd/poolamkoo. The app now includes public guide, About, Privacy/Data policy, and data-safety pages plus a cached GitHub star count. Optional development support is available at https://daramet.com/hamedtkd and never unlocks product features.
@@ -139,6 +147,7 @@ See [SECURITY.md](./SECURITY.md) for the security and data-safety model.
 - Recharts and Lightweight Charts where appropriate
 - next-themes
 - Motion (`motion/react`) for restrained micro-interactions
+- Optional Cloudflare Web Analytics through the official hosted beacon, with no analytics SDK
 - Remix Icons through react-icons
 
 ## Repository structure
@@ -181,6 +190,18 @@ http://localhost:3000
 Configure both BrsApi and a Tindex developer token. BrsApi remains primary for public market quotes; Tindex supplies missing core USD, 18K gold, and BTC quotes and serves linked Tehran Stock Exchange assets. The exact server-side environment variable names are documented in `.env.example`.
 
 Exchange quotes are returned by Tindex from TSETMC data and converted from rial to toman for Poolamco calculations. Poolamco also uses Tindex candle/history endpoints for 1-month and 3-month USD, 18K gold, and linked exchange charts, with quota-aware server caching. If market access is unavailable, Poolamco must not fabricate historical prices; previously stored real snapshots remain the chart fallback.
+
+## Privacy-first analytics
+
+Poolamco v0.18 can optionally load Cloudflare Web Analytics in production. Add the site in Cloudflare Web Analytics, copy the token from its browser snippet, and set only the production deployment environment:
+
+```env
+NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN=your_site_token
+```
+
+This is a public Web Analytics site token, not a Cloudflare account API secret. If the variable is empty, the analytics component renders nothing. Development builds also keep the beacon disabled even if a token is present.
+
+The integration is intentionally coarse: Cloudflare can measure visits, page views, page paths, device/browser categories, and real-user performance. Poolamco does not emit custom analytics events from financial data, search text, forms, backups, or device transfers. See [docs/analytics.md](./docs/analytics.md) for setup and privacy boundaries.
 
 ## Market alerts and background push
 

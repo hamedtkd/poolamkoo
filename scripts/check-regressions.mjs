@@ -135,7 +135,17 @@ const [motionRevealSource, providersMotionSource, dashboardMotionSource, sparkli
   read(".gitattributes"), read("package.json"),
 ]);
 
+const [analyticsComponentSource, analyticsHelperSource, analyticsSettingsSource, analyticsPageSource, analyticsDocsSource, envExampleSource] = await Promise.all([
+  read("components/analytics/cloudflare-web-analytics.tsx"), read("lib/analytics.ts"),
+  read("components/settings/analytics-settings-card.tsx"), read("app/(public)/analytics/page.tsx"),
+  read("docs/analytics.md"), read(".env.example"),
+]);
+
 const checks = [
+  [rootLayout.includes("CloudflareWebAnalytics") && analyticsComponentSource.includes("next/script") && analyticsHelperSource.includes("static.cloudflareinsights.com") && analyticsHelperSource.includes('nodeEnv === "production"'), "Cloudflare Web Analytics must be optional, production-only and wired through the root layout"],
+  [analyticsComponentSource.includes("NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN") && envExampleSource.includes("NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN") && !analyticsComponentSource.includes("fetch("), "Analytics must use only the public site token and the official beacon without a custom telemetry transport"],
+  [settingsSection.includes("AnalyticsSettingsCard") && analyticsSettingsSource.includes("مبلغ") && analyticsSettingsSource.includes("Custom Event") && analyticsPageSource.includes("بدون Cookie"), "Analytics status and privacy boundaries must be visible in the app"],
+  [analyticsDocsSource.includes("query strings are not logged") && analyticsDocsSource.includes("No analytics package is installed") && analyticsPageSource.includes("Self-host"), "Analytics documentation must preserve the zero-cost self-host and query-string privacy model"],
   [packageSource.includes('"motion"') && providersMotionSource.includes('reducedMotion="user"') && motionRevealSource.includes("useReducedMotion"), "Motion must be installed behind a global user reduced-motion policy"],
   [shell.includes("RouteTransition") && dashboardMotionSource.includes("MotionReveal") && dashboardMotionSource.includes("sm:col-span-2 xl:col-span-2"), "Route continuity and dashboard KPI hierarchy must use restrained motion"],
   [desktopSidebar.includes('layoutId="desktop-nav-active"') && mobileNavigation.includes('layoutId="mobile-nav-active"'), "Desktop and mobile navigation must keep a continuous active indicator"],
@@ -146,7 +156,7 @@ const checks = [
   [communitySource.includes("SUPPORT_PROMPT_ACTIVE_DAYS = 7") && communitySource.includes("SUPPORT_PROMPT_SNOOZE_DAYS = 60") && communitySource.includes("SUPPORT_PROMPT_THANKS_DAYS = 180") && communityHookSource.includes("withUsageDay"), "Community support prompt must require seven distinct active days and use long local cooldowns"],
   [supportPromptSource.includes("ستاره در GitHub") && supportPromptSource.includes("حمایت اختیاری") && supportPromptSource.includes('pathname === "/"'), "Support prompt must stay gentle, optional, and dashboard-only"],
   [githubStatsApiSource.includes("api.github.com/repos/hamedtkd/poolamkoo") && githubStatsApiSource.includes("revalidate: 21_600") && sidebarCommunitySource.includes("RiStarFill"), "GitHub entry must use a cached public star count without requiring a client token"],
-  [privacyPageSource.includes("IndexedDB") && privacyPageSource.includes("Analytics در این نسخه خاموش است") && privacyPageSource.includes("WebRTC") && aboutPageSource.includes("متن‌باز") && guidePageSource.includes("بکاپ") && securityPageSource.includes("Secretهای سرور") && licensePageSource.includes("مجوز MIT"), "Public trust pages must explain local-first privacy, security, licensing, and backup reality"],
+  [privacyPageSource.includes("IndexedDB") && privacyPageSource.includes("Analytics اختیاری و بدون داده مالی") && privacyPageSource.includes("WebRTC") && aboutPageSource.includes("متن‌باز") && guidePageSource.includes("بکاپ") && securityPageSource.includes("Secretهای سرور") && licensePageSource.includes("مجوز MIT"), "Public trust pages must explain local-first privacy, security, licensing, and backup reality"],
   [desktopSidebar.includes("SidebarCommunity") && mobileNavigation.includes("GithubLink") && settingsSection.includes("OpenSourceCard") && openSourceCardSource.includes("/privacy"), "Open-source, guide, privacy and GitHub surfaces must be reachable from desktop, mobile and settings"],
   [onboardingSource.includes('href="/privacy"'), "Privacy policy must be reachable before onboarding is complete"],
   [db.includes('this.version(6).stores(storesV6)') && db.includes('recoverySnapshots') && db.includes('appMeta'), "Data safety schema must persist bounded recovery snapshots and device-local backup metadata"],
@@ -276,4 +286,4 @@ if (failures.length) {
   console.error(`Regression checks failed:\n${failures.join("\n")}`);
   process.exit(1);
 }
-console.log("Regression checks passed: Persian forms, resilient local data, semantic DataTable headers, global search, PWA identity, compact sidebar, privacy controls, market cache, and responsive UI are wired.");
+console.log("Regression checks passed: Persian forms, resilient local data, semantic DataTable headers, global search, PWA identity, privacy-first analytics, market cache, and responsive UI are wired.");

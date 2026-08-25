@@ -31,3 +31,11 @@ If you extend this project for production, review CSP, hosting headers, dependen
 Direct device transfer uses a browser WebRTC DataChannel and does not require a Poolamco signaling/data server. Pairing descriptions are moved by the user through copy/share. The financial payload is additionally encrypted with AES-GCM using a one-time transfer PIN before it is chunked onto the WebRTC channel. The receiver verifies a SHA-256 digest, previews the decoded payload, and must explicitly confirm replacement. A local recovery snapshot is created before import.
 
 For sensitive environments, keep both devices on a trusted local network and do not share pairing codes or the one-time PIN with third parties. Encrypted backup-file transfer remains the fallback when direct WebRTC cannot connect.
+
+## Usage analytics
+
+Cloudflare Web Analytics is optional and disabled when `NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN` is absent. The configured site token is intentionally public because it is embedded in Cloudflare's browser beacon; it is not a Cloudflare account API credential.
+
+Poolamco does not create custom analytics events from IndexedDB records or financial forms. Income amounts, fund balances, personal asset names, transactions, search text, backups, recovery snapshots, and device-transfer payloads are not intentionally serialized into analytics requests. Keep sensitive values and user-entered names out of route paths because normal web analytics can measure page paths.
+
+Local development never renders the analytics beacon, even when the token is present. See `docs/analytics.md` for deployment and privacy details.

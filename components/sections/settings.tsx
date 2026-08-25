@@ -1,6 +1,7 @@
 "use client";
 
 import { AllocationRuleCard } from "@/components/settings/allocation-rule-card";
+import { AnalyticsSettingsCard } from "@/components/settings/analytics-settings-card";
 import { AppearanceSettingsCard } from "@/components/settings/appearance-settings-card";
 import { BackupSettingsCard } from "@/components/settings/backup-settings-card";
 import { FinancialSafetyCard } from "@/components/settings/financial-safety-card";
@@ -23,6 +24,7 @@ export function SettingsSection({ settings, rule }: { settings: AppSettings; rul
         <FinancialSafetyCard settings={settings} />
         <BackupSettingsCard />
         <DeviceTransferCard />
+        <AnalyticsSettingsCard />
         <OpenSourceCard />
       </div>
       <InstallPwaCard />

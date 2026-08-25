@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { CloudflareWebAnalytics } from "@/components/analytics/cloudflare-web-analytics";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body className="mesh-bg">
         <Providers>{children}</Providers>
+        <CloudflareWebAnalytics />
       </body>
     </html>
   );

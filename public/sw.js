@@ -1,4 +1,4 @@
-const CACHE = "poolamco-v31";
+const CACHE = "poolamco-v32";
 const PRECACHE = ["/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamco.svg"];
 
 self.addEventListener("install", (event) => {
