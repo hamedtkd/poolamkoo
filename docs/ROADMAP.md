@@ -27,7 +27,7 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Encrypted backup file transfer remains the universal fallback when WebRTC cannot connect.
 - QR scanning can be reconsidered later only if it materially simplifies the flow without adding fragile browser dependencies.
 
-## v0.16 — Open-source product surface
+## v0.16 — Open-source product surface ✅
 
 - GitHub entry point for `https://github.com/hamedtkd/poolamkoo` and a cached public star count.
 - Guide/help, About, Privacy/Data policy, Security, License, and data-safety pages.

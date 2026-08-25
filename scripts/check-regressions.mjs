@@ -122,7 +122,20 @@ const [deviceTransferHookSource, deviceTransferCardSource, deviceTransferHelperS
   read("lib/device-transfer.ts"), read("hooks/use-backup-safety.ts"),
 ]);
 
+const [communitySource, communityHookSource, supportPromptSource, sidebarCommunitySource, githubStatsApiSource, privacyPageSource, aboutPageSource, guidePageSource, securityPageSource, licensePageSource, openSourceCardSource] = await Promise.all([
+  read("lib/community.ts"), read("hooks/use-community-support.ts"), read("components/community/support-prompt.tsx"),
+  read("components/community/sidebar-community.tsx"), read("app/api/github/stats/route.ts"), read("app/(public)/privacy/page.tsx"),
+  read("app/(public)/about/page.tsx"), read("app/(public)/guide/page.tsx"), read("app/(public)/security/page.tsx"),
+  read("app/(public)/license/page.tsx"), read("components/community/open-source-card.tsx"),
+]);
+
 const checks = [
+  [communitySource.includes("SUPPORT_PROMPT_ACTIVE_DAYS = 7") && communitySource.includes("SUPPORT_PROMPT_SNOOZE_DAYS = 60") && communitySource.includes("SUPPORT_PROMPT_THANKS_DAYS = 180") && communityHookSource.includes("withUsageDay"), "Community support prompt must require seven distinct active days and use long local cooldowns"],
+  [supportPromptSource.includes("ستاره در GitHub") && supportPromptSource.includes("حمایت اختیاری") && supportPromptSource.includes('pathname === "/"'), "Support prompt must stay gentle, optional, and dashboard-only"],
+  [githubStatsApiSource.includes("api.github.com/repos/hamedtkd/poolamkoo") && githubStatsApiSource.includes("revalidate: 21_600") && sidebarCommunitySource.includes("RiStarFill"), "GitHub entry must use a cached public star count without requiring a client token"],
+  [privacyPageSource.includes("IndexedDB") && privacyPageSource.includes("Analytics در این نسخه خاموش است") && privacyPageSource.includes("WebRTC") && aboutPageSource.includes("متن‌باز") && guidePageSource.includes("بکاپ") && securityPageSource.includes("Secretهای سرور") && licensePageSource.includes("مجوز MIT"), "Public trust pages must explain local-first privacy, security, licensing, and backup reality"],
+  [desktopSidebar.includes("SidebarCommunity") && mobileNavigation.includes("GithubLink") && settingsSection.includes("OpenSourceCard") && openSourceCardSource.includes("/privacy"), "Open-source, guide, privacy and GitHub surfaces must be reachable from desktop, mobile and settings"],
+  [onboardingSource.includes('href="/privacy"'), "Privacy policy must be reachable before onboarding is complete"],
   [db.includes('this.version(6).stores(storesV6)') && db.includes('recoverySnapshots') && db.includes('appMeta'), "Data safety schema must persist bounded recovery snapshots and device-local backup metadata"],
   [backupSafetySource.includes('BACKUP_STALE_DAYS = 7') && backupSafetySource.includes('BACKUP_SNOOZE_DAYS = 3') && backupReminderSource.includes('سه روز بعد'), "Backup reminders must use the documented stale and snooze policy"],
   [backupSettingsSource.includes('RecoverySnapshots') && recoverySource.includes('recoverySnapshotIdsToPrune') && recoverySource.includes('قبل از بازگردانی نقطه بازیابی') && recoverySource.includes('payload.marketSnapshots = []'), "Settings must expose lean bounded recovery history with a pre-restore safety point"],

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   RiArrowLeftLine, RiArrowRightLine, RiBarChartBoxLine, RiHeart3Line, RiLineChartLine,
   RiScales3Line, RiShieldCheckLine, RiSkipForwardLine, RiWallet3Line,
@@ -28,7 +29,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   return <main className="min-h-svh bg-background p-2 sm:p-5"><div className="mx-auto flex min-h-[calc(100svh-1rem)] max-w-6xl flex-col overflow-hidden rounded-[30px] border bg-background/92 shadow-2xl sm:min-h-[calc(100svh-2.5rem)]">
     <header className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-7">
       <div className="flex items-center gap-3"><BrandLogo className="size-10" /><div className="hidden sm:block"><div className="type-caption text-muted-foreground">راه‌اندازی شخصی</div><div className="type-label">پولم‌کو</div></div></div>
-      <div className="flex items-center gap-2"><span className="hidden text-xs text-muted-foreground sm:inline">مرحله {stepNumber} از {totalSteps}</span><Button type="button" size="sm" variant="ghost" onClick={() => void state.skip()} disabled={state.isSaving}><RiSkipForwardLine /> فعلاً ردش کن</Button></div>
+      <div className="flex items-center gap-1 sm:gap-2"><Link href="/privacy" className="hidden rounded-lg px-2 py-2 text-xs text-muted-foreground transition hover:bg-accent hover:text-foreground sm:inline-flex">حریم خصوصی</Link><span className="hidden text-xs text-muted-foreground lg:inline">مرحله {stepNumber} از {totalSteps}</span><Button type="button" size="sm" variant="ghost" onClick={() => void state.skip()} disabled={state.isSaving}><RiSkipForwardLine /> فعلاً ردش کن</Button></div>
     </header>
     <div className="h-1 bg-muted"><div className="h-full bg-primary transition-all duration-500" style={{ width: `${((state.step + 1) / ONBOARDING_STEPS) * 100}%` }} /></div>
 

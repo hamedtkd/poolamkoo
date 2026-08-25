@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { RiArchiveLine, RiDownloadCloud2Line, RiLockPasswordLine, RiUploadCloud2Line } from "react-icons/ri";
 import { RecoverySnapshots } from "@/components/settings/recovery-snapshots";
@@ -64,7 +65,7 @@ export function BackupSettingsCard() {
       <div className="grid gap-2 sm:grid-cols-2"><Button disabled={busy} onClick={() => void downloadBackup()}><RiDownloadCloud2Line /> {busy ? "در حال انجام..." : "دریافت بکاپ"}</Button><Button disabled={busy} variant="outline" onClick={() => fileRef.current?.click()}><RiUploadCloud2Line /> بازیابی فایل</Button></div>
       <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => setPendingRestore(event.target.files?.[0] ?? null)} />
       <RecoverySnapshots snapshots={backupSafety.snapshots} />
-      <p className="text-xs leading-6 text-muted-foreground">داده اصلی در IndexedDB همین دستگاه است. پاک‌کردن داده مرورگر، خرابی دستگاه یا تعویض دستگاه می‌تواند آن را از بین ببرد؛ بکاپ فایل را بیرون از همین مرورگر نگه دار.</p>
+      <p className="text-xs leading-6 text-muted-foreground">داده اصلی در IndexedDB همین دستگاه است. پاک‌کردن داده مرورگر، خرابی دستگاه یا تعویض دستگاه می‌تواند آن را از بین ببرد؛ بکاپ فایل را بیرون از همین مرورگر نگه دار. <Link href="/data-safety" className="text-primary underline-offset-4 hover:underline">راهنمای ماندگاری داده</Link></p>
       <AlertDialog open={pendingRestore !== null} onOpenChange={(open) => { if (!open) { setPendingRestore(null); if (fileRef.current) fileRef.current.value = ""; } }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>بکاپ جای داده فعلی قرار بگیرد؟</AlertDialogTitle><AlertDialogDescription>قبل از جایگزینی، از وضعیت فعلی یک Recovery Snapshot محلی ساخته می‌شود. اگر فایل رمزدار است، رمز همین فیلد بالا استفاده می‌شود.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction onClick={() => void restoreBackup(pendingRestore ?? undefined)}>بازیابی بکاپ</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     </CardContent>
   </Card>;

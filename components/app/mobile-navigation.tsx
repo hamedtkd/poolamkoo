@@ -4,17 +4,21 @@ import Link from "next/link";
 import {
   RiAddLine,
   RiBarChartBoxLine,
+  RiBookOpenLine,
   RiDashboardLine,
+  RiInformationLine,
   RiLineChartLine,
   RiMenu3Line,
   RiQuestionLine,
   RiSafe2Line,
   RiSearch2Line,
+  RiShieldCheckLine,
   RiSettings3Line,
   RiWallet3Line,
 } from "react-icons/ri";
 import { appNav } from "@/components/app/navigation";
 import { BrandLogo } from "@/components/brand-logo";
+import { GithubLink } from "@/components/community/github-link";
 import { TodayDate } from "@/components/app/today-date";
 import { MarketRefreshButton, type MarketRefreshControls } from "@/components/app/market-refresh-button";
 import { PrivacyToggle } from "@/components/app/privacy-toggle";
@@ -101,6 +105,12 @@ function MobileMenu({ open, onOpenChange, market, onNewMoney, onStartTour, resol
           <CompactUtility label="راهنما"><button type="button" onClick={() => { close(); window.setTimeout(onStartTour, 120); }} className="grid size-11 place-items-center rounded-xl" aria-label="راهنمای سریع"><RiQuestionLine className="size-5" /></button></CompactUtility>
         </div>
         <div className="mt-3"><MenuLink href="/settings" utility icon={<RiSettings3Line />} label="تنظیمات" onClick={close} /></div>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          <MenuLink href="/guide" compact icon={<RiBookOpenLine />} label="راهنما" onClick={close} />
+          <MenuLink href="/about" compact icon={<RiInformationLine />} label="درباره" onClick={close} />
+          <MenuLink href="/privacy" compact icon={<RiShieldCheckLine />} label="داده‌ها" onClick={close} />
+        </div>
+        <GithubLink className="mt-2 w-full" />
       </DrawerContent>
     </Drawer>
   );

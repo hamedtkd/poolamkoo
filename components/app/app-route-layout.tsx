@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { BackupReminder } from "@/components/backup/backup-reminder";
+import { SupportPrompt } from "@/components/community/support-prompt";
 import { AppRuntimeProvider } from "@/components/app/app-runtime";
 import { NewMoneyDialog } from "@/components/new-money-dialog";
 import { Onboarding } from "@/components/onboarding";
@@ -11,6 +12,7 @@ import { useAppData } from "@/hooks/use-app-data";
 import { useAppDateFilter } from "@/hooks/use-app-date-filter";
 import { useBackgroundPush } from "@/hooks/use-background-push";
 import { useBackupSafety } from "@/hooks/use-backup-safety";
+import { useCommunitySupport } from "@/hooks/use-community-support";
 import { useMarket } from "@/hooks/use-market";
 import { useMarketAlerts } from "@/hooks/use-market-alerts";
 
@@ -22,6 +24,7 @@ export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const backgroundPush = useBackgroundPush(data.marketAlerts);
   const dateFilter = useAppDateFilter(data);
   const backupSafety = useBackupSafety(data);
+  const communitySupport = useCommunitySupport(data.ready && data.settings.onboardingComplete);
 
   useEffect(() => {
     const open = () => setNewMoneyOpen(true);
@@ -36,6 +39,7 @@ export function AppRouteLayout({ children }: { children: React.ReactNode }) {
     <AppRuntimeProvider value={{ data, market, dateFilter, backgroundPush, backupSafety }}>
       <AppShell settings={data.settings} market={market} onNewMoney={() => setNewMoneyOpen(true)}>{children}</AppShell>
       <BackupReminder backup={backupSafety} />
+      <SupportPrompt support={communitySupport} />
       <NewMoneyDialog
         open={newMoneyOpen}
         onOpenChange={setNewMoneyOpen}

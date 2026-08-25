@@ -108,6 +108,10 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Product tour and contextual financial help
 - Layout-matched skeletons
 
+## Open source and support
+
+Poolamco is public at https://github.com/hamedtkd/poolamkoo. The app now includes public guide, About, Privacy/Data policy, and data-safety pages plus a cached GitHub star count. Optional development support is available at https://daramet.com/hamedtkd and never unlocks product features.
+
 ## Local-first and privacy
 
 Poolamco stores core product data in IndexedDB for the current browser profile and origin. There is no central Poolamco database containing users' personal financial records by default.

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RiAddLine, RiArrowLeftLine, RiArrowRightLine } from "react-icons/ri";
 import { appNav } from "@/components/app/navigation";
 import { BrandLogo } from "@/components/brand-logo";
+import { SidebarCommunity } from "@/components/community/sidebar-community";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,7 @@ export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMo
           return <SidebarTip key={item.href} label={item.label} enabled={collapsed}>{link}</SidebarTip>;
         })}
       </nav>
+      <SidebarCommunity collapsed={collapsed} />
     </aside>
   );
 }
