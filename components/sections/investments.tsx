@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { RiAddLine, RiFileUploadLine, RiFundsLine, RiHistoryLine, RiLineChartLine, RiShoppingBag3Line } from "react-icons/ri";
 import { AssetDialog } from "@/components/investments/asset-dialog";
+import { MarketAlertDialog } from "@/components/investments/market-alert-dialog";
+import { MarketAlertsCard } from "@/components/investments/market-alerts-card";
 import { MarketChartCard } from "@/components/investments/market-chart-card";
 import { MarketWatchlistCard } from "@/components/investments/market-watchlist-card";
 import { OpeningHoldingDialog } from "@/components/investments/opening-holding-dialog";
@@ -16,8 +18,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useInvestmentPortfolio } from "@/hooks/use-investment-portfolio";
 import { db } from "@/lib/db";
 import { formatMoney, formatPercent } from "@/lib/format";
+import type { MarketAlertTarget } from "@/lib/market/alerts";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
-import type { AppSettings, Asset, AssetKind, IncomeEvent, InvestmentTransaction, MarketInstrument, MarketQuote, MarketSnapshot, MarketWatchItem, PlanItem } from "@/lib/types";
+import type { AppSettings, Asset, AssetKind, IncomeEvent, InvestmentTransaction, MarketAlert, MarketInstrument, MarketQuote, MarketSnapshot, MarketWatchItem, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { HelpLabel } from "@/components/ui/help-label";
@@ -43,13 +46,14 @@ const T = {
 
 type TransactionTarget = { asset: Asset; planItem?: PlanItem } | null;
 
-export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
+export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, marketAlerts, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
   settings: AppSettings;
   assets: Asset[];
   transactions: InvestmentTransaction[];
   quotes: MarketQuote[];
   snapshots: MarketSnapshot[];
   watchlist: MarketWatchItem[];
+  marketAlerts: MarketAlert[];
   planItems: PlanItem[];
   incomes: IncomeEvent[];
   visibleTransactions?: InvestmentTransaction[];
@@ -67,6 +71,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   const [transactionTarget, setTransactionTarget] = useState<TransactionTarget>(null);
   const [archiveTarget, setArchiveTarget] = useState<Asset | null>(null);
   const [deleteTransactionId, setDeleteTransactionId] = useState<number | null>(null);
+  const [alertTarget, setAlertTarget] = useState<MarketAlertTarget | null>(null);
 
   async function archiveAsset() {
     if (!archiveTarget?.id) return;
@@ -94,13 +99,15 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setHistoryImportOpen(true)}><RiFileUploadLine /> ورود سوابق CSV</Button><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div>
     <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl >= 0 ? "primary" : "danger"} label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></div>
     {Math.round(portfolio.targetTotal) !== 100 && <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div>}
-    <MarketWatchlistCard watchlist={watchlist} quotes={quotes} snapshots={visibleSnapshots ?? snapshots} assets={assets} settings={settings} onCreateAsset={createAssetFromMarket} />
+    <MarketWatchlistCard watchlist={watchlist} quotes={quotes} snapshots={visibleSnapshots ?? snapshots} assets={assets} settings={settings} onCreateAsset={createAssetFromMarket} onCreateAlert={setAlertTarget} />
+    <MarketAlertsCard alerts={marketAlerts} quotes={quotes} settings={settings} onCreateAlert={setAlertTarget} />
     <PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} />
     <MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} watchlist={watchlist} />
     <PortfolioTables positions={portfolio.positions} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
     <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />
+    <MarketAlertDialog open={!!alertTarget} target={alertTarget} settings={settings} onOpenChange={(open) => !open && setAlertTarget(null)} />
     <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activeAsset ? (activeAsset.symbol ? portfolio.quoteMap.get(activeAsset.symbol)?.priceToman : undefined) ?? activeAsset.manualPriceToman : undefined} availableQty={activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id)?.qty ?? 0 : 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />
     <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={deleteTransactionId !== null} onOpenChange={(open) => !open && setDeleteTransactionId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.deleteTitle}</AlertDialogTitle><AlertDialogDescription>{T.deleteDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction destructive onClick={() => void deleteTransaction()}>{T.delete}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>

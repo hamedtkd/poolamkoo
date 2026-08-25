@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
-import type { Asset, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
+import type { Asset, MarketAlert, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 
 type MarketResponse = {
   mode?: string;
@@ -13,10 +13,11 @@ type MarketResponse = {
 
 let inFlight: { key: string; promise: Promise<MarketResponse> } | null = null;
 
-function targetIds(assets: Asset[], watchlist: MarketWatchItem[]) {
+function targetIds(assets: Asset[], watchlist: MarketWatchItem[], alerts: MarketAlert[]) {
   const assetIds = assets.filter((asset) => asset.marketSource === "tindex" && asset.marketId).map((asset) => asset.marketId as string);
   const watchIds = watchlist.filter((item) => item.source === "tindex" && item.marketId).map((item) => item.marketId);
-  return [...new Set([...assetIds, ...watchIds])].sort();
+  const alertIds = alerts.filter((item) => item.enabled && item.source === "tindex" && item.marketId).map((item) => item.marketId);
+  return [...new Set([...assetIds, ...watchIds, ...alertIds])].sort();
 }
 
 async function requestMarket(ids: readonly string[]) {
@@ -44,9 +45,9 @@ async function latestCachedQuotes() {
   return [...latest.values()];
 }
 
-export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = []) {
-  const ids = useMemo(() => targetIds(assets, watchlist), [assets, watchlist]);
-  const idsKey = ids.join(",");
+export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [], alerts: MarketAlert[] = []) {
+  const idsKey = useMemo(() => JSON.stringify(targetIds(assets, watchlist, alerts)), [alerts, assets, watchlist]);
+  const ids = useMemo(() => JSON.parse(idsKey) as string[], [idsKey]);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState("loading");

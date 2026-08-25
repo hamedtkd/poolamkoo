@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RiLineChartLine, RiLoader4Line, RiWallet3Line } from "react-icons/ri";
+import { RiLineChartLine, RiLoader4Line, RiNotification3Line, RiWallet3Line } from "react-icons/ri";
 import { FinancialChart } from "@/components/charts/financial-chart";
 import { MarketSourceLabel } from "@/components/market/market-source-label";
 import { Badge } from "@/components/ui/badge";
@@ -10,16 +10,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { useMarketHistory } from "@/hooks/use-market-history";
 import { formatMoney, formatPercent } from "@/lib/format";
+import type { MarketAlertTarget } from "@/lib/market/alerts";
 import { navSignal, type WatchlistRow } from "@/lib/market/watchlist";
 import type { AppSettings, MarketHistoryRange, MarketInstrument, MarketSnapshot } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onCreateAsset }: {
+export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onCreateAsset, onCreateAlert }: {
   row: WatchlistRow | null;
   snapshots: MarketSnapshot[];
   settings: AppSettings;
   onClose: () => void;
   onCreateAsset: (instrument: MarketInstrument) => void;
+  onCreateAlert: (target: MarketAlertTarget) => void;
 }) {
   const [range, setRange] = useState<MarketHistoryRange>("3m");
   const history = useMarketHistory({ symbol: row?.item.symbol ?? "", marketId: row?.item.marketId, snapshots, range });
@@ -41,7 +43,7 @@ export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onC
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <RangePicker value={range} onChange={setRange} />
-          {!row.owned && <Button size="sm" onClick={() => onCreateAsset({ id: row.item.marketId, symbol: row.item.symbol, name: row.item.name, priceToman: quote?.priceToman, changePercent: quote?.changePercent, source: row.item.source })}><RiWallet3Line /> افزودن به سبد</Button>}
+          <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => onCreateAlert({ marketId: row.item.marketId, symbol: row.item.symbol, name: row.item.name, source: row.item.source, priceToman: quote?.priceToman, navToman: quote?.navToman, changePercent: quote?.changePercent })}><RiNotification3Line /> ساخت هشدار</Button>{!row.owned && <Button size="sm" onClick={() => onCreateAsset({ id: row.item.marketId, symbol: row.item.symbol, name: row.item.name, priceToman: quote?.priceToman, changePercent: quote?.changePercent, source: row.item.source })}><RiWallet3Line /> افزودن به سبد</Button>}</div>
         </div>
         {history.loading && !history.candles.length ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed"><div className="text-center"><RiLoader4Line className="mx-auto size-7 animate-spin text-primary" /><div className="mt-2 type-strong">در حال دریافت نمودار…</div></div></div> : history.candles.length >= 2 ? <FinancialChart candles={history.candles} variant="candles" height={360} /> : <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed p-6 text-center"><div><RiLineChartLine className="mx-auto size-7 text-muted-foreground" /><div className="mt-2 type-strong">برای این بازه داده کافی نداریم</div><p className="mt-1 type-caption text-muted-foreground">بازه دیگر را امتحان کن؛ Snapshotهای واقعی دستگاه هم به‌عنوان fallback استفاده می‌شوند.</p></div></div>}
         {history.warning && <p className="rounded-xl bg-muted/45 px-3 py-2 text-[10px] leading-5 text-muted-foreground">{history.warning}</p>}

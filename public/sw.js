@@ -1,4 +1,4 @@
-const CACHE = "poolamco-v23";
+const CACHE = "poolamco-v24";
 const PRECACHE = ["/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamco.svg"];
 
 self.addEventListener("install", (event) => {
@@ -44,4 +44,14 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(fetch(request).catch(async () => (await caches.match(request)) || new Response("Offline", { status: 503 })));
+});
+
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+    const existing = clients.find((client) => new URL(client.url).pathname === "/investments");
+    if (existing) return existing.focus();
+    return self.clients.openWindow("/investments");
+  }));
 });

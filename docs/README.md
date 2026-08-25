@@ -24,6 +24,7 @@
 - بدون داده ساختگی بازار
 
 ## Release history
+- [v0.12.0](./releases/0.12.0.md)
 - [v0.11.0](./releases/0.11.0.md)
 - [v0.10.0](./releases/0.10.0.md)
 - [v0.9.2](./releases/0.9.2.md)

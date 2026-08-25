@@ -71,6 +71,7 @@ Core personal-finance data is stored locally in the user's browser through Index
 - No fake historical market series
 - Market watchlist for tracking TSE stocks/ETFs before adding them to the portfolio
 - NAV and market-price premium/discount for exchange funds whenever Tindex/TSETMC publishes NAV
+- Local price, daily-move, and NAV alerts with duplicate-notification suppression
 
 ### Reports
 

@@ -90,6 +90,13 @@ const [marketWatchToolbarSource, marketWatchDetailSource, marketWatchHelperSourc
   read("lib/market/watchlist.ts"),
 ]);
 
+const [marketAlertsCardSource, marketAlertDialogSource, marketAlertHelperSource, marketAlertHookSource] = await Promise.all([
+  read("components/investments/market-alerts-card.tsx"),
+  read("components/investments/market-alert-dialog.tsx"),
+  read("lib/market/alerts.ts"),
+  read("hooks/use-market-alerts.ts"),
+]);
+
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -176,6 +183,11 @@ const checks = [
   [marketWatchlistSource.includes("MarketWatchlistToolbar") && marketWatchToolbarSource.includes("بیشترین تخفیف NAV") && marketWatchHelperSource.includes('filter === "discount"') && marketWatchHelperSource.includes('sort === "gain"'), "Market watchlist must support local search, portfolio/NAV filters and decision-oriented sorting"],
   [marketWatchlistSource.includes("WatchlistSummary") && marketWatchHelperSource.includes("watchlistSummary") && marketWatchHelperSource.includes("navSignal"), "Market watchlist must summarize movers and expose explicit NAV discount/premium signals"],
   [marketWatchlistSource.includes("MarketWatchDetailDialog") && marketWatchDetailSource.includes("useMarketHistory") && marketWatchDetailSource.includes('"1m", "3m"') && marketWatchDetailSource.includes("افزودن به سبد"), "Watchlist items must open real market history details with a direct portfolio shortcut"],
+
+  [db.includes("marketAlerts") && types.includes("MarketAlertKind") && appDataSource.includes("db.marketAlerts") && appRouteLayout.includes("useMarketAlerts"), "Market alerts must be persisted and evaluated from the application runtime"],
+  [marketAlertHelperSource.includes("marketAlertTransition") && marketAlertHelperSource.includes('return "trigger"') && marketAlertHelperSource.includes('return "rearm"'), "Market alerts must suppress duplicate triggers until the condition clears"],
+  [marketAlertsCardSource.includes("هشدارهای بازار") && marketAlertDialogSource.includes("Notification.requestPermission") && marketAlertHookSource.includes("showNotification") && marketAlertHookSource.includes('mode !== "live"'), "Market alerts must expose opt-in browser notifications without requiring them"],
+  [marketWatchlistSource.includes("RiNotification3Line") && marketWatchDetailSource.includes("ساخت هشدار") && marketAlertDialogSource.includes("nav_discount"), "Watchlist and market details must offer direct price/NAV alert shortcuts"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],

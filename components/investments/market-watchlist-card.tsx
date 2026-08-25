@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { RiAddLine, RiDeleteBin6Line, RiEyeLine, RiLineChartLine, RiWallet3Line } from "react-icons/ri";
+import { RiAddLine, RiDeleteBin6Line, RiEyeLine, RiLineChartLine, RiNotification3Line, RiWallet3Line } from "react-icons/ri";
 import { ExchangeInstrumentPicker } from "@/components/investments/exchange-instrument-picker";
 import { MarketWatchDetailDialog } from "@/components/investments/market-watch-detail-dialog";
 import { MarketWatchlistToolbar } from "@/components/investments/market-watchlist-toolbar";
@@ -13,17 +13,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { db } from "@/lib/db";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { type MarketAlertTarget } from "@/lib/market/alerts";
 import { marketWatchlistRows, navSignal, watchlistSummary, type WatchlistFilter, type WatchlistRow, type WatchlistSort } from "@/lib/market/watchlist";
 import type { AppSettings, Asset, MarketInstrument, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function MarketWatchlistCard({ watchlist, quotes, snapshots, assets, settings, onCreateAsset }: {
+export function MarketWatchlistCard({ watchlist, quotes, snapshots, assets, settings, onCreateAsset, onCreateAlert }: {
   watchlist: MarketWatchItem[];
   quotes: MarketQuote[];
   snapshots: MarketSnapshot[];
   assets: Asset[];
   settings: AppSettings;
   onCreateAsset: (instrument: MarketInstrument) => void;
+  onCreateAlert: (target: MarketAlertTarget) => void;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -55,15 +57,15 @@ export function MarketWatchlistCard({ watchlist, quotes, snapshots, assets, sett
       {watchlist.length ? <>
         <WatchlistSummary total={summary.total} gainers={summary.gainers} discounts={summary.discounts} premiums={summary.premiums} />
         <MarketWatchlistToolbar query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} sort={sort} onSortChange={setSort} />
-        {rows.length ? <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">{rows.map((row) => <WatchCard key={row.item.marketId} row={row} settings={settings} onDetail={() => setDetailId(row.item.marketId)} onCreateAsset={onCreateAsset} />)}</div> : <div className="rounded-2xl border border-dashed p-7 text-center"><div className="type-strong">چیزی با این فیلتر پیدا نشد</div><p className="mt-1 type-caption text-muted-foreground">فیلتر یا عبارت جست‌وجو را تغییر بده.</p></div>}
+        {rows.length ? <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">{rows.map((row) => <WatchCard key={row.item.marketId} row={row} settings={settings} onDetail={() => setDetailId(row.item.marketId)} onCreateAsset={onCreateAsset} onCreateAlert={onCreateAlert} />)}</div> : <div className="rounded-2xl border border-dashed p-7 text-center"><div className="type-strong">چیزی با این فیلتر پیدا نشد</div><p className="mt-1 type-caption text-muted-foreground">فیلتر یا عبارت جست‌وجو را تغییر بده.</p></div>}
       </> : <EmptyWatchlist onAdd={() => setPickerOpen(true)} />}
     </CardContent>
     <Dialog open={pickerOpen} onOpenChange={setPickerOpen}><DialogContent><DialogHeader><DialogTitle>افزودن به دیده‌بان</DialogTitle><DialogDescription>نماد بورسی یا صندوق قابل معامله را جست‌وجو کن. فقط نماد ذخیره می‌شود و هنوز خریدی ثبت نخواهد شد.</DialogDescription></DialogHeader><ExchangeInstrumentPicker settings={settings} onSelect={(instrument) => void add(instrument)} onClear={() => undefined} /></DialogContent></Dialog>
-    <MarketWatchDetailDialog row={detailRow} snapshots={snapshots} settings={settings} onClose={() => setDetailId(null)} onCreateAsset={(instrument) => { setDetailId(null); onCreateAsset(instrument); }} />
+    <MarketWatchDetailDialog row={detailRow} snapshots={snapshots} settings={settings} onClose={() => setDetailId(null)} onCreateAsset={(instrument) => { setDetailId(null); onCreateAsset(instrument); }} onCreateAlert={(target) => { setDetailId(null); onCreateAlert(target); }} />
   </Card>;
 }
 
-function WatchCard({ row, settings, onDetail, onCreateAsset }: { row: WatchlistRow; settings: AppSettings; onDetail: () => void; onCreateAsset: (instrument: MarketInstrument) => void }) {
+function WatchCard({ row, settings, onDetail, onCreateAsset, onCreateAlert }: { row: WatchlistRow; settings: AppSettings; onDetail: () => void; onCreateAsset: (instrument: MarketInstrument) => void; onCreateAlert: (target: MarketAlertTarget) => void }) {
   const signal = navSignal(row.premium);
   const quote = row.quote;
   return <div className="rounded-2xl border bg-muted/15 p-4 transition hover:border-primary/20 hover:bg-muted/25">
@@ -79,7 +81,7 @@ function WatchCard({ row, settings, onDetail, onCreateAsset }: { row: WatchlistR
     </div>
     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
       <MarketSourceLabel source={quote?.source ?? row.item.source} compact className="text-[10px] text-muted-foreground" />
-      <div className="flex gap-1.5"><Button size="sm" variant="outline" onClick={onDetail}><RiLineChartLine /> جزئیات</Button>{!row.owned && <Button size="sm" onClick={() => onCreateAsset({ id: row.item.marketId, symbol: row.item.symbol, name: row.item.name, priceToman: quote?.priceToman, changePercent: quote?.changePercent, source: row.item.source })}><RiWallet3Line /> افزودن به سبد</Button>}</div>
+      <div className="flex flex-wrap gap-1.5"><Button size="sm" variant="outline" onClick={() => onCreateAlert({ marketId: row.item.marketId, symbol: row.item.symbol, name: row.item.name, source: row.item.source, priceToman: quote?.priceToman, navToman: quote?.navToman, changePercent: quote?.changePercent })}><RiNotification3Line /> هشدار</Button><Button size="sm" variant="outline" onClick={onDetail}><RiLineChartLine /> جزئیات</Button>{!row.owned && <Button size="sm" onClick={() => onCreateAsset({ id: row.item.marketId, symbol: row.item.symbol, name: row.item.name, priceToman: quote?.priceToman, changePercent: quote?.changePercent, source: row.item.source })}><RiWallet3Line /> افزودن به سبد</Button>}</div>
     </div>
   </div>;
 }

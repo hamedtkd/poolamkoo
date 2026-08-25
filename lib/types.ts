@@ -7,6 +7,7 @@ export type MarketSymbol = "USD" | "IR_GOLD_18K" | "BTC" | "USDT";
 export type MarketSource = "brsapi" | "tindex" | "local";
 export type MarketHistoryRange = "1m" | "3m";
 export type ExchangeMarketSource = "tindex";
+export type MarketAlertKind = "price_above" | "price_below" | "change_above" | "change_below" | "nav_discount" | "nav_premium";
 export type PlanTargetType = "life" | "fund" | "asset" | "bucket";
 
 export interface AllocationRule {
@@ -119,6 +120,22 @@ export interface MarketWatchItem {
   symbol: string;
   name: string;
   source: ExchangeMarketSource;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MarketAlert {
+  id?: number;
+  marketId: string;
+  symbol: string;
+  name: string;
+  source: ExchangeMarketSource;
+  kind: MarketAlertKind;
+  threshold: number;
+  enabled: boolean;
+  notifyBrowser: boolean;
+  armed: boolean;
+  lastTriggeredAt?: string;
   createdAt: string;
   updatedAt: string;
 }

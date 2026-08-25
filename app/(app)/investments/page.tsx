@@ -24,6 +24,7 @@ export default function InvestmentsPage() {
         quotes={market.quotes}
         snapshots={data.snapshots}
         watchlist={data.watchlist}
+        marketAlerts={data.marketAlerts}
         planItems={data.planItems}
         incomes={data.incomes}
         visibleTransactions={filtered.transactions}

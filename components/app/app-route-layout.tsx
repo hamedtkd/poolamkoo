@@ -9,11 +9,13 @@ import { FullAppSkeleton } from "@/components/skeletons/page-skeleton";
 import { useAppData } from "@/hooks/use-app-data";
 import { useAppDateFilter } from "@/hooks/use-app-date-filter";
 import { useMarket } from "@/hooks/use-market";
+import { useMarketAlerts } from "@/hooks/use-market-alerts";
 
 export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const [newMoneyOpen, setNewMoneyOpen] = useState(false);
   const data = useAppData();
-  const market = useMarket(data.assets, data.watchlist);
+  const market = useMarket(data.assets, data.watchlist, data.marketAlerts);
+  useMarketAlerts(data.marketAlerts, market.quotes, market.mode, data.settings.displayUnit);
   const dateFilter = useAppDateFilter(data);
 
   useEffect(() => {
