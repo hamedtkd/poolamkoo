@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useInvestmentPortfolio } from "@/hooks/use-investment-portfolio";
 import { db } from "@/lib/db";
+import { createRecoverySnapshot } from "@/lib/recovery";
+import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, formatPercent } from "@/lib/format";
 import type { MarketAlertTarget } from "@/lib/market/alerts";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
@@ -26,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { HelpLabel } from "@/components/ui/help-label";
 import { KpiIcon } from "@/components/ui/kpi-icon";
+import { toast } from "@/components/ui/toast";
 
 const T = {
   eyebrow: "\u0633\u0628\u062f \u0631\u0634\u062f",
@@ -77,16 +80,27 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
 
   async function archiveAsset() {
     if (!archiveTarget?.id) return;
-    await db.assets.update(archiveTarget.id, { archived: true, updatedAt: new Date().toISOString() });
-    setArchiveTarget(null);
+    try {
+      await createRecoverySnapshot("قبل از آرشیو دارایی");
+      await db.assets.update(archiveTarget.id, { archived: true, updatedAt: new Date().toISOString() });
+      setArchiveTarget(null);
+    } catch (error) {
+      toast({ tone: "error", title: "آرشیو دارایی انجام نشد", description: toPersianUiError(error, "دوباره تلاش کن.") });
+    }
   }
 
   async function deleteTransaction() {
     if (!deleteTransactionId) return;
-    const tx = await db.transactions.get(deleteTransactionId);
-    await db.transactions.delete(deleteTransactionId);
-    if (tx?.planItemId) await syncInvestmentPlanItem(tx.planItemId);
-    setDeleteTransactionId(null);
+    try {
+      await createRecoverySnapshot("قبل از حذف تراکنش سرمایه‌گذاری");
+      const tx = await db.transactions.get(deleteTransactionId);
+      await db.transactions.delete(deleteTransactionId);
+      if (tx?.planItemId) await syncInvestmentPlanItem(tx.planItemId);
+      toast({ tone: "success", title: "تراکنش حذف شد", description: "یک نقطه بازیابی محلی از وضعیت قبل حذف نگه داشتیم." });
+      setDeleteTransactionId(null);
+    } catch (error) {
+      toast({ tone: "error", title: "حذف تراکنش انجام نشد", description: toPersianUiError(error, "دوباره تلاش کن.") });
+    }
   }
 
   const activeAsset = transactionTarget?.asset ?? null;

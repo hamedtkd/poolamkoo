@@ -108,7 +108,25 @@ const [backgroundPushHookSource, marketPushStatusSource, pushSubscriptionApiSour
   read("vercel.json"),
 ]);
 
+const [backupSettingsSource, backupReminderSource, backupSafetySource, recoverySource, toastSource, providersSource] = await Promise.all([
+  read("components/settings/backup-settings-card.tsx"),
+  read("components/backup/backup-reminder.tsx"),
+  read("lib/backup-safety.ts"),
+  read("lib/recovery.ts"),
+  read("components/ui/toast.tsx"),
+  read("components/providers.tsx"),
+]);
+
+const [deviceTransferHookSource, deviceTransferCardSource, deviceTransferHelperSource, backupSafetyHookSource] = await Promise.all([
+  read("hooks/use-device-transfer.ts"), read("components/settings/device-transfer-card.tsx"),
+  read("lib/device-transfer.ts"), read("hooks/use-backup-safety.ts"),
+]);
+
 const checks = [
+  [db.includes('this.version(6).stores(storesV6)') && db.includes('recoverySnapshots') && db.includes('appMeta'), "Data safety schema must persist bounded recovery snapshots and device-local backup metadata"],
+  [backupSafetySource.includes('BACKUP_STALE_DAYS = 7') && backupSafetySource.includes('BACKUP_SNOOZE_DAYS = 3') && backupReminderSource.includes('سه روز بعد'), "Backup reminders must use the documented stale and snooze policy"],
+  [backupSettingsSource.includes('RecoverySnapshots') && recoverySource.includes('recoverySnapshotIdsToPrune') && recoverySource.includes('قبل از بازگردانی نقطه بازیابی') && recoverySource.includes('payload.marketSnapshots = []'), "Settings must expose lean bounded recovery history with a pre-restore safety point"],
+  [toastSource.includes('poolamco:toast') && providersSource.includes('<Toaster />') && backupSettingsSource.includes('toast({ tone: "error"'), "Backup success and failure must use the shared toast surface"],
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
   [dialog.includes("sm:place-items-center") && !dialog.includes("sm:left-1/2"), "Dialog desktop layout must use RTL-safe grid centering"],
@@ -206,6 +224,11 @@ const checks = [
   [marketAlertHelperSource.includes("marketAlertTransition") && marketAlertHelperSource.includes('return "trigger"') && marketAlertHelperSource.includes('return "rearm"'), "Market alerts must suppress duplicate triggers until the condition clears"],
   [marketAlertsCardSource.includes("هشدارهای بازار") && marketAlertDialogSource.includes("Notification.requestPermission") && marketAlertHookSource.includes("showNotification") && marketAlertHookSource.includes('mode !== "live"'), "Market alerts must expose opt-in browser notifications without requiring them"],
   [marketWatchlistSource.includes("RiNotification3Line") && marketWatchDetailSource.includes("ساخت هشدار") && marketAlertDialogSource.includes("nav_discount"), "Watchlist and market details must offer direct price/NAV alert shortcuts"],
+
+  [deviceTransferCardSource.includes("انتقال بین دستگاه‌ها") && deviceTransferCardSource.includes("بدون حساب و فضای ابری پولم‌کو") && deviceTransferHookSource.includes("RTCPeerConnection"), "Device transfer must stay direct, local-first and account-free"],
+  [deviceTransferHookSource.includes("createBackupEnvelope") && deviceTransferHookSource.includes("createRecoverySnapshot") && deviceTransferHookSource.includes("importDatabaseObject") && deviceTransferHelperSource.includes("validateTransferData"), "Device transfer must encrypt payloads, preview valid data and create recovery before replacement"],
+  [deviceTransferHookSource.includes("stage: \"imported\"") && deviceTransferHookSource.includes("sendChannelMessages") && deviceTransferHelperSource.includes("splitTransferText"), "Device transfer must provide chunked progress and explicit receiver acknowledgement"],
+  [backupSafetyHookSource.includes("[metaQuery]") && !backupSafetyHookSource.includes("const meta = metaQuery ?? []"), "Backup safety memoization must not recreate a fallback dependency on every render"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],

@@ -13,6 +13,8 @@ import type {
   MarketSnapshot,
   MarketWatchItem,
   PlanItem,
+  RecoverySnapshot,
+  AppMeta,
 } from "@/lib/types";
 
 const storesV2 = {
@@ -35,6 +37,12 @@ const storesV4 = {
 const stores = {
   ...storesV4,
   marketAlerts: "++id, marketId, symbol, kind, enabled, updatedAt",
+};
+
+const storesV6 = {
+  ...stores,
+  recoverySnapshots: "++id, createdAt, reason",
+  appMeta: "&key, updatedAt",
 };
 
 const storesV1 = {
@@ -74,6 +82,8 @@ export class PoolYarDB extends Dexie {
   marketSnapshots!: EntityTable<MarketSnapshot, "id">;
   marketWatchlist!: EntityTable<MarketWatchItem, "id">;
   marketAlerts!: EntityTable<MarketAlert, "id">;
+  recoverySnapshots!: EntityTable<RecoverySnapshot, "id">;
+  appMeta!: EntityTable<AppMeta, "key">;
   planItems!: EntityTable<PlanItem, "id">;
   settings!: EntityTable<AppSettings, "id">;
 
@@ -86,6 +96,7 @@ export class PoolYarDB extends Dexie {
     });
     this.version(4).stores(storesV4);
     this.version(5).stores(stores);
+    this.version(6).stores(storesV6);
   }
 }
 
@@ -200,16 +211,16 @@ export async function exportDatabaseObject() {
   };
 }
 
+const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
 export async function importDatabaseObject(data: Record<string, unknown>) {
   const required = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "settings"] as const;
   for (const name of required) if (!Array.isArray(data[name])) throw new Error(`بکاپ ناقص است: بخش ${name} پیدا نشد.`);
   const settings = data.settings as unknown[];
   if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) throw new Error("بکاپ تنظیمات معتبر پولم‌کو را ندارد.");
 
-  const allowed = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
   await db.transaction("rw", db.tables, async () => {
-    for (const table of db.tables) await table.clear();
-    for (const name of allowed) {
+    for (const name of backupTableNames) await db.table(name).clear();
+    for (const name of backupTableNames) {
       const rows = data[name];
       if (Array.isArray(rows) && rows.length) await db.table(name).bulkAdd(rows);
     }

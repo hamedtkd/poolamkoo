@@ -72,7 +72,7 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Market watchlist for tracking TSE stocks/ETFs before adding them to the portfolio
 - NAV and market-price premium/discount for exchange funds whenever Tindex/TSETMC publishes NAV
 - Local price, daily-move, and NAV alerts with duplicate-notification suppression
-- Optional Web Push delivery while the installed PWA is fully closed
+- Local market alerts; the Background Push experiment remains paused in the backlog by default
 
 ### Reports
 
@@ -83,6 +83,18 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Target versus actual portfolio allocation
 - Charts only when real local data exists
 - Privacy mode for hiding financial values on screen
+
+### Data durability and backups
+
+- Visible backup health with stale/never-backed-up states
+- Friendly reminders after meaningful use and again after seven days
+- AES-GCM encrypted backup download with shared toast/error handling
+- Up to five local recovery snapshots for accidental destructive changes
+- Daily recovery checkpoints plus pre-destructive snapshots for key financial deletes/restores
+- Browser persistence status without pretending browser storage is a permanent backup
+- Device-local backup metadata and recovery history excluded from exported financial payloads
+- Direct encrypted WebRTC device transfer with copy/share pairing codes and preview before import
+- Recovery snapshot before destination replacement, with encrypted backup files kept as the universal fallback
 
 ### User experience
 
@@ -198,3 +210,7 @@ Please avoid publishing sensitive security details or real personal financial da
 ## License
 
 See [LICENSE](./LICENSE).
+
+### Direct device transfer
+
+Settings can now move local data directly to another device without an account or financial-data backend. Pairing uses copy/share codes, the payload is additionally protected with a one-time AES-GCM PIN, the receiver previews record counts before import, and a recovery snapshot is created before destination replacement. See [docs/device-transfer.md](./docs/device-transfer.md).

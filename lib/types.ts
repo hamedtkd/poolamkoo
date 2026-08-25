@@ -168,6 +168,20 @@ export interface AppSettings {
   updatedAt: string;
 }
 
+export interface RecoverySnapshot {
+  id?: number;
+  reason: string;
+  payload: string;
+  itemCount: number;
+  createdAt: string;
+}
+
+export interface AppMeta {
+  key: string;
+  value: string;
+  updatedAt: string;
+}
+
 export interface BackupEnvelope {
   format: "poolyar-backup";
   version: 1;

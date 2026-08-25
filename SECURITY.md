@@ -10,7 +10,9 @@ PoolamCo is local-first. Personal finance records are stored in the browser's In
 
 ## Backups
 
-Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted by PoolamCo.
+Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted by PoolamCo. Successful-backup timestamps and reminder snooze state are device-local metadata and are intentionally excluded from exported financial payloads.
+
+Before importing a backup, PoolamCo creates a local recovery snapshot of the current database. Up to five recent recovery snapshots are kept in IndexedDB. These snapshots are for accidental local changes only and are not a substitute for an external backup because clearing Site Data removes them too.
 
 ## Browser storage
 
@@ -23,3 +25,9 @@ Local market notifications are opt-in and require browser permission. Background
 ## Reporting a problem
 
 If you extend this project for production, review CSP, hosting headers, dependency advisories, and the selected market-data provider before deployment.
+
+## Device transfer
+
+Direct device transfer uses a browser WebRTC DataChannel and does not require a Poolamco signaling/data server. Pairing descriptions are moved by the user through copy/share. The financial payload is additionally encrypted with AES-GCM using a one-time transfer PIN before it is chunked onto the WebRTC channel. The receiver verifies a SHA-256 digest, previews the decoded payload, and must explicitly confirm replacement. A local recovery snapshot is created before import.
+
+For sensitive environments, keep both devices on a trusted local network and do not share pairing codes or the one-time PIN with third parties. Encrypted backup-file transfer remains the fallback when direct WebRTC cannot connect.

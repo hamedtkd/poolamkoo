@@ -4,6 +4,7 @@ import { AllocationRuleCard } from "@/components/settings/allocation-rule-card";
 import { AppearanceSettingsCard } from "@/components/settings/appearance-settings-card";
 import { BackupSettingsCard } from "@/components/settings/backup-settings-card";
 import { FinancialSafetyCard } from "@/components/settings/financial-safety-card";
+import { DeviceTransferCard } from "@/components/settings/device-transfer-card";
 import { InstallPwaCard } from "@/components/settings/install-pwa-card";
 import type { AllocationRule, AppSettings } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export function SettingsSection({ settings, rule }: { settings: AppSettings; rul
         <AllocationRuleCard rule={rule} />
         <FinancialSafetyCard settings={settings} />
         <BackupSettingsCard />
+        <DeviceTransferCard />
       </div>
       <InstallPwaCard />
     </div>

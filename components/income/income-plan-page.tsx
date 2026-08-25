@@ -11,9 +11,11 @@ import { PlanProgressCard } from "@/components/income/plan-progress-card";
 import { QuickPlanDialog } from "@/components/income/quick-plan-dialog";
 import { TransactionDialog } from "@/components/investments/transaction-dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIncomePlan } from "@/hooks/use-income-plan";
 import { usePlanItemActions } from "@/hooks/use-plan-item-actions";
+import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, toPersianDate } from "@/lib/format";
 import { planRemaining } from "@/lib/plan-execution";
 import type { AppSettings, Asset, BucketKey, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
@@ -111,7 +113,7 @@ export function IncomePlanPage({
       <PlanDeleteDialog
         item={deleteItem}
         onOpenChange={(open) => { if (!open) setDeleteItem(null); }}
-        onConfirm={async () => { if (deleteItem) await actions.deletePlanItem(deleteItem); setDeleteItem(null); }}
+        onConfirm={async () => { try { if (deleteItem) await actions.deletePlanItem(deleteItem); toast({ tone: "success", title: "کارت برنامه حذف شد", description: "قبل از حذف یک نقطه بازیابی محلی ساخته شد." }); } catch (error) { toast({ tone: "error", title: "حذف کارت انجام نشد", description: toPersianUiError(error, "دوباره تلاش کن.") }); } finally { setDeleteItem(null); } }}
       />
     </div>
   );

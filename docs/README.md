@@ -30,7 +30,13 @@
 - [Roadmap](./ROADMAP.md)
 - [Background Push backlog](./backlog/background-push.md)
 
+## Data safety
+- [مدل ماندگاری داده و Backup](./data-safety.md)
+
 ## Release history
+- [v0.14.0](./releases/0.14.0.md)
+- [v0.15.0](./releases/0.15.0.md)
+- [v0.15.1](./releases/0.15.1.md)
 - [v0.13.1](./releases/0.13.1.md)
 - [v0.13.0](./releases/0.13.0.md)
 - [v0.12.0](./releases/0.12.0.md)

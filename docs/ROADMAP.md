@@ -9,23 +9,23 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Require no Redis/VAPID secrets for normal deployments.
 - Keep the implementation and tests in the repository backlog.
 
-## v0.14 — Data safety and durable backups
+## v0.14 — Data safety and durable backups ✅
 
-- Backup health/status in Settings: last backup time, age, and clear risk state.
-- Friendly backup reminders after meaningful usage and when the last backup becomes old.
-- One-click encrypted JSON backup download with complete toast/error handling.
-- Never claim browser storage is a permanent backup.
-- Explore user-approved persistent save destinations where browser APIs support them; otherwise use reminders plus explicit downloads.
-- Add local recovery snapshots and a bounded recovery history before destructive operations.
+- Backup health/status, 7-day stale policy, and 3-day snooze.
+- Encrypted reminder flow plus shared Toast/Error Handling.
+- Daily bounded local Recovery Snapshots and pre-destructive recovery points.
+- Browser persistence status with explicit warnings that local recovery is not a permanent backup.
+- Device-only backup metadata kept outside exported financial payloads.
 
-## v0.15 — Simple device-to-device transfer
+## v0.15 — Simple device-to-device transfer ✅
 
-- Direct encrypted WebRTC transfer inspired by Saatyar, but with a shorter Poolamco flow.
-- Sender: "انتقال به دستگاه جدید" → QR/pairing code.
-- Receiver: scan/paste → preview → explicit import.
-- No central storage of financial data.
-- Version/schema validation, transfer progress, acknowledgement, timeout/retry, and duplicate-safe import.
-- Keep encrypted backup file transfer as a universal fallback when WebRTC cannot connect.
+- Direct encrypted WebRTC transfer inspired by Saatyar, with a shorter copy/share pairing flow.
+- Sender: «انتقال به دستگاه جدید» → one-time PIN + pairing code.
+- Receiver: paste/share code → return answer → preview → explicit import.
+- No central storage of financial data and no required signaling backend.
+- Version/schema validation, chunk progress, SHA-256 integrity, acknowledgement, timeout/retry, and duplicate-safe replace import.
+- Encrypted backup file transfer remains the universal fallback when WebRTC cannot connect.
+- QR scanning can be reconsidered later only if it materially simplifies the flow without adding fragile browser dependencies.
 
 ## v0.16 — Open-source product surface
 

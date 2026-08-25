@@ -71,7 +71,7 @@
 - دیده‌بان بازار برای دنبال‌کردن سهام و ETFها قبل از خرید، با افزودن مستقیم نماد به سبد
 - نمایش NAV و حباب قیمت نسبت به NAV برای صندوق‌هایی که Tindex/TSETMC این مقدار را منتشر می‌کند
 - هشدار قیمت، رشد/افت روزانه و فاصله از NAV با جلوگیری از اعلان تکراری
-- Web Push اختیاری برای دریافت هشدار حتی وقتی PWA کاملاً بسته است
+- هشدارهای محلی بازار؛ Background Push آزمایشی فعلاً در Backlog و در Build عادی غیرفعال است
 - عدم تولید داده تاریخی مصنوعی
 
 ### گزارش‌ها
@@ -83,6 +83,18 @@
 - سهم فعلی در برابر سهم هدف
 - نمودارهای مبتنی بر داده واقعی محلی
 - حالت Privacy برای مخفی کردن اعداد مالی
+
+### ماندگاری داده و بکاپ
+
+- وضعیت آخرین بکاپ و هشدار واضح برای بکاپ قدیمی یا انجام‌نشده
+- یادآوری دوستانه بعد از استفاده معنادار و تکرار پس از ۷ روز
+- دانلود بکاپ رمزنگاری‌شده AES-GCM با Toast و Error Handling کامل
+- حداکثر ۵ Recovery Snapshot محلی برای برگشت از حذف یا Restore اشتباه
+- Snapshot خودکار روزانه و Snapshot قبل از عملیات تخریبی مهم
+- نمایش وضعیت Persistent/Best-effort مرورگر با تأکید اینکه Browser Storage بکاپ دائمی نیست
+- متادیتای بکاپ و Recovery history فقط روی همان دستگاه باقی می‌مانند و وارد فایل خروجی نمی‌شوند
+- انتقال مستقیم رمزنگاری‌شده بین دو دستگاه با WebRTC، کد Pairing قابل Copy/Share و Preview قبل از Import
+- ساخت Recovery Snapshot قبل از جایگزینی داده دستگاه مقصد و Backup فایل رمزدار به‌عنوان fallback عمومی
 
 ### تجربه کاربری
 
@@ -172,7 +184,7 @@ http://localhost:3000
 
 هشدارهای محلی بازار بدون Backend کار می‌کنند و هنگام اجرای اپ با Refresh قیمت‌ها بررسی می‌شوند. آزمایش Background Web Push نسخه v0.13.0 از v0.13.1 **عمداً در Backlog قرار گرفته و در Build عادی غیرفعال است** تا پروژه رایگان، Local-First و بدون Redis/Cron اجباری باقی بماند. برای Deploy معمول هیچ VAPID key، Upstash یا `CRON_SECRET` لازم نیست.
 
-کد آزمایشی حذف نشده است؛ جزئیات فنی و روش فعال‌سازی فقط برای توسعه آینده در [docs/backlog/background-push.md](./docs/backlog/background-push.md) نگهداری می‌شود. نقشه راه Backup، انتقال دستگاه، Open Source/Support، Motion و Analytics رایگان نیز در [docs/ROADMAP.md](./docs/ROADMAP.md) ثبت شده است.
+کد آزمایشی حذف نشده است؛ جزئیات فنی و روش فعال‌سازی فقط برای توسعه آینده در [docs/backlog/background-push.md](./docs/backlog/background-push.md) نگهداری می‌شود. نقشه راه Open Source/Support، Motion و Analytics رایگان نیز در [docs/ROADMAP.md](./docs/ROADMAP.md) ثبت شده است.
 
 ## Quality Gate
 
@@ -202,3 +214,7 @@ npm run build
 ## مجوز
 
 این پروژه تحت شرایط فایل [LICENSE](./LICENSE) منتشر می‌شود.
+
+### انتقال مستقیم دستگاه
+
+در Settings می‌توان داده را بدون حساب کاربری و بدون Backend مالی مستقیماً به دستگاه دیگر منتقل کرد. Pairing با کد قابل Copy/Share انجام می‌شود، Payload با رمز یک‌بارمصرف AES-GCM رمزنگاری می‌شود، گیرنده قبل از Import پیش‌نمایش رکوردها را می‌بیند و پیش از جایگزینی داده یک Recovery Snapshot ساخته می‌شود. برای جزئیات: [docs/device-transfer.md](./docs/device-transfer.md).

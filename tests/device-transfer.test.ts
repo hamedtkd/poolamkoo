@@ -1,0 +1,30 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createTransferPin, decodeTransferSignal, encodeTransferSignal, splitTransferText, validateTransferData } from "../lib/device-transfer.ts";
+
+test("device transfer pairing codes round-trip and expire", () => {
+  const createdAt = new Date("2026-08-25T12:00:00.000Z").toISOString();
+  const code = encodeTransferSignal({ format: "poolamco-device-signal", version: 1, role: "offer", createdAt, description: { type: "offer", sdp: "v=0\\r\\n" } });
+  const decoded = decodeTransferSignal(code, "offer", new Date("2026-08-25T12:10:00.000Z").getTime());
+  assert.equal(decoded.description.sdp, "v=0\\r\\n");
+  assert.throws(() => decodeTransferSignal(code, "offer", new Date("2026-08-25T12:30:01.000Z").getTime()), /منقضی/);
+});
+
+test("device transfer PIN is short, readable and random enough for a one-time session", () => {
+  const pin = createTransferPin();
+  assert.match(pin, /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
+});
+
+test("transfer payload preview validates required Poolamco data", () => {
+  const preview = validateTransferData({
+    allocationRules: [{}], incomes: [{}, {}], allocations: [], funds: [{}], assets: [{}, {}], transactions: [{}, {}, {}],
+    settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{}], marketAlerts: [{}, {}],
+  });
+  assert.deepEqual(preview, { incomes: 2, funds: 1, assets: 2, transactions: 3, planItems: 1, watchlist: 1, alerts: 2, total: 12 });
+});
+
+test("large transfer payload is split into bounded chunks", () => {
+  const chunks = splitTransferText("x".repeat(50_000), 10_000);
+  assert.equal(chunks.length, 5);
+  assert.ok(chunks.every((chunk) => chunk.length <= 10_000));
+});

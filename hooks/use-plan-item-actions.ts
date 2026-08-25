@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { db } from "@/lib/db";
+import { createRecoverySnapshot } from "@/lib/recovery";
 import { syncIncomeAllocationsFromPlan } from "@/lib/plan-execution";
 import type { Asset, GoalFund, IncomeEvent, PlanItem } from "@/lib/types";
 import type { QuickPlanFormValues } from "@/lib/validation";
@@ -77,6 +78,7 @@ export function usePlanItemActions({
 
   const deletePlanItem = useCallback(async (item: PlanItem) => {
     if (!item.id || item.executedToman > 0) return;
+    await createRecoverySnapshot("قبل از حذف کارت برنامه");
     await db.transaction("rw", db.planItems, db.transactions, async () => {
       const linked = await db.transactions.where("planItemId").equals(item.id!).toArray();
       for (const transaction of linked) {

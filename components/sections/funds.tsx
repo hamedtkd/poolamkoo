@@ -12,10 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { db } from "@/lib/db";
+import { createRecoverySnapshot } from "@/lib/recovery";
+import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, formatPercent, toPersianDate } from "@/lib/format";
 import type { AppSettings, GoalFund } from "@/lib/types";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { KpiIcon } from "@/components/ui/kpi-icon";
+import { toast } from "@/components/ui/toast";
 
 export function FundsSection({ funds, settings }: { funds: GoalFund[]; settings: AppSettings }) {
   const [editorOpen, setEditorOpen] = useState(false);
@@ -27,8 +30,15 @@ export function FundsSection({ funds, settings }: { funds: GoalFund[]; settings:
   const overall = totalTarget ? totalCurrent / totalTarget * 100 : 0;
 
   async function remove() {
-    if (deleteFund?.id) await db.funds.delete(deleteFund.id);
-    setDeleteFund(null);
+    if (!deleteFund?.id) return;
+    try {
+      await createRecoverySnapshot("قبل از حذف صندوق");
+      await db.funds.delete(deleteFund.id);
+      toast({ tone: "success", title: "صندوق حذف شد", description: "یک نقطه بازیابی محلی از قبل حذف نگه داشتیم." });
+      setDeleteFund(null);
+    } catch (error) {
+      toast({ tone: "error", title: "حذف صندوق انجام نشد", description: toPersianUiError(error, "دوباره تلاش کن.") });
+    }
   }
 
   const columns: ColumnDef<DataTableFeatures, GoalFund, unknown>[] = [
