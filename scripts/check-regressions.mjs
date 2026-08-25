@@ -84,6 +84,12 @@ const [marketWatchlistSource, navSource, appDataSource, investmentsPageSource] =
   read("app/(app)/investments/page.tsx"),
 ]);
 
+const [marketWatchToolbarSource, marketWatchDetailSource, marketWatchHelperSource] = await Promise.all([
+  read("components/investments/market-watchlist-toolbar.tsx"),
+  read("components/investments/market-watch-detail-dialog.tsx"),
+  read("lib/market/watchlist.ts"),
+]);
+
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -165,8 +171,11 @@ const checks = [
   [marketChartCardSource.includes('<RangePicker value={range} onChange={setRange} />\n      </div>\n      {candles.length >= 2 ? <>'), "Market history range picker must stay visible in loading and empty states"],
   [selectSource.includes("collisionPadding={12}") && selectSource.includes("min(16rem, calc(var(--radix-select-content-available-height) - 3.5rem))") && selectSource.includes("overflow-y-auto"), "Shared Select dropdowns must stay within the viewport and scroll when options are long"],
   [db.includes("marketWatchlist") && appDataSource.includes("db.marketWatchlist") && appRouteLayout.includes("data.watchlist") && investmentsPageSource.includes("watchlist={data.watchlist}"), "Market watchlist must be persisted and wired through the application runtime"],
-  [marketWatchlistSource.includes("دیده‌بان بازار") && marketWatchlistSource.includes("افزودن به سبد") && marketWatchlistSource.includes("premiumToNavPercent"), "Investments must expose a pre-purchase market watchlist with a direct portfolio shortcut"],
+  [marketWatchlistSource.includes("دیده‌بان بازار") && marketWatchlistSource.includes("افزودن به سبد") && marketWatchlistSource.includes("marketWatchlistRows"), "Investments must expose a pre-purchase market watchlist with a direct portfolio shortcut"],
   [types.includes("navToman?: number") && tindexProviderSource.includes("nav?:") && tindexProviderSource.includes("navToman") && navSource.includes("premiumToNavPercent"), "Exchange fund NAV must be normalized and exposed without fabricating missing values"],
+  [marketWatchlistSource.includes("MarketWatchlistToolbar") && marketWatchToolbarSource.includes("بیشترین تخفیف NAV") && marketWatchHelperSource.includes('filter === "discount"') && marketWatchHelperSource.includes('sort === "gain"'), "Market watchlist must support local search, portfolio/NAV filters and decision-oriented sorting"],
+  [marketWatchlistSource.includes("WatchlistSummary") && marketWatchHelperSource.includes("watchlistSummary") && marketWatchHelperSource.includes("navSignal"), "Market watchlist must summarize movers and expose explicit NAV discount/premium signals"],
+  [marketWatchlistSource.includes("MarketWatchDetailDialog") && marketWatchDetailSource.includes("useMarketHistory") && marketWatchDetailSource.includes('"1m", "3m"') && marketWatchDetailSource.includes("افزودن به سبد"), "Watchlist items must open real market history details with a direct portfolio shortcut"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],
