@@ -69,6 +69,8 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Real 1-month and 3-month Tindex history for USD, 18K gold, and linked TSE stocks/ETFs
 - Line history for public indicators and real exchange candlesticks, with local snapshots as fallback
 - No fake historical market series
+- Market watchlist for tracking TSE stocks/ETFs before adding them to the portfolio
+- NAV and market-price premium/discount for exchange funds whenever Tindex/TSETMC publishes NAV
 
 ### Reports
 

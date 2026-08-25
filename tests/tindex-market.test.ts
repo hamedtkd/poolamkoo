@@ -19,13 +19,14 @@ test("Tindex overview produces a portfolio quote in toman", () => {
     success: true,
     data: {
       symbol: { slug: "عیار", ticker: "عیار", name: "صندوق طلای عیار مفید" },
-      quote: { last_price: 611_990, last_change: 22_310, last_change_percent: 3.78, updated_at: "2026-08-24T12:30:00+03:30" },
+      quote: { last_price: 611_990, last_change: 22_310, last_change_percent: 3.78, nav: 588_000, updated_at: "2026-08-24T12:30:00+03:30" },
     },
   });
   assert.ok(quote);
   assert.equal(quote.priceToman, 61_199);
   assert.equal(quote.changeValueToman, 2_231);
   assert.equal(quote.changePercent, 3.78);
+  assert.equal(quote.navToman, 58_800);
   assert.equal(quote.source, "tindex");
 });
 

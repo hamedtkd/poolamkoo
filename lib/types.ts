@@ -96,6 +96,7 @@ export interface MarketQuote {
   symbol: string;
   name: string;
   priceToman: number;
+  navToman?: number;
   changePercent: number;
   changeValueToman: number;
   asOf: string;
@@ -110,6 +111,16 @@ export interface MarketInstrument {
   priceToman?: number;
   changePercent?: number;
   source: ExchangeMarketSource;
+}
+
+export interface MarketWatchItem {
+  id?: number;
+  marketId: string;
+  symbol: string;
+  name: string;
+  source: ExchangeMarketSource;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MarketSnapshot extends MarketQuote {

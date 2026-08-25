@@ -13,7 +13,7 @@ import { useMarket } from "@/hooks/use-market";
 export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const [newMoneyOpen, setNewMoneyOpen] = useState(false);
   const data = useAppData();
-  const market = useMarket(data.assets);
+  const market = useMarket(data.assets, data.watchlist);
   const dateFilter = useAppDateFilter(data);
 
   useEffect(() => {

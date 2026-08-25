@@ -15,7 +15,7 @@ type TindexOverviewPayload = {
     symbol?: { slug?: string; ticker?: string; name?: string };
     quote?: {
       last_price?: number | string | null; last_change?: number | string | null;
-      last_change_percent?: number | string | null; updated_at?: string | null;
+      last_change_percent?: number | string | null; nav?: number | string | null; updated_at?: string | null;
     };
   };
   message?: string; message_en?: string;
@@ -113,8 +113,10 @@ export function parseTindexOverviewPayload(payload: TindexOverviewPayload): Mark
   if (!symbol?.ticker || !quote) return null;
   const priceToman = rialToToman(quote.last_price);
   if (!(priceToman > 0)) return null;
+  const navToman = rialToToman(quote.nav);
   return {
     symbol: symbol.ticker, name: symbol.name || symbol.ticker, priceToman,
+    navToman: navToman > 0 ? navToman : undefined,
     changePercent: numeric(quote.last_change_percent), changeValueToman: rialToToman(quote.last_change),
     asOf: quote.updated_at || new Date().toISOString(), source: "tindex",
   };

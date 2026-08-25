@@ -10,10 +10,11 @@ import type {
   IncomeEvent,
   InvestmentTransaction,
   MarketSnapshot,
+  MarketWatchItem,
   PlanItem,
 } from "@/lib/types";
 
-const stores = {
+const storesV2 = {
   allocationRules: "++id, preset, updatedAt",
   incomes: "++id, happenedAt, createdAt",
   allocations: "++id, incomeId, bucket, createdAt",
@@ -23,6 +24,11 @@ const stores = {
   marketSnapshots: "++id, symbol, capturedAt",
   planItems: "++id, incomeId, bucket, targetType, targetId, updatedAt",
   settings: "id, updatedAt",
+};
+
+const stores = {
+  ...storesV2,
+  marketWatchlist: "++id, &marketId, symbol, updatedAt",
 };
 
 const storesV1 = {
@@ -60,16 +66,18 @@ export class PoolYarDB extends Dexie {
   assets!: EntityTable<Asset, "id">;
   transactions!: EntityTable<InvestmentTransaction, "id">;
   marketSnapshots!: EntityTable<MarketSnapshot, "id">;
+  marketWatchlist!: EntityTable<MarketWatchItem, "id">;
   planItems!: EntityTable<PlanItem, "id">;
   settings!: EntityTable<AppSettings, "id">;
 
   constructor() {
     super("poolyar-local");
     this.version(1).stores(storesV1);
-    this.version(2).stores(stores);
-    this.version(3).stores(stores).upgrade(async (tx) => {
+    this.version(2).stores(storesV2);
+    this.version(3).stores(storesV2).upgrade(async (tx) => {
       await tx.table("planItems").toCollection().modify((row) => normalizePlanRow(row));
     });
+    this.version(4).stores(stores);
   }
 }
 
@@ -179,7 +187,7 @@ export async function exportDatabaseObject() {
     allocationRules: await db.allocationRules.toArray(), incomes: await db.incomes.toArray(),
     allocations: await db.allocations.toArray(), funds: await db.funds.toArray(), assets: await db.assets.toArray(),
     transactions: await db.transactions.toArray(), marketSnapshots: await db.marketSnapshots.toArray(),
-    planItems: await db.planItems.toArray(), settings: await db.settings.toArray(),
+    marketWatchlist: await db.marketWatchlist.toArray(), planItems: await db.planItems.toArray(), settings: await db.settings.toArray(),
   };
 }
 
@@ -189,7 +197,7 @@ export async function importDatabaseObject(data: Record<string, unknown>) {
   const settings = data.settings as unknown[];
   if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) throw new Error("بکاپ تنظیمات معتبر پولم‌کو را ندارد.");
 
-  const allowed = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "planItems", "settings"] as const;
+  const allowed = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "marketWatchlist", "planItems", "settings"] as const;
   await db.transaction("rw", db.tables, async () => {
     for (const table of db.tables) await table.clear();
     for (const name of allowed) {

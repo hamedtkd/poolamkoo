@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RiAddLine, RiFileUploadLine, RiFundsLine, RiHistoryLine, RiLineChartLine, RiShoppingBag3Line } from "react-icons/ri";
 import { AssetDialog } from "@/components/investments/asset-dialog";
 import { MarketChartCard } from "@/components/investments/market-chart-card";
+import { MarketWatchlistCard } from "@/components/investments/market-watchlist-card";
 import { OpeningHoldingDialog } from "@/components/investments/opening-holding-dialog";
 import { HistoryImportDialog } from "@/components/investments/history-import-dialog";
 import { PendingPlanPurchases } from "@/components/investments/pending-plan-purchases";
@@ -16,7 +17,7 @@ import { useInvestmentPortfolio } from "@/hooks/use-investment-portfolio";
 import { db } from "@/lib/db";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
-import type { AppSettings, Asset, IncomeEvent, InvestmentTransaction, MarketQuote, MarketSnapshot, PlanItem } from "@/lib/types";
+import type { AppSettings, Asset, AssetKind, IncomeEvent, InvestmentTransaction, MarketInstrument, MarketQuote, MarketSnapshot, MarketWatchItem, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { HelpLabel } from "@/components/ui/help-label";
@@ -42,12 +43,13 @@ const T = {
 
 type TransactionTarget = { asset: Asset; planItem?: PlanItem } | null;
 
-export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
+export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
   settings: AppSettings;
   assets: Asset[];
   transactions: InvestmentTransaction[];
   quotes: MarketQuote[];
   snapshots: MarketSnapshot[];
+  watchlist: MarketWatchItem[];
   planItems: PlanItem[];
   incomes: IncomeEvent[];
   visibleTransactions?: InvestmentTransaction[];
@@ -60,6 +62,8 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   const [openingHoldingOpen, setOpeningHoldingOpen] = useState(false);
   const [historyImportOpen, setHistoryImportOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [seedInstrument, setSeedInstrument] = useState<MarketInstrument | undefined>();
+  const [seedKind, setSeedKind] = useState<AssetKind | undefined>();
   const [transactionTarget, setTransactionTarget] = useState<TransactionTarget>(null);
   const [archiveTarget, setArchiveTarget] = useState<Asset | null>(null);
   const [deleteTransactionId, setDeleteTransactionId] = useState<number | null>(null);
@@ -80,14 +84,21 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
 
   const activeAsset = transactionTarget?.asset ?? null;
   const activePlan = transactionTarget?.planItem;
+  function createAssetFromMarket(instrument: MarketInstrument) {
+    setEditingAsset(null);
+    setSeedInstrument(instrument);
+    setSeedKind(instrument.name.includes("صندوق") ? "fund" : "stock");
+    setAssetDialogOpen(true);
+  }
   return <div className="space-y-5">
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setHistoryImportOpen(true)}><RiFileUploadLine /> ورود سوابق CSV</Button><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setHistoryImportOpen(true)}><RiFileUploadLine /> ورود سوابق CSV</Button><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div>
     <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl >= 0 ? "primary" : "danger"} label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></div>
     {Math.round(portfolio.targetTotal) !== 100 && <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div>}
+    <MarketWatchlistCard watchlist={watchlist} quotes={quotes} assets={assets} settings={settings} onCreateAsset={createAssetFromMarket} />
     <PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} />
-    <MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} />
-    <PortfolioTables positions={portfolio.positions} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
-    <AssetDialog open={assetDialogOpen} onOpenChange={setAssetDialogOpen} asset={editingAsset} settings={settings} />
+    <MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} watchlist={watchlist} />
+    <PortfolioTables positions={portfolio.positions} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
+    <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />
     <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activeAsset ? (activeAsset.symbol ? portfolio.quoteMap.get(activeAsset.symbol)?.priceToman : undefined) ?? activeAsset.manualPriceToman : undefined} availableQty={activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id)?.qty ?? 0 : 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />

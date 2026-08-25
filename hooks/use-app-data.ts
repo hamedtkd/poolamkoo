@@ -16,6 +16,7 @@ export function useAppData() {
   const assets = useLiveQuery(() => db.assets.filter((a) => !a.archived).toArray(), []) ?? [];
   const transactions = useLiveQuery(() => db.transactions.toArray(), []) ?? [];
   const snapshots = useLiveQuery(() => db.marketSnapshots.orderBy("capturedAt").reverse().limit(1000).toArray(), []) ?? [];
+  const watchlist = useLiveQuery(() => db.marketWatchlist.orderBy("updatedAt").reverse().toArray(), []) ?? [];
   const planItems = useLiveQuery(() => db.planItems.toArray(), []) ?? [];
-  return { ready, settings, rule, incomes, allocations, funds, assets, transactions, snapshots, planItems };
+  return { ready, settings, rule, incomes, allocations, funds, assets, transactions, snapshots, watchlist, planItems };
 }

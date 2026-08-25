@@ -38,9 +38,11 @@ interface AssetDialogProps {
   settings: AppSettings;
   onSaved?: (asset: Asset) => void;
   initialName?: string;
+  initialInstrument?: MarketInstrument;
+  initialKind?: AssetKind;
 }
 
-export function AssetDialog({ open, onOpenChange, asset, settings, onSaved, initialName }: AssetDialogProps) {
+export function AssetDialog({ open, onOpenChange, asset, settings, onSaved, initialName, initialInstrument, initialKind }: AssetDialogProps) {
   const form = useForm<AssetFormValues>({
     resolver: zodResolver(assetSchema),
     defaultValues: { name: "", kind: "custom", symbol: "", marketId: undefined, marketSource: undefined, targetPct: 0, manualPriceToman: null },
@@ -56,15 +58,15 @@ export function AssetDialog({ open, onOpenChange, asset, settings, onSaved, init
   useEffect(() => {
     if (!open) return;
     form.reset({
-      name: asset?.name ?? initialName ?? "",
-      kind: asset?.kind ?? "custom",
-      symbol: asset?.symbol ?? "",
-      marketId: asset?.marketId,
-      marketSource: asset?.marketSource,
+      name: asset?.name ?? initialInstrument?.name ?? initialName ?? "",
+      kind: asset?.kind ?? initialKind ?? "custom",
+      symbol: asset?.symbol ?? initialInstrument?.symbol ?? "",
+      marketId: asset?.marketId ?? initialInstrument?.id,
+      marketSource: asset?.marketSource ?? initialInstrument?.source,
       targetPct: asset?.targetPct ?? 0,
-      manualPriceToman: asset?.manualPriceToman ?? null,
+      manualPriceToman: asset?.manualPriceToman ?? initialInstrument?.priceToman ?? null,
     });
-  }, [asset, form, initialName, open]);
+  }, [asset, form, initialInstrument, initialKind, initialName, open]);
 
   function selectInstrument(instrument: MarketInstrument) {
     form.setValue("name", instrument.name, { shouldDirty: true, shouldValidate: true });

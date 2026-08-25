@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { useMarketHistory } from "@/hooks/use-market-history";
 import { formatMoney, formatPercent } from "@/lib/format";
-import type { AppSettings, Asset, MarketHistoryRange, MarketQuote, MarketSnapshot } from "@/lib/types";
+import type { AppSettings, Asset, MarketHistoryRange, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const T = {
@@ -22,30 +22,34 @@ const T = {
   loading: "در حال دریافت تاریخچه بازار…",
 };
 
-export function MarketChartCard({ settings, snapshots, quotes, assets }: {
+export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist = [] }: {
   settings: AppSettings;
   snapshots: MarketSnapshot[];
   quotes: MarketQuote[];
   assets: Asset[];
+  watchlist?: MarketWatchItem[];
 }) {
   const [symbol, setSymbol] = useState("USD");
   const [range, setRange] = useState<MarketHistoryRange>("3m");
   const exchangeAssets = assets.filter((asset) => asset.symbol && (asset.kind === "stock" || asset.kind === "fund"));
-  const exchangeOptions = exchangeAssets.map((asset) => ({ value: asset.symbol as string, label: asset.name }));
+  const exchangeItems = dedupeMarketItems([
+    ...exchangeAssets.map((asset) => ({ symbol: asset.symbol as string, name: asset.name, marketId: asset.marketId })),
+    ...watchlist.map((item) => ({ symbol: item.symbol, name: item.name, marketId: item.marketId })),
+  ]);
   const options = dedupeOptions([
     { value: "USD", label: "دلار" },
     { value: "IR_GOLD_18K", label: "طلای ۱۸ عیار" },
     { value: "BTC", label: "بیت‌کوین" },
     { value: "USDT", label: "تتر" },
-    ...exchangeOptions,
+    ...exchangeItems.map((item) => ({ value: item.symbol, label: item.name })),
   ]);
-  const selectedAsset = exchangeAssets.find((asset) => asset.symbol === symbol);
-  const history = useMarketHistory({ symbol, marketId: selectedAsset?.marketId, snapshots, range });
+  const selectedMarketItem = exchangeItems.find((item) => item.symbol === symbol);
+  const history = useMarketHistory({ symbol, marketId: selectedMarketItem?.marketId, snapshots, range });
   const candles = history.candles;
   const first = candles[0];
   const last = candles.at(-1);
   const currentQuote = quotes.find((quote) => quote.symbol === symbol);
-  const chartVariant = selectedAsset ? "candles" as const : "line" as const;
+  const chartVariant = selectedMarketItem?.marketId ? "candles" as const : "line" as const;
   const periodChange = first && last && first.close > 0 ? ((last.close - first.close) / first.close) * 100 : 0;
 
   return <Card className="overflow-hidden">
@@ -118,4 +122,8 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "po
 
 function dedupeOptions(options: Array<{ value: string; label: string }>) {
   return [...new Map(options.map((option) => [option.value, option])).values()];
+}
+
+function dedupeMarketItems(items: Array<{ symbol: string; name: string; marketId?: string }>) {
+  return [...new Map(items.map((item) => [item.symbol, item])).values()];
 }

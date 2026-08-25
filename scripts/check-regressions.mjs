@@ -76,6 +76,14 @@ const [marketHistoryApiSource, marketChartCardSource, financialChartSource, sele
   read("components/ui/select.tsx"),
 ]);
 
+
+const [marketWatchlistSource, navSource, appDataSource, investmentsPageSource] = await Promise.all([
+  read("components/investments/market-watchlist-card.tsx"),
+  read("lib/market/nav.ts"),
+  read("hooks/use-app-data.ts"),
+  read("app/(app)/investments/page.tsx"),
+]);
+
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -156,6 +164,9 @@ const checks = [
   [marketChartCardSource.includes('"1m"') && marketChartCardSource.includes('"3m"') && marketChartCardSource.includes("MarketSourceLabel") && financialChartSource.includes("LineSeries") && financialChartSource.includes("CandlestickSeries"), "Market charts must expose real 1m/3m history, source attribution, line indicators and exchange candles"],
   [marketChartCardSource.includes('<RangePicker value={range} onChange={setRange} />\n      </div>\n      {candles.length >= 2 ? <>'), "Market history range picker must stay visible in loading and empty states"],
   [selectSource.includes("collisionPadding={12}") && selectSource.includes("min(16rem, calc(var(--radix-select-content-available-height) - 3.5rem))") && selectSource.includes("overflow-y-auto"), "Shared Select dropdowns must stay within the viewport and scroll when options are long"],
+  [db.includes("marketWatchlist") && appDataSource.includes("db.marketWatchlist") && appRouteLayout.includes("data.watchlist") && investmentsPageSource.includes("watchlist={data.watchlist}"), "Market watchlist must be persisted and wired through the application runtime"],
+  [marketWatchlistSource.includes("دیده‌بان بازار") && marketWatchlistSource.includes("افزودن به سبد") && marketWatchlistSource.includes("premiumToNavPercent"), "Investments must expose a pre-purchase market watchlist with a direct portfolio shortcut"],
+  [types.includes("navToman?: number") && tindexProviderSource.includes("nav?:") && tindexProviderSource.includes("navToman") && navSource.includes("premiumToNavPercent"), "Exchange fund NAV must be normalized and exposed without fabricating missing values"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],
