@@ -7,6 +7,8 @@
 - `architecture/` معماری Local-First، بازار، داده و UI
 - `releases/` تاریخچه نسخه‌ها و تغییرات
 - `testing/` تست، کنترل کیفیت و انتشار
+- `backlog/` آزمایش‌های متوقف‌شده و ایده‌های نگه‌داری‌شده
+- `ROADMAP.md` نقشه راه محصول و اولویت فازهای بعدی
 
 ## فلسفه محصول
 
@@ -23,7 +25,14 @@
 - shadcn/ui + PersianLabs patterns
 - بدون داده ساختگی بازار
 
+## نقشه راه
+
+- [Roadmap](./ROADMAP.md)
+- [Background Push backlog](./backlog/background-push.md)
+
 ## Release history
+- [v0.13.1](./releases/0.13.1.md)
+- [v0.13.0](./releases/0.13.0.md)
 - [v0.12.0](./releases/0.12.0.md)
 - [v0.11.0](./releases/0.11.0.md)
 - [v0.10.0](./releases/0.10.0.md)

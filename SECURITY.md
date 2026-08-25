@@ -6,7 +6,7 @@ PoolamCo is local-first. Personal finance records are stored in the browser's In
 
 ## Secrets
 
-`BRS_API_KEY`, `BRS_API_PRO_KEY`, and `TINDEX_API_TOKEN` are server environment variables. Do not expose them through `NEXT_PUBLIC_*` variables or client bundles.
+`BRS_API_KEY` and `TINDEX_API_TOKEN` are the normal server environment variables. Do not expose them through `NEXT_PUBLIC_*` variables or client bundles. Background Push is paused by default; its experimental VAPID/Redis/Cron secrets are documented separately in `.env.push.example` and must remain server-side if that experiment is ever enabled.
 
 ## Backups
 
@@ -18,7 +18,7 @@ Browser storage is not a substitute for backup. Users should export backups befo
 
 ## Browser notifications
 
-Market notifications are opt-in and require browser permission. v0.12 evaluates alert conditions only after a live market refresh while the application is running; it does not claim background push delivery while the app is fully closed.
+Local market notifications are opt-in and require browser permission. Background Web Push while the PWA is closed is paused in v0.13.1 and is not part of the default deployment. The preserved experiment can mirror only minimal alert condition metadata plus a Push Subscription when explicitly enabled; personal portfolio balances, transactions, income records, and purchase prices are excluded. See `docs/backlog/background-push.md`.
 
 ## Reporting a problem
 

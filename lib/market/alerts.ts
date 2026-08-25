@@ -41,7 +41,7 @@ export function marketAlertConditionMet(alert: Pick<MarketAlert, "kind" | "thres
   return observed >= threshold;
 }
 
-export function marketAlertTransition(alert: MarketAlert, quote?: MarketQuote): MarketAlertTransition {
+export function marketAlertTransition(alert: Pick<MarketAlert, "kind" | "threshold" | "enabled" | "armed">, quote?: MarketQuote): MarketAlertTransition {
   if (!alert.enabled) return "none";
   const observed = marketAlertObservedValue(alert, quote);
   if (observed === null) return "unavailable";

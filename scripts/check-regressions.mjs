@@ -97,6 +97,17 @@ const [marketAlertsCardSource, marketAlertDialogSource, marketAlertHelperSource,
   read("hooks/use-market-alerts.ts"),
 ]);
 
+const [backgroundPushHookSource, marketPushStatusSource, pushSubscriptionApiSource, pushCronSource, pushStoreSource, pushConfigSource, pushFeatureSource, vercelConfigSource] = await Promise.all([
+  read("hooks/use-background-push.ts"),
+  read("components/investments/market-push-status.tsx"),
+  read("app/api/push/subscription/route.ts"),
+  read("lib/push/cron.ts"),
+  read("lib/push/store.ts"),
+  read("lib/push/config.ts"),
+  read("lib/push/feature.ts"),
+  read("vercel.json"),
+]);
+
 const checks = [
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -184,6 +195,13 @@ const checks = [
   [marketWatchlistSource.includes("WatchlistSummary") && marketWatchHelperSource.includes("watchlistSummary") && marketWatchHelperSource.includes("navSignal"), "Market watchlist must summarize movers and expose explicit NAV discount/premium signals"],
   [marketWatchlistSource.includes("MarketWatchDetailDialog") && marketWatchDetailSource.includes("useMarketHistory") && marketWatchDetailSource.includes('"1m", "3m"') && marketWatchDetailSource.includes("افزودن به سبد"), "Watchlist items must open real market history details with a direct portfolio shortcut"],
 
+  [backgroundPushHookSource.includes("pushManager.subscribe") && backgroundPushHookSource.includes("/api/push/subscription") && backgroundPushHookSource.includes("BACKGROUND_PUSH_EXPERIMENT_ENABLED"), "Background Push experiment must stay preserved behind the explicit feature flag"],
+  [marketPushStatusSource.includes("هشدار وقتی PWA بسته است") && marketPushStatusSource.includes("Push Subscription"), "Paused Background Push UI implementation must remain available for future work"],
+  [marketAlertsCardSource.includes("backgroundPush.featureEnabled && <MarketPushStatus"), "Background Push controls must stay hidden unless the experimental flag is enabled"],
+  [pushSubscriptionApiSource.includes("mergeRemoteAlerts") && pushSubscriptionApiSource.includes("config.featureEnabled") && pushStoreSource.includes("sha256"), "Push subscription experiment must keep privacy reconciliation and refuse the disabled default"],
+  [pushCronSource.includes("runMarketAlertCron") && pushCronSource.includes("sendMarketAlertPush") && pushConfigSource.includes("featureEnabled") && pushFeatureSource.includes("NEXT_PUBLIC_EXPERIMENTAL_BACKGROUND_PUSH"), "Preserved Push evaluator must require the explicit experimental feature flag"],
+  [vercelConfigSource.trim() === "{}", "Zero-cost public deployment must not ship a scheduled Background Push cron"],
+  [serviceWorker.includes('addEventListener("push"') && serviceWorker.includes("markAlertTriggered") && serviceWorker.includes("showNotification"), "Service worker Push handling must stay preserved for the backlog experiment"],
   [db.includes("marketAlerts") && types.includes("MarketAlertKind") && appDataSource.includes("db.marketAlerts") && appRouteLayout.includes("useMarketAlerts"), "Market alerts must be persisted and evaluated from the application runtime"],
   [marketAlertHelperSource.includes("marketAlertTransition") && marketAlertHelperSource.includes('return "trigger"') && marketAlertHelperSource.includes('return "rearm"'), "Market alerts must suppress duplicate triggers until the condition clears"],
   [marketAlertsCardSource.includes("هشدارهای بازار") && marketAlertDialogSource.includes("Notification.requestPermission") && marketAlertHookSource.includes("showNotification") && marketAlertHookSource.includes('mode !== "live"'), "Market alerts must expose opt-in browser notifications without requiring them"],

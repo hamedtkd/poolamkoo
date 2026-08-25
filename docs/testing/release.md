@@ -102,3 +102,13 @@ git push origin vX.Y.Z
 - [ ] Refresh فقط نمادهای بورسی متصل به سبد را درخواست کند
 - [ ] در قطع Provider، آخرین Snapshot واقعی یا fallback دستی نمایش داده شود
 - [ ] هیچ توکن market-data داخل response یا client bundle دیده نشود
+
+## 10. Background Push backlog
+
+- [ ] Deploy عادی بدون VAPID، Redis و `CRON_SECRET` کامل کار کند
+- [ ] `vercel.json` هیچ Cron مربوط به Market Alert نداشته باشد
+- [ ] `NEXT_PUBLIC_EXPERIMENTAL_BACKGROUND_PUSH` در Production عادی فعال نباشد
+- [ ] UI فعال‌سازی Background Push در حالت عادی نمایش داده نشود
+- [ ] هشدارهای محلی بازار هنگام اجرای اپ همچنان کار کنند
+- [ ] APIهای Push/Cron بدون Feature Flag آزمایشی عملیات Server-side انجام ندهند
+- [ ] کد و تست‌های آزمایشی Push برای Backlog در Repository باقی بمانند

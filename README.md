@@ -72,6 +72,7 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Market watchlist for tracking TSE stocks/ETFs before adding them to the portfolio
 - NAV and market-price premium/discount for exchange funds whenever Tindex/TSETMC publishes NAV
 - Local price, daily-move, and NAV alerts with duplicate-notification suppression
+- Optional Web Push delivery while the installed PWA is fully closed
 
 ### Reports
 
@@ -162,6 +163,12 @@ http://localhost:3000
 Configure both BrsApi and a Tindex developer token. BrsApi remains primary for public market quotes; Tindex supplies missing core USD, 18K gold, and BTC quotes and serves linked Tehran Stock Exchange assets. The exact server-side environment variable names are documented in `.env.example`.
 
 Exchange quotes are returned by Tindex from TSETMC data and converted from rial to toman for Poolamco calculations. Poolamco also uses Tindex candle/history endpoints for 1-month and 3-month USD, 18K gold, and linked exchange charts, with quota-aware server caching. If market access is unavailable, Poolamco must not fabricate historical prices; previously stored real snapshots remain the chart fallback.
+
+## Market alerts and background push
+
+Local market alerts work without a backend and are evaluated when the app refreshes live quotes. The v0.13.0 Background Web Push experiment is **intentionally paused and hidden by default in v0.13.1** so the public project remains zero-cost and local-first, with no required Redis, scheduler, VAPID keys, or cron secret.
+
+The experiment has not been deleted. Its implementation and future opt-in instructions remain in [docs/backlog/background-push.md](./docs/backlog/background-push.md). The next zero-cost product phases are tracked in [docs/ROADMAP.md](./docs/ROADMAP.md).
 
 ## Quality gate
 

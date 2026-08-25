@@ -5,7 +5,7 @@ import { InvestmentsSection } from "@/components/sections/investments";
 import { useAppRuntime } from "@/components/app/app-runtime";
 
 export default function InvestmentsPage() {
-  const { data, market, dateFilter } = useAppRuntime();
+  const { data, market, dateFilter, backgroundPush } = useAppRuntime();
   const scope = "investments" as const;
   const filtered = dateFilter.filteredFor(scope);
 
@@ -25,6 +25,7 @@ export default function InvestmentsPage() {
         snapshots={data.snapshots}
         watchlist={data.watchlist}
         marketAlerts={data.marketAlerts}
+        backgroundPush={backgroundPush}
         planItems={data.planItems}
         incomes={data.incomes}
         visibleTransactions={filtered.transactions}

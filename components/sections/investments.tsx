@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { BackgroundPushControls } from "@/hooks/use-background-push";
 import { RiAddLine, RiFileUploadLine, RiFundsLine, RiHistoryLine, RiLineChartLine, RiShoppingBag3Line } from "react-icons/ri";
 import { AssetDialog } from "@/components/investments/asset-dialog";
 import { MarketAlertDialog } from "@/components/investments/market-alert-dialog";
@@ -46,7 +47,7 @@ const T = {
 
 type TransactionTarget = { asset: Asset; planItem?: PlanItem } | null;
 
-export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, marketAlerts, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
+export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, marketAlerts, backgroundPush, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
   settings: AppSettings;
   assets: Asset[];
   transactions: InvestmentTransaction[];
@@ -54,6 +55,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   snapshots: MarketSnapshot[];
   watchlist: MarketWatchItem[];
   marketAlerts: MarketAlert[];
+  backgroundPush: BackgroundPushControls;
   planItems: PlanItem[];
   incomes: IncomeEvent[];
   visibleTransactions?: InvestmentTransaction[];
@@ -100,7 +102,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
     <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl >= 0 ? "primary" : "danger"} label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></div>
     {Math.round(portfolio.targetTotal) !== 100 && <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div>}
     <MarketWatchlistCard watchlist={watchlist} quotes={quotes} snapshots={visibleSnapshots ?? snapshots} assets={assets} settings={settings} onCreateAsset={createAssetFromMarket} onCreateAlert={setAlertTarget} />
-    <MarketAlertsCard alerts={marketAlerts} quotes={quotes} settings={settings} onCreateAlert={setAlertTarget} />
+    <MarketAlertsCard alerts={marketAlerts} quotes={quotes} settings={settings} backgroundPush={backgroundPush} onCreateAlert={setAlertTarget} />
     <PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} />
     <MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} watchlist={watchlist} />
     <PortfolioTables positions={portfolio.positions} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
