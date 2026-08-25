@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { m } from "motion/react";
 import {
   RiAddLine,
   RiBarChartBoxLine,
@@ -64,7 +65,7 @@ export function MobileNavigation({ pathname, market, menuOpen, setMenuOpen, onOp
       <nav className="mobile-bottom-nav fixed inset-x-3 bottom-3 z-30 grid h-[72px] grid-cols-5 rounded-[24px] p-1 pb-[max(.25rem,env(safe-area-inset-bottom))] md:hidden">
         {visible.map((item) => {
           const Icon = item.icon;
-          return <Link key={item.href} href={item.href} data-tour={item.tour} className={cn("grid place-items-center content-center gap-0.5 rounded-[18px] px-1 type-caption text-[10px] transition active:scale-95", active(item.href) ? "bg-primary/12 text-primary" : "text-muted-foreground")}><Icon className="size-5" />{item.shortLabel}</Link>;
+          return <Link key={item.href} href={item.href} data-tour={item.tour} className={cn("relative grid place-items-center content-center gap-0.5 overflow-hidden rounded-[18px] px-1 type-caption text-[10px] transition active:scale-95", active(item.href) ? "text-primary" : "text-muted-foreground")}>{active(item.href) && <m.span layoutId="mobile-nav-active" className="absolute inset-0 rounded-[18px] bg-primary/12" transition={{ type: "spring", stiffness: 440, damping: 36 }} />}<Icon className="relative z-[1] size-5" /><span className="relative z-[1]">{item.shortLabel}</span></Link>;
         })}
         <button type="button" data-tour="mobile-more" onClick={() => setMenuOpen(true)} className={cn("grid place-items-center content-center gap-0.5 rounded-[18px] type-caption text-[10px] transition active:scale-95", menuOpen ? "bg-primary/12 text-primary" : "text-muted-foreground")}><RiDashboardLine className="size-5" />بیشتر</button>
       </nav>

@@ -8,6 +8,7 @@ import { GlobalSearch } from "@/components/app/global-search";
 import type { MarketRefreshControls } from "@/components/app/market-refresh-button";
 import { MobileNavigation } from "@/components/app/mobile-navigation";
 import { ProductTour } from "@/components/app/product-tour";
+import { RouteTransition } from "@/components/motion/reveal";
 import { useAppTheme } from "@/hooks/use-app-theme";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import type { AppSettings } from "@/lib/types";
@@ -61,7 +62,7 @@ export function AppShell({ settings, market, onNewMoney, children }: {
       <main className={cn("transition-[margin] duration-300 ease-out", sidebar.collapsed ? "md:mr-[64px]" : "md:mr-64")}>
         <div className="mx-auto w-full max-w-[1920px] p-3 sm:p-5 lg:p-7 2xl:p-8">
           <AppTopbar market={market} onOpenSearch={() => setSearchOpen(true)} onStartTour={startTour} resolvedTheme={resolvedTheme} onToggleTheme={toggleTheme} hideFinancialData={settings.hideFinancialData} />
-          {children}
+          <RouteTransition routeKey={pathname}>{children}</RouteTransition>
         </div>
       </main>
 

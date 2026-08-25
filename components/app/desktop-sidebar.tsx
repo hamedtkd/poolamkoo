@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { m } from "motion/react";
 import { RiAddLine, RiArrowLeftLine, RiArrowRightLine } from "react-icons/ri";
 import { appNav } from "@/components/app/navigation";
 import { BrandLogo } from "@/components/brand-logo";
@@ -36,9 +37,10 @@ export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMo
         {appNav.map((item) => {
           const Icon = item.icon;
           const link = (
-            <Link href={item.href} data-tour={item.tour} aria-label={item.label} className={cn("flex h-11 items-center rounded-xl type-label transition", collapsed ? "justify-center px-0" : "gap-3 px-3", active(item.href) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground")}>
-              <Icon className="size-5 shrink-0" />
-              {!collapsed && <span className="truncate">{item.label}</span>}
+            <Link href={item.href} data-tour={item.tour} aria-label={item.label} className={cn("relative flex h-11 items-center overflow-hidden rounded-xl type-label transition-colors", collapsed ? "justify-center px-0" : "gap-3 px-3", active(item.href) ? "text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground")}>
+              {active(item.href) && <m.span layoutId="desktop-nav-active" className="absolute inset-0 rounded-xl bg-primary/10" transition={{ type: "spring", stiffness: 440, damping: 36 }} />}
+              <Icon className="relative z-[1] size-5 shrink-0" />
+              {!collapsed && <span className="relative z-[1] truncate">{item.label}</span>}
             </Link>
           );
           return <SidebarTip key={item.href} label={item.label} enabled={collapsed}>{link}</SidebarTip>;

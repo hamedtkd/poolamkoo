@@ -106,7 +106,8 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Light, dark, and system themes
 - Gold-first visual palette
 - Product tour and contextual financial help
-- Layout-matched skeletons
+- Layout-matched skeletons with restrained shimmer
+- Reduced-motion-aware route, KPI, navigation, and toast micro-interactions
 
 ## Open source and support
 
@@ -137,6 +138,7 @@ See [SECURITY.md](./SECURITY.md) for the security and data-safety model.
 - TanStack Table
 - Recharts and Lightweight Charts where appropriate
 - next-themes
+- Motion (`motion/react`) for restrained micro-interactions
 - Remix Icons through react-icons
 
 ## Repository structure

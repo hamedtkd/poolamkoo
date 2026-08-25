@@ -35,7 +35,7 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Gentle support prompt only after real repeated use (target: at least 7 distinct active days), with choices to star GitHub, support financially, or dismiss.
 - Long cooldown after dismissal; never interrupt onboarding or critical financial flows.
 
-## v0.17 — Motion and dashboard polish
+## v0.17 — Motion and dashboard polish ✅
 
 - Add the modern `motion` package for restrained route/card/dialog micro-interactions.
 - Respect `prefers-reduced-motion` everywhere.

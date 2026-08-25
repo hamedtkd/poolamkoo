@@ -34,6 +34,7 @@
 - [مدل ماندگاری داده و Backup](./data-safety.md)
 
 ## Release history
+- [v0.17.0](./releases/0.17.0.md)
 - [v0.16.0](./releases/0.16.0.md)
 - [v0.14.0](./releases/0.14.0.md)
 - [v0.15.0](./releases/0.15.0.md)

@@ -1,6 +1,7 @@
 "use client";
 
 import { RiBarChartBoxLine } from "react-icons/ri";
+import { useReducedMotion } from "motion/react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartLegend } from "@/components/charts/chart-legend";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
@@ -14,6 +15,7 @@ const items = [
 ];
 
 export function MonthlyBars({ data, unit }: { data: Array<{ month: string; life: number; safety: number; growth: number }>; unit: MoneyUnit }) {
+  const reduced = useReducedMotion();
   const hasData = data.some((row) => row.life + row.safety + row.growth > 0);
   if (!hasData) return <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed bg-muted/15 p-6 text-center"><div><RiBarChartBoxLine className="mx-auto size-8 text-primary" /><div className="mt-3 type-strong">هنوز داده ماهانه‌ای نداریم</div><p className="mt-2 max-w-sm type-caption text-muted-foreground">با ثبت پول ورودی و برنامه‌ریزی آن، نمودار ماهانه از داده واقعی خودت ساخته می‌شود.</p></div></div>;
   return (
@@ -26,9 +28,9 @@ export function MonthlyBars({ data, unit }: { data: Array<{ month: string; life:
             <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
             <YAxis hide />
             <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.35 }} content={({ active, payload, label }) => active && payload?.length ? <div className="glass rounded-xl p-3 text-xs"><div className="mb-2 type-strong">{label}</div>{payload.map((entry) => <div key={String(entry.dataKey)} className="flex min-w-36 justify-between gap-4"><span className="text-muted-foreground">{entry.dataKey === "life" ? "زندگی" : entry.dataKey === "safety" ? "امنیت" : "رشد"}</span><SensitiveValue className="type-strong">{formatMoney(Number(entry.value), unit, true)}</SensitiveValue></div>)}</div> : null} />
-            <Bar dataKey="life" stackId="a" fill="var(--chart-1)" radius={[0, 0, 6, 6]} />
-            <Bar dataKey="safety" stackId="a" fill="var(--chart-2)" />
-            <Bar dataKey="growth" stackId="a" fill="var(--chart-3)" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="life" stackId="a" fill="var(--chart-1)" radius={[0, 0, 6, 6]} isAnimationActive={!reduced} />
+            <Bar dataKey="safety" stackId="a" fill="var(--chart-2)" isAnimationActive={!reduced} />
+            <Bar dataKey="growth" stackId="a" fill="var(--chart-3)" radius={[6, 6, 0, 0]} isAnimationActive={!reduced} />
           </BarChart>
         </ResponsiveContainer>
       </div>

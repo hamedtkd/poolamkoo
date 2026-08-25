@@ -129,7 +129,20 @@ const [communitySource, communityHookSource, supportPromptSource, sidebarCommuni
   read("app/(public)/license/page.tsx"), read("components/community/open-source-card.tsx"),
 ]);
 
+const [motionRevealSource, providersMotionSource, dashboardMotionSource, sparklineMotionSource, portfolioMotionSource, monthlyMotionSource, gitattributesSource, packageSource] = await Promise.all([
+  read("components/motion/reveal.tsx"), read("components/providers.tsx"), read("components/sections/dashboard.tsx"),
+  read("components/charts/sparkline.tsx"), read("components/charts/portfolio-area-chart.tsx"), read("components/charts/monthly-bars.tsx"),
+  read(".gitattributes"), read("package.json"),
+]);
+
 const checks = [
+  [packageSource.includes('"motion"') && providersMotionSource.includes('reducedMotion="user"') && motionRevealSource.includes("useReducedMotion"), "Motion must be installed behind a global user reduced-motion policy"],
+  [shell.includes("RouteTransition") && dashboardMotionSource.includes("MotionReveal") && dashboardMotionSource.includes("sm:col-span-2 xl:col-span-2"), "Route continuity and dashboard KPI hierarchy must use restrained motion"],
+  [desktopSidebar.includes('layoutId="desktop-nav-active"') && mobileNavigation.includes('layoutId="mobile-nav-active"'), "Desktop and mobile navigation must keep a continuous active indicator"],
+  [toastSource.includes("AnimatePresence") && dialog.includes("data-motion-dialog-body") && dialog.includes("useReducedMotion") && css.includes("skeleton-shimmer") && css.includes("prefers-reduced-motion: reduce"), "Dialog, toast and loading motion must include reduced-motion-safe behavior"],
+  [sparklineMotionSource.includes("isAnimationActive={!reduced}") && portfolioMotionSource.includes("isAnimationActive={!reduced}") && monthlyMotionSource.includes("isAnimationActive={!reduced}"), "Financial chart animations must stop when the user requests reduced motion"],
+  [dashboardMotionSource.includes("هنوز صندوق هدفی نداری") && dashboardMotionSource.includes("قیمت بازار فعلاً در دسترس نیست") && dashboardMotionSource.includes("نمودار بعد از اولین خرید شکل می‌گیرد"), "Dashboard must show explicit empty states instead of blank or misleading loading states"],
+  [gitattributesSource.includes("* text=auto eol=lf"), "Repository text files must keep deterministic LF line endings across Windows and Unix"],
   [communitySource.includes("SUPPORT_PROMPT_ACTIVE_DAYS = 7") && communitySource.includes("SUPPORT_PROMPT_SNOOZE_DAYS = 60") && communitySource.includes("SUPPORT_PROMPT_THANKS_DAYS = 180") && communityHookSource.includes("withUsageDay"), "Community support prompt must require seven distinct active days and use long local cooldowns"],
   [supportPromptSource.includes("ستاره در GitHub") && supportPromptSource.includes("حمایت اختیاری") && supportPromptSource.includes('pathname === "/"'), "Support prompt must stay gentle, optional, and dashboard-only"],
   [githubStatsApiSource.includes("api.github.com/repos/hamedtkd/poolamkoo") && githubStatsApiSource.includes("revalidate: 21_600") && sidebarCommunitySource.includes("RiStarFill"), "GitHub entry must use a cached public star count without requiring a client token"],

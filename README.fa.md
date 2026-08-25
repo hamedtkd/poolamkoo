@@ -116,7 +116,8 @@
 - راهنمای اولیه محصول با امکان رد کردن سریع راه‌اندازی
 - ورود موجودی دارایی‌های قبلی با تاریخ و میانگین قیمت خرید
 - Tooltipهای توضیحی برای مفاهیم مالی
-- Skeletonهای متناسب با ساختار واقعی صفحه
+- Skeletonهای متناسب با ساختار واقعی صفحه و shimmer ملایم
+- Motion محدود برای تغییر route، KPIها، navigation و Toast با رعایت `prefers-reduced-motion`
 
 ## Local-First و حریم خصوصی
 
@@ -143,6 +144,7 @@
 - TanStack Table
 - Recharts و Lightweight Charts در بخش‌های لازم
 - next-themes
+- Motion (`motion/react`) برای micro-interactionهای کنترل‌شده
 - Remix Icons از طریق react-icons
 
 ## ساختار پروژه

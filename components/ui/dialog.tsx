@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog as DialogPrimitive } from "radix-ui";
+import { m, useReducedMotion } from "motion/react";
 import { RiCloseLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +10,7 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 
 export function DialogContent({ children, className }: { children: React.ReactNode; className?: string }) {
+  const reduced = useReducedMotion();
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out" />
@@ -21,8 +23,10 @@ export function DialogContent({ children, className }: { children: React.ReactNo
             className,
           )}
         >
-          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted-foreground/20 sm:hidden" />
-          {children}
+          <m.div data-motion-dialog-body initial={reduced ? false : { opacity: 0, y: 8, scale: 0.99 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: reduced ? 0 : 0.2 }}>
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted-foreground/20 sm:hidden" />
+            {children}
+          </m.div>
           <DialogPrimitive.Close className="absolute left-4 top-4 rounded-lg p-2 text-muted-foreground transition hover:bg-accent">
             <RiCloseLine className="size-5" />
           </DialogPrimitive.Close>
