@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createTransferPin, decodeTransferSignal, encodeTransferSignal, splitTransferText, validateTransferData } from "../lib/device-transfer.ts";
+import { createTransferPin, decodeTransferSignal, encodeTransferSignal, splitTransferText, validateTransferData, validateTransferSchema } from "../lib/device-transfer.ts";
+import { LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.ts";
 
 test("device transfer pairing codes round-trip and expire", () => {
   const createdAt = new Date("2026-08-25T12:00:00.000Z").toISOString();
@@ -27,4 +28,10 @@ test("large transfer payload is split into bounded chunks", () => {
   const chunks = splitTransferText("x".repeat(50_000), 10_000);
   assert.equal(chunks.length, 5);
   assert.ok(chunks.every((chunk) => chunk.length <= 10_000));
+});
+
+
+test("device transfer rejects data from a newer local schema before import", () => {
+  assert.equal(validateTransferSchema(), "legacy");
+  assert.throws(() => validateTransferSchema(LOCAL_DATABASE_SCHEMA_VERSION + 1), /نسخه جدیدتری/);
 });

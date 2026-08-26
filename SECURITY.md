@@ -12,9 +12,9 @@ Public informational routes, including the landing page at `/`, do not seed the 
 
 ## Backups
 
-Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted by PoolamCo. Successful-backup timestamps and reminder snooze state are device-local metadata and are intentionally excluded from exported financial payloads.
+Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted by PoolamCo. New v2 backup envelopes also include a SHA-256 corruption digest plus application/database-schema metadata. The digest is a corruption detector, not a digital signature; AES-GCM remains the authenticated encryption layer for encrypted files. Successful-backup timestamps and reminder snooze state are device-local metadata and are intentionally excluded from exported financial payloads.
 
-Before importing a backup, PoolamCo creates a local recovery snapshot of the current database. Up to five recent recovery snapshots are kept in IndexedDB. These snapshots are for accidental local changes only and are not a substitute for an external backup because clearing Site Data removes them too.
+Before importing a backup, PoolamCo verifies the envelope, decrypts when required, validates required local tables/settings, rejects data from a newer database schema, and shows a record-count preview. Only after explicit confirmation does it create a local recovery snapshot and replace the current database. Legacy v1 backup files remain readable. Up to five recent recovery snapshots are kept in IndexedDB; new snapshots also carry schema/app version metadata. These snapshots are for accidental local changes only and are not a substitute for an external backup because clearing Site Data removes them too.
 
 ## Browser storage
 

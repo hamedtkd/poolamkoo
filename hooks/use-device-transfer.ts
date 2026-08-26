@@ -2,15 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createBackupEnvelope, openBackupEnvelope } from "@/lib/crypto";
-import { createTransferPin, splitTransferText, validateTransferData, validateTransferEnvelope, type TransferPreview } from "@/lib/device-transfer";
+import { createTransferPin, splitTransferText, validateTransferData, validateTransferEnvelope, validateTransferSchema, type TransferPreview } from "@/lib/device-transfer";
 import { exportDatabaseObject, importDatabaseObject } from "@/lib/db";
+import { LOCAL_DATABASE_SCHEMA_VERSION } from "@/lib/app-version";
 import { createRecoverySnapshot } from "@/lib/recovery";
 import { TRANSFER_CONNECT_TIMEOUT_MS, applyRemoteDescription, createLocalTransferPeer, localDescriptionCode, sendChannelMessages, sha256Text, waitForIceGathering } from "@/lib/webrtc-transfer";
 import type { BackupEnvelope } from "@/lib/types";
 
 type TransferMode = "sender" | "receiver";
 type TransferStatus = "idle" | "pairing" | "connected" | "sending" | "receiving" | "locked" | "ready" | "importing" | "complete" | "error";
-type TransferMeta = { type: "meta"; chunks: number; digest: string; exportedAt: string };
+type TransferMeta = { type: "meta"; chunks: number; digest: string; exportedAt: string; schemaVersion?: number };
 type TransferChunk = { type: "chunk"; index: number; data: string };
 type TransferControl = { type: "done" } | { type: "ack"; stage: "received" | "imported" };
 
@@ -124,6 +125,7 @@ export function useDeviceTransfer() {
       const message = JSON.parse(raw) as TransferMeta | TransferChunk | TransferControl;
       if (message.type === "meta") {
         if (!Number.isInteger(message.chunks) || message.chunks < 1 || message.chunks > 2_000 || typeof message.digest !== "string") throw new Error("مشخصات بسته انتقال معتبر نیست.");
+        validateTransferSchema(message.schemaVersion);
         metaRef.current = message; chunksRef.current = new Array(message.chunks); setProgress(0); setStatus("receiving"); return;
       }
       if (message.type === "chunk") {
@@ -155,9 +157,9 @@ export function useDeviceTransfer() {
   async function sendData() {
     try {
       const channel = channelRef.current; if (!channel || channel.readyState !== "open") throw new Error("اول کد پاسخ دستگاه جدید را وارد کن تا اتصال برقرار شود.");
-      setStatus("sending"); setProgress(0); const payload = await exportDatabaseObject(); const envelope = await createBackupEnvelope(JSON.stringify(payload), pin);
+      setStatus("sending"); setProgress(0); const payload = await exportDatabaseObject(); const envelope = await createBackupEnvelope(JSON.stringify(payload), pin, { version: 1 });
       const text = JSON.stringify(envelope); const chunks = splitTransferText(text); const digest = await sha256Text(text);
-      const frames = [JSON.stringify({ type: "meta", chunks: chunks.length, digest, exportedAt: envelope.exportedAt } satisfies TransferMeta), ...chunks.map((data, index) => JSON.stringify({ type: "chunk", index, data } satisfies TransferChunk)), JSON.stringify({ type: "done" } satisfies TransferControl)];
+      const frames = [JSON.stringify({ type: "meta", chunks: chunks.length, digest, exportedAt: envelope.exportedAt, schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION } satisfies TransferMeta), ...chunks.map((data, index) => JSON.stringify({ type: "chunk", index, data } satisfies TransferChunk)), JSON.stringify({ type: "done" } satisfies TransferControl)];
       await sendChannelMessages(channel, frames, setProgress); setStatus("connected");
     } catch (reason) { fail(reason); }
   }

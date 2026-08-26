@@ -173,6 +173,8 @@ export interface RecoverySnapshot {
   reason: string;
   payload: string;
   itemCount: number;
+  schemaVersion?: number;
+  appVersion?: string;
   createdAt: string;
 }
 
@@ -184,10 +186,13 @@ export interface AppMeta {
 
 export interface BackupEnvelope {
   format: "poolyar-backup";
-  version: 1;
+  version: 1 | 2;
   exportedAt: string;
   encrypted: boolean;
   payload: string;
   salt?: string;
   iv?: string;
+  digest?: string;
+  schemaVersion?: number;
+  appVersion?: string;
 }

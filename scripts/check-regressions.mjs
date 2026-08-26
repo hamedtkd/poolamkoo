@@ -108,11 +108,16 @@ const [backgroundPushHookSource, marketPushStatusSource, pushSubscriptionApiSour
   read("vercel.json"),
 ]);
 
-const [backupSettingsSource, backupReminderSource, backupSafetySource, recoverySource, toastSource, providersSource] = await Promise.all([
+const [backupSettingsSource, backupRestoreSource, backupReminderSource, backupSafetySource, backupClientSource, cryptoSource, dataPortabilitySource, recoverySource, appVersionSource, toastSource, providersSource] = await Promise.all([
   read("components/settings/backup-settings-card.tsx"),
+  read("components/backup/backup-restore-dialog.tsx"),
   read("components/backup/backup-reminder.tsx"),
   read("lib/backup-safety.ts"),
+  read("lib/backup-client.ts"),
+  read("lib/crypto.ts"),
+  read("lib/data-portability.ts"),
   read("lib/recovery.ts"),
+  read("lib/app-version.ts"),
   read("components/ui/toast.tsx"),
   read("components/providers.tsx"),
 ]);
@@ -167,7 +172,7 @@ const checks = [
   [appDataSource.includes("bootstrapError") && appDataSource.includes("BOOT_TIMEOUT_MS") && appDataSource.includes("performBootstrap(run)") && !appDataSource.includes("retryBootstrap();") && appRouteLayout.includes("LocalDataUnavailable") && localDataUnavailableSource.includes("Site Data") && !providersSource.includes("ensureSeedData"), "IndexedDB bootstrap failures must stay retryable without synchronous setState inside the mount effect"],
   [db.includes('db.on("blocked"') && db.includes('db.on("versionchange"') && appDataSource.includes("LOCAL_DATA_BLOCKED_EVENT") && appDataSource.includes("const canQuery = bootstrap.status === \"ready\"") && localDataIssuesSource.includes('name === "VersionError"') && localDataUnavailableSource.includes("classifyLocalDataIssue") && marketHook.includes("enabled = true") && backupSafetyHookSource.includes("enabled = true") && communityHookSource.includes("enabled ? db.appMeta") && appRouteLayout.includes("data.marketAlerts, data.ready"), "Multi-tab IndexedDB upgrades must block stale writes and delay financial database consumers until bootstrap succeeds"],
   [providersSource.includes("PwaUpdateNotice") && pwaUpdateNoticeSource.includes("نسخه جدید پولم‌کو آماده است") && pwaUpdateHookSource.includes("controllerchange") && pwaUpdateHookSource.includes("waiting.postMessage({ type: PWA_UPDATE_MESSAGE })") && pwaUpdateHelperSource.includes('PWA_UPDATE_MESSAGE = "SKIP_WAITING"'), "PWA updates must wait for explicit acceptance and reload only after the new worker controls the page"],
-  [serviceWorker.includes('const CACHE = "poolamco-v36"') && serviceWorker.includes('event.data?.type === "SKIP_WAITING"') && serviceWorker.indexOf('addEventListener("message"') < serviceWorker.indexOf("self.skipWaiting()"), "Service worker updates must not skip waiting unconditionally during install"],
+  [serviceWorker.includes('const CACHE = "poolamco-v37"') && serviceWorker.includes('event.data?.type === "SKIP_WAITING"') && serviceWorker.indexOf('addEventListener("message"') < serviceWorker.indexOf("self.skipWaiting()"), "Service worker updates must not skip waiting unconditionally during install"],
   [networkStatusHookSource.includes("useSyncExternalStore") && !networkStatusHookSource.includes("useState") && shell.includes("NetworkStatusBanner") && networkStatusSource.includes("آفلاین هستی") && offlineScreenSource.includes("Local-first"), "Network state must use an external-store subscription without synchronous hydration setState"],
   [obsoleteRouteCleanupSource.includes('"app/(app)"') && obsoleteRouteCleanupSource.includes('".next/types"') && obsoleteRouteCleanupSource.includes('".next/dev/types"'), "Replacement installs must remove the legacy route group and stale Next.js route validators before typecheck/build"],
   [notFoundSource.includes("۴۰۴") && notFoundSource.includes("/data") === false, "Unknown routes must fail safely without offering destructive data actions"],
@@ -188,9 +193,12 @@ const checks = [
   [privacyPageSource.includes("IndexedDB") && privacyPageSource.includes("Analytics اختیاری و بدون داده مالی") && privacyPageSource.includes("WebRTC") && aboutPageSource.includes("متن‌باز") && guidePageSource.includes("بکاپ") && securityPageSource.includes("Secretهای سرور") && licensePageSource.includes("مجوز MIT"), "Public trust pages must explain local-first privacy, security, licensing, and backup reality"],
   [desktopSidebar.includes("SidebarCommunity") && mobileNavigation.includes("GithubLink") && settingsSection.includes("OpenSourceCard") && openSourceCardSource.includes("/privacy"), "Open-source, guide, privacy and GitHub surfaces must be reachable from desktop, mobile and settings"],
   [onboardingSource.includes('href="/privacy"'), "Privacy policy must be reachable before onboarding is complete"],
-  [db.includes('this.version(6).stores(storesV6)') && db.includes('recoverySnapshots') && db.includes('appMeta'), "Data safety schema must persist bounded recovery snapshots and device-local backup metadata"],
+  [db.includes('this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV6)') && appVersionSource.includes('LOCAL_DATABASE_SCHEMA_VERSION = 6') && db.includes('recoverySnapshots') && db.includes('appMeta'), "Data safety schema must persist bounded recovery snapshots and device-local backup metadata"],
   [backupSafetySource.includes('BACKUP_STALE_DAYS = 7') && backupSafetySource.includes('BACKUP_SNOOZE_DAYS = 3') && backupReminderSource.includes('سه روز بعد'), "Backup reminders must use the documented stale and snooze policy"],
   [backupSettingsSource.includes('RecoverySnapshots') && recoverySource.includes('recoverySnapshotIdsToPrune') && recoverySource.includes('قبل از بازگردانی نقطه بازیابی') && recoverySource.includes('payload.marketSnapshots = []'), "Settings must expose lean bounded recovery history with a pre-restore safety point"],
+  [cryptoSource.includes('version = options.version ?? 2') && cryptoSource.includes('verifyBackupEnvelopeIntegrity') && cryptoSource.includes('sha256Base64(integrityInput(base))'), "New backup files must carry a v2 corruption digest while preserving explicit legacy envelope support"],
+  [backupClientSource.includes('inspectDatabaseBackup') && backupClientSource.indexOf('await verifyBackupEnvelopeIntegrity(envelope);') < backupClientSource.indexOf('const compatibility = assertSupportedDataSchema') && backupClientSource.includes('createRecoverySnapshot') && backupRestoreSource.includes('بررسی صحت و پیش‌نمایش') && backupRestoreSource.includes('بازیابی همین نسخه'), "Backup restore must verify file integrity, validate compatibility and show a record preview before replacement"],
+  [dataPortabilitySource.includes('schemaVersion > LOCAL_DATABASE_SCHEMA_VERSION') && recoverySource.includes('schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION') && recoverySource.includes('assertSupportedDataSchema(snapshot.schemaVersion)') && recoverySource.indexOf('validatePortableData(parsed);') < recoverySource.indexOf('await createRecoverySnapshot("قبل از بازگردانی نقطه بازیابی")'), "Backup and recovery data must reject future or malformed local data before destructive replacement"],
   [toastSource.includes('poolamco:toast') && providersSource.includes('<Toaster />') && backupSettingsSource.includes('toast({ tone: "error"'), "Backup success and failure must use the shared toast surface"],
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
@@ -293,6 +301,7 @@ const checks = [
   [deviceTransferCardSource.includes("انتقال بین دستگاه‌ها") && deviceTransferCardSource.includes("بدون حساب و فضای ابری پولم‌کو") && deviceTransferHookSource.includes("RTCPeerConnection"), "Device transfer must stay direct, local-first and account-free"],
   [deviceTransferHookSource.includes("createBackupEnvelope") && deviceTransferHookSource.includes("createRecoverySnapshot") && deviceTransferHookSource.includes("importDatabaseObject") && deviceTransferHelperSource.includes("validateTransferData"), "Device transfer must encrypt payloads, preview valid data and create recovery before replacement"],
   [deviceTransferHookSource.includes("stage: \"imported\"") && deviceTransferHookSource.includes("sendChannelMessages") && deviceTransferHelperSource.includes("splitTransferText"), "Device transfer must provide chunked progress and explicit receiver acknowledgement"],
+  [deviceTransferHookSource.includes('schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION') && deviceTransferHookSource.includes('{ version: 1 }') && deviceTransferHelperSource.includes('validateTransferSchema'), "Direct transfer must gate future schemas while keeping its legacy encrypted envelope interoperable"],
   [backupSafetyHookSource.includes("[metaQuery]") && !backupSafetyHookSource.includes("const meta = metaQuery ?? []"), "Backup safety memoization must not recreate a fallback dependency on every render"],
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
@@ -315,4 +324,4 @@ if (failures.length) {
   console.error(`Regression checks failed:\n${failures.join("\n")}`);
   process.exit(1);
 }
-console.log("Regression checks passed: landing/app separation, safe PWA/database updates, resilient local data, offline/error recovery, privacy-first analytics, market cache, and responsive UI are wired.");
+console.log("Regression checks passed: landing/app separation, safe PWA/database updates, verified data portability, resilient local data, privacy-first analytics, market cache, and responsive UI are wired.");

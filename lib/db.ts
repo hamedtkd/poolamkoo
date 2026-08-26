@@ -2,6 +2,8 @@
 
 import Dexie, { type EntityTable } from "dexie";
 import { LOCAL_DATA_BLOCKED_EVENT, LOCAL_DATA_VERSION_CHANGE_EVENT } from "@/lib/local-data-issues";
+import { LOCAL_DATABASE_SCHEMA_VERSION } from "@/lib/app-version";
+import { validatePortableData } from "@/lib/data-portability";
 import type {
   AllocationEntry,
   AllocationRule,
@@ -97,7 +99,7 @@ export class PoolYarDB extends Dexie {
     });
     this.version(4).stores(storesV4);
     this.version(5).stores(stores);
-    this.version(6).stores(storesV6);
+    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV6);
   }
 }
 
@@ -224,10 +226,7 @@ export async function exportDatabaseObject() {
 
 const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
 export async function importDatabaseObject(data: Record<string, unknown>) {
-  const required = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "settings"] as const;
-  for (const name of required) if (!Array.isArray(data[name])) throw new Error(`بکاپ ناقص است: بخش ${name} پیدا نشد.`);
-  const settings = data.settings as unknown[];
-  if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) throw new Error("بکاپ تنظیمات معتبر پولم‌کو را ندارد.");
+  validatePortableData(data);
 
   await db.transaction("rw", db.tables, async () => {
     for (const name of backupTableNames) await db.table(name).clear();

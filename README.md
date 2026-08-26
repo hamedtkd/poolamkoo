@@ -93,12 +93,15 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 - Visible backup health with stale/never-backed-up states
 - Friendly reminders after meaningful use and again after seven days
 - AES-GCM encrypted backup download with shared toast/error handling
+- v2 backup envelope with SHA-256 corruption detection plus app/schema metadata
+- Restore inspection with compatibility checks and record preview before replacement; legacy v1 files remain readable
 - Up to five local recovery snapshots for accidental destructive changes
 - Daily recovery checkpoints plus pre-destructive snapshots for key financial deletes/restores
 - Browser persistence status without pretending browser storage is a permanent backup
 - Device-local backup metadata and recovery history excluded from exported financial payloads
 - Direct encrypted WebRTC device transfer with copy/share pairing codes and preview before import
 - Recovery snapshot before destination replacement, with encrypted backup files kept as the universal fallback
+- Recovery and direct-transfer schema guards stop newer-format data before destructive import
 
 ### Public landing and production resilience
 

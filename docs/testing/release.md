@@ -152,3 +152,15 @@ git push origin vX.Y.Z
 - [ ] اگر تب دیگری Schema جدید را باز کرد، تب قدیمی اتصال DB را ببندد و ادامه نوشتن ندهد
 - [ ] Reload بعد از `versionchange` داده موجود را روی همان Origin/IndexedDB نگه دارد
 - [ ] هیچ Flow به‌روزرسانی پیشنهاد Clear Site Data ندهد
+
+## 14. Verified backups and data portability
+
+- [ ] بکاپ رمزنگاری‌شده جدید ساخته شود و در Preview تاریخ، رمزنگاری و تعداد رکوردها درست دیده شود
+- [ ] بکاپ بدون رمز جدید نیز digest معتبر داشته باشد و قبل از Restore قابل بررسی باشد
+- [ ] یک کاراکتر از Payload بکاپ v2 تغییر داده شود و Restore قبل از تغییر IndexedDB با خطای صحت فایل متوقف شود
+- [ ] یک بکاپ واقعی v1 از نسخه‌های قبلی همچنان Preview و Restore شود
+- [ ] Backup با `schemaVersion` بالاتر از نسخه فعلی قبل از ساخت Recovery/Import رد شود
+- [ ] Recovery Snapshot جدید `schemaVersion` داشته باشد و Snapshot قدیمی بدون Metadata همچنان به‌عنوان Legacy قابل Restore باشد
+- [ ] Device Transfer از فرستنده جدید `schemaVersion` را اعلام کند و گیرنده داده Schema جدیدتر را قبل از Import رد کند
+- [ ] Restore موفق همچنان قبل از جایگزینی یک Recovery Snapshot از وضعیت فعلی بسازد
+- [ ] هیچ خطای Backup/Recovery پیشنهاد Clear Site Data ندهد

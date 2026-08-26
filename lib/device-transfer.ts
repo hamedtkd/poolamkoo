@@ -1,3 +1,4 @@
+import { assertSupportedDataSchema, validatePortableData, type PortableDataPreview } from "./data-portability.ts";
 import type { BackupEnvelope } from "@/lib/types";
 
 export const DEVICE_TRANSFER_SIGNAL_FORMAT = "poolamco-device-signal";
@@ -14,16 +15,7 @@ export type TransferSignalPacket = {
   description: { type: "offer" | "answer"; sdp: string };
 };
 
-export type TransferPreview = {
-  incomes: number;
-  funds: number;
-  assets: number;
-  transactions: number;
-  planItems: number;
-  watchlist: number;
-  alerts: number;
-  total: number;
-};
+export type TransferPreview = PortableDataPreview;
 
 function bytesToBase64Url(bytes: Uint8Array) {
   let binary = "";
@@ -74,24 +66,12 @@ export function splitTransferText(value: string, size = DEVICE_TRANSFER_CHUNK_SI
   return chunks;
 }
 
-function countRows(data: Record<string, unknown>, key: string) {
-  return Array.isArray(data[key]) ? data[key].length : 0;
+export function validateTransferData(data: Record<string, unknown>): TransferPreview {
+  return validatePortableData(data);
 }
 
-export function validateTransferData(data: Record<string, unknown>): TransferPreview {
-  const required = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "settings"];
-  for (const key of required) if (!Array.isArray(data[key])) throw new Error(`داده انتقال ناقص است: بخش ${key} پیدا نشد.`);
-  const settings = data.settings as unknown[];
-  if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) {
-    throw new Error("داده انتقال تنظیمات معتبر پولم‌کو را ندارد.");
-  }
-  const preview = {
-    incomes: countRows(data, "incomes"), funds: countRows(data, "funds"), assets: countRows(data, "assets"),
-    transactions: countRows(data, "transactions"), planItems: countRows(data, "planItems"),
-    watchlist: countRows(data, "marketWatchlist"), alerts: countRows(data, "marketAlerts"), total: 0,
-  };
-  preview.total = preview.incomes + preview.funds + preview.assets + preview.transactions + preview.planItems + preview.watchlist + preview.alerts;
-  return preview;
+export function validateTransferSchema(schemaVersion?: number) {
+  return assertSupportedDataSchema(schemaVersion);
 }
 
 export function validateTransferEnvelope(envelope: BackupEnvelope) {

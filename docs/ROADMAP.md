@@ -67,6 +67,15 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Delay live financial queries until local database bootstrap completes successfully.
 - Keep all recovery guidance non-destructive and preserve the same local-first origin/database.
 
+## v0.21 — Verified backups and restore safety ✅
+
+- Add a versioned v2 backup envelope with SHA-256 corruption detection plus app/schema metadata.
+- Keep legacy v1 backup files readable so existing users are not stranded after upgrading.
+- Inspect/decrypt/validate backup files before replacement and show a human-readable record preview.
+- Reject backups, Recovery Snapshots and direct-transfer payloads created by a newer local schema before any destructive import starts.
+- Stamp new Recovery Snapshots with schema/app versions while preserving old snapshots as legacy-compatible data.
+- Keep direct WebRTC transfer zero-cost and backward-friendly by retaining its v1 encrypted envelope while adding schema compatibility metadata to the transfer frame.
+
 ## Backlog — Background alerts while PWA is closed
 
 See `docs/backlog/background-push.md`. Reconsider only when a sustainable free/voluntary hosting model and market-data quota make it responsible to enable.
