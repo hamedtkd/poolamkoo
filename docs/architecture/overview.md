@@ -106,3 +106,7 @@ Capture رسانه برای Windows نیز Production Server را با `process.
 هر اجرا یک Browser Profile موقت می‌سازد، Origin تست را پاک می‌کند و Market/Push/Cloudflare requests را Block می‌کند. ابتدا `/` را به‌عنوان Landing عمومی بررسی می‌کند، سپس CTA واقعی را تا Fresh `/dashboard` دنبال می‌کند، ایجاد IndexedDB و Onboarding را تأیید می‌کند، Fixture ساختگی `scripts/media/demo-data.mjs` را داخل همان Profile Seed می‌کند و Dashboard/Reports را از Production Build واقعی می‌خواند. در همان Session، Manifest و Service Worker فقط از Workspace بررسی می‌شوند و بازگشت عادی به `/` نباید به Dashboard redirect شود.
 
 این Gate عمداً محدود است: فقط قراردادهای Release-critical را پوشش می‌دهد و هر Flow جدید را به Browser suite اضافه نمی‌کند. اگر Regression جدیدی ثابت کند پوشش بیشتری لازم است، همان مورد به‌صورت هدفمند اضافه می‌شود.
+
+## Public landing rendering boundary (v0.27)
+
+The public Hero must remain useful before client hydration. Critical copy and approved Light/Dark product media therefore render as normal server-visible markup; decorative entrance/float motion is CSS-only and disabled by `prefers-reduced-motion`. The public theme toggle uses `next-themes` directly and does not read or write the financial IndexedDB settings record. Workspace appearance persistence remains owned by the application theme layer after entering `/dashboard`.

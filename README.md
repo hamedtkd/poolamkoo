@@ -1,4 +1,6 @@
 # Poolamkoo — پولم‌کو
+> v0.27.1 hotfix: workspace client-side navigation no longer wraps entire routes in exit/opacity animation, and the production browser gate now verifies Reports → Settings → Reports without a reload or blank content.
+> v0.27 note: the public Landing hero is redesigned around the approved Light/Dark product artwork, critical hero content no longer depends on Motion hydration, and the public header now has a local theme toggle with reduced-motion-safe transition.
 > v0.26.1 hotfix: full-source replacement now removes the obsolete root `app/manifest.ts` route so the public Landing cannot accidentally advertise the installable PWA; the production browser gate guards this exact regression.
 > v0.26 release note: a real production-browser smoke gate now verifies Landing → Workspace, fresh onboarding/local bootstrap, Reports decision insights and PWA boundaries from an isolated fake-data profile, without adding Playwright/Cypress.
 > v0.25 note: Reports now surface factual plan/allocation/fund follow-ups from recorded local data, and the public Landing hero uses approved local Light/Dark product visuals. Windows product-media capture also avoids the previous `spawn EINVAL` path.

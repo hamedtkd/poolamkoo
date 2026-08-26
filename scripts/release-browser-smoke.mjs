@@ -128,6 +128,32 @@ async function navigate(client, url, readyText) {
   if (readyText) await waitFor(client, `document.body?.innerText.includes(${JSON.stringify(readyText)})`, readyText);
 }
 
+async function clientNavigate(client, href, readyText) {
+  const marker = `client-nav-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  await evaluate(client, `window.__poolamkooClientNavMarker = ${JSON.stringify(marker)}; true`);
+  const clicked = await evaluate(client, `(() => {
+    const link = [...document.querySelectorAll('a[href=${JSON.stringify(href)}]')].find((node) => {
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    }) ?? document.querySelector('a[href=${JSON.stringify(href)}]');
+    if (!(link instanceof HTMLAnchorElement)) return false;
+    link.click();
+    return true;
+  })()`);
+  assert(clicked, `workspace navigation link ${href} must exist`);
+  await waitFor(client, `location.pathname === ${JSON.stringify(href)}`, `client navigation to ${href}`);
+  await waitFor(client, `document.body?.innerText.includes(${JSON.stringify(readyText)})`, readyText);
+  assert(await evaluate(client, `window.__poolamkooClientNavMarker === ${JSON.stringify(marker)}`), `navigation to ${href} must stay client-side without a document reload`);
+  assert(await evaluate(client, `(() => {
+    const content = document.querySelector('[data-route-content=${JSON.stringify(href)}]');
+    if (!(content instanceof HTMLElement)) return false;
+    const style = getComputedStyle(content);
+    const rect = content.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0 && (content.innerText || '').trim().length > 0;
+  })()`), `workspace content must remain visible after client navigation to ${href}`);
+}
+
 async function seedDemoData(client) {
   const data = createPoolamkooMediaDemoData();
   await evaluate(client, `(async () => {
@@ -226,11 +252,16 @@ async function main() {
     await client.call("Page.addScriptToEvaluateOnNewDocument", { source: `(() => { const RealDate=Date; const fixed=${JSON.stringify(POOLAMKOO_MEDIA_ANCHOR)}; class FixedDate extends RealDate { constructor(...args){ super(...(args.length?args:[fixed])); } static now(){ return new RealDate(fixed).getTime(); } } FixedDate.parse=RealDate.parse; FixedDate.UTC=RealDate.UTC; window.Date=FixedDate; })();` });
     await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
 
-    await navigate(client, `${origin}/`, "برای پولی که وارد می‌شود");
+    await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal web root must remain the public landing page");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "public landing must not advertise the installable manifest");
     assert(await evaluate(client, "navigator.serviceWorker.getRegistrations().then((rows) => rows.length === 0)"), "public landing must not initialize a service worker in a fresh profile");
     assert(await evaluate(client, "Boolean([...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان')))"), "landing must expose a dashboard CTA");
+    await waitFor(client, "[...document.querySelectorAll('img[data-landing-visual]')].some((node) => node.complete && node.naturalWidth > 0)", "landing product visual");
+    assert(await evaluate(client, "[...document.querySelectorAll('img[data-landing-visual]')].some((node) => getComputedStyle(node).display !== 'none')"), "one landing theme visual must be visible");
+    const beforeTheme = await evaluate(client, "document.documentElement.classList.contains('dark') ? 'dark' : 'light'");
+    await evaluate(client, "document.querySelector('[data-public-theme-toggle=\"true\"]')?.click(); true");
+    await waitFor(client, `document.documentElement.classList.contains(${JSON.stringify(beforeTheme === "dark" ? "light" : "dark")})`, "public theme switch");
     await evaluate(client, "[...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان'))?.click(); true");
     await waitFor(client, "location.pathname === '/dashboard'", "landing-to-workspace navigation");
     await waitFor(client, "document.body?.innerText.includes('پولت را از همان چیزی که واقعاً داری شروع کن')", "fresh onboarding");
@@ -257,17 +288,21 @@ async function main() {
     await seedDemoData(client);
     await navigate(client, `${origin}/dashboard`, "قانون پول فعلی");
     assert(await evaluate(client, "document.body?.innerText.includes('صندوق اضطراری')"), "seeded local data must render on the dashboard");
-    await navigate(client, `${origin}/reports`, "گزارش‌ها و بینش‌ها");
+
+    await clientNavigate(client, "/reports", "گزارش‌ها و بینش‌ها");
     assert(await evaluate(client, "document.body?.innerText.includes('جمع‌بندی تصمیمی این بازه')"), "reports must render decision insights from local demo data");
     assert(await evaluate(client, "document.body?.innerText.includes('قانون پول در برابر تخصیص ثبت‌شده')"), "reports must render recorded allocation comparison");
+    await clientNavigate(client, "/settings", "پولم‌کو را برای خودت تنظیم کن");
+    await clientNavigate(client, "/reports", "گزارش‌ها و بینش‌ها");
+    assert(await evaluate(client, "document.body?.innerText.includes('جمع‌بندی تصمیمی این بازه')"), "reports must remain visible after returning through client-side workspace navigation");
 
-    await navigate(client, `${origin}/`, "برای پولی که وارد می‌شود");
+    await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal browser root must remain landing even after workspace PWA registration");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "returning to the public landing must remove workspace manifest metadata");
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/AbortError|ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: landing → workspace, onboarding/bootstrap, reports, and PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: landing media/theme → workspace, onboarding/bootstrap, client-side route continuity, reports, and PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

@@ -1,4 +1,6 @@
 # پولم‌کو
+> نکته v0.27.1: جابه‌جایی Client-side بین صفحات Workspace دیگر کل Route را وارد انیمیشن خروج/Opacity نمی‌کند و Browser Release Gate مسیر Reports → Settings → Reports را بدون Reload و بدون صفحه سفید بررسی می‌کند.
+> نکته v0.27: Hero لندینگ با تصاویر تأییدشده روشن/تاریک بازطراحی شده، محتوای حیاتی Hero دیگر برای دیده‌شدن به Hydration انیمیشن وابسته نیست و هدر عمومی کنترل مستقل تم با Transition سازگار با Reduced Motion دارد.
 > نکته v0.26.1: پاک‌سازی جایگزینی سورس حالا `app/manifest.ts` قدیمی را حذف می‌کند تا Landing عمومی به‌اشتباه Manifest نصب PWA را advertise نکند؛ Browser Smoke واقعی همین Regression را پوشش می‌دهد.
 > نکته v0.26: یک Browser Smoke واقعی روی Production Build اضافه شده که Landing → Workspace، آنبوردینگ/بوت‌استرپ داده محلی، Reports و مرزهای PWA را با Profile موقت و دیتای نمایشی بررسی می‌کند؛ بدون اضافه‌کردن Playwright/Cypress.
 > نکته v0.25: گزارش‌ها حالا از داده محلی ثبت‌شده جمع‌بندی تصمیمی برای اجرای برنامه، تعادل قانون پول و صندوق‌ها می‌سازند؛ Hero لندینگ هم از دو تصویر تأییدشده روشن/تاریک استفاده می‌کند و مسیر Capture ویندوز برای رفع `spawn EINVAL` سخت‌سازی شده است.

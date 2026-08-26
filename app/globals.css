@@ -400,3 +400,63 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
   transition: transform .16s ease;
 }
 .skip-link:focus { transform: translateY(0); outline: 2px solid var(--ring); outline-offset: 2px; }
+
+@keyframes landing-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-float {
+  0%, 100% { transform: translateY(0) rotate(.001deg); }
+  50% { transform: translateY(-7px) rotate(.001deg); }
+}
+
+@keyframes landing-orbit {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .55; }
+  50% { transform: translate3d(18px, -12px, 0) scale(1.08); opacity: .8; }
+}
+
+.landing-enter {
+  animation: landing-enter .58s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.landing-enter-delay { animation-delay: .08s; }
+
+.landing-visual-float {
+  animation: landing-float 7s ease-in-out 1s infinite;
+  will-change: transform;
+}
+
+.landing-orb {
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(64px);
+  animation: landing-orbit 9s ease-in-out infinite;
+}
+
+.landing-orb-one {
+  width: 18rem;
+  height: 18rem;
+  inset-inline-start: -6rem;
+  top: -6rem;
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
+.landing-orb-two {
+  width: 22rem;
+  height: 22rem;
+  inset-inline-end: -8rem;
+  bottom: -10rem;
+  background: color-mix(in oklab, var(--chart-1) 14%, transparent);
+  animation-delay: -3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-enter,
+  .landing-visual-float,
+  .landing-orb {
+    animation: none !important;
+  }
+}

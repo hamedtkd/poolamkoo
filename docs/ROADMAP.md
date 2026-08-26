@@ -126,9 +126,20 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Add `npm run check:release` plus a manual GitHub Actions **Release smoke** workflow using the same gate.
 - Keep IndexedDB schema 6, backup formats, market providers and Background Push backlog unchanged.
 
+
+## v0.27 — Public landing experience and theme continuity ✅
+
+> v0.27.1 navigation hotfix: route-level exit/opacity animation was removed after it could leave the persistent workspace shell with blank content during Next.js client navigation. The production browser gate now clicks Reports → Settings → Reports without a document reload and asserts that route content stays visible.
+
+- Redesign the public Hero around the approved local Light/Dark product artwork so the product is visually present above the fold.
+- Keep critical Hero content visible before/without client Motion hydration; use CSS-only entrance/float effects with reduced-motion fallbacks.
+- Add a public Light/Dark theme control that does not touch financial IndexedDB state.
+- Extend the production browser release gate to verify landing media loads and public theme switching works before entering the workspace.
+- Preserve workspace-only PWA initialization, local-first privacy boundaries, and IndexedDB schema 6.
+
 ## Likely next phases
 
-- **v0.27 — Export/share refinements:** consider privacy-safe report export/share for user-requested summaries without turning Poolamkoo into accounting software.
+- **v0.28 — Export/share refinements:** add privacy-safe report sharing/export only where it improves real decisions without becoming accounting software.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 
 ## Backlog — Background alerts while PWA is closed
