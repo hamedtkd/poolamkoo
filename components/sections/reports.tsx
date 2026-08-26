@@ -4,7 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { RiArrowDownLine, RiArrowUpLine, RiFileList3Line, RiMoneyDollarCircleLine, RiSafe2Line } from "react-icons/ri";
 import { DataTable, type DataTableFeatures } from "@/components/data-table";
 import { AllocationDonut } from "@/components/charts/allocation-donut";
-import { MonthlyBars } from "@/components/charts/monthly-bars";
+import { LazyMonthlyBars } from "@/components/charts/lazy-monthly-bars";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HelpLabel } from "@/components/ui/help-label";
@@ -60,7 +60,7 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
 
     <div className="grid gap-4 lg:grid-cols-2">
       <Card><CardHeader><CardTitle><HelpLabel label="تقسیم کل پول ثبت‌شده" help={HELP.allocation} /></CardTitle></CardHeader><CardContent className="grid gap-5 sm:grid-cols-[220px_1fr] sm:items-center"><div className="grid place-items-center"><AllocationDonut segments={allocationSegments(totalIncome, totals, rule)} /></div><div className="grid gap-2"><Legend color="var(--chart-3)" label="زندگی" value={allocationValue(totalIncome, totals.life, rule?.lifePct ?? 30)} /><Legend color="var(--chart-2)" label="امنیت" value={allocationValue(totalIncome, totals.safety, rule?.safetyPct ?? 20)} /><Legend color="var(--chart-1)" label="رشد" value={allocationValue(totalIncome, totals.growth, rule?.growthPct ?? 50)} /></div></CardContent></Card>
-      <Card><CardHeader><CardTitle><HelpLabel label="تقسیم ماهانه" help={HELP.monthly} /></CardTitle></CardHeader><CardContent><MonthlyBars data={monthly} unit={settings.displayUnit} /></CardContent></Card>
+      <Card><CardHeader><CardTitle><HelpLabel label="تقسیم ماهانه" help={HELP.monthly} /></CardTitle></CardHeader><CardContent><LazyMonthlyBars data={monthly} unit={settings.displayUnit} /></CardContent></Card>
     </div>
 
     <Card><CardHeader><CardTitle><HelpLabel label="پایبندی به برنامه‌های پول ورودی" help={HELP.adherence} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">پیشنهاد پولم‌کو با آنچه واقعاً اجرا کرده‌ای مقایسه می‌شود.</p></CardHeader><CardContent><DataTable<PlanAdherenceRow> data={planRows} columns={planColumns} searchPlaceholder="جست‌وجوی برنامه..." mobileCard={(row) => <div className="p-4"><div className="flex items-start justify-between"><strong>{row.title}</strong><SensitiveValue className="type-strong text-primary">{formatPercent(row.pct, 0)}</SensitiveValue></div><div className="mt-3 grid grid-cols-2 gap-2 text-xs"><Small label="برنامه" value={formatMoney(row.planned, settings.displayUnit, true)} /><Small label="اجراشده" value={formatMoney(row.executed, settings.displayUnit, true)} /></div></div>} /></CardContent></Card>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { RiInformationLine, RiLineChartLine, RiLoader4Line } from "react-icons/ri";
-import { FinancialChart } from "@/components/charts/financial-chart";
+import { LazyFinancialChart } from "@/components/charts/lazy-financial-chart";
 import { MarketSourceLabel } from "@/components/market/market-source-label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
@@ -86,7 +86,7 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
           <Stat label="تغییر بازه" value={formatPercent(periodChange)} tone={periodChange >= 0 ? "positive" : "negative"} />
         </div> : null}
         {history.warning && <p className="mb-3 rounded-xl bg-muted/50 px-3 py-2 text-[10px] leading-5 text-muted-foreground">{history.warning}</p>}
-        <FinancialChart candles={candles} variant={chartVariant} />
+        <LazyFinancialChart candles={candles} variant={chartVariant} />
       </> : history.loading ? <div className="grid min-h-72 place-items-center rounded-2xl border border-dashed bg-muted/15 p-6 text-center">
         <div><RiLoader4Line className="mx-auto size-8 animate-spin text-primary" /><div className="mt-3 type-strong">{T.loading}</div><p className="mt-2 text-xs text-muted-foreground">برای کاهش مصرف سهمیه، پاسخ تاریخچه تا یک ساعت در لایه سرور cache می‌شود.</p></div>
       </div> : <EmptyState currentQuote={currentQuote} settings={settings} warning={history.warning} range={range} />}

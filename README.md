@@ -1,4 +1,5 @@
 # Poolamco — پولم‌کو
+> v0.23 performance note: high-cost chart engines are lazy-loaded on financial routes, while Dashboard sparklines use lightweight SVG rendering; this changes loading cost, not financial calculations or data boundaries.
 
 ### A Persian-first, RTL, local-first PWA for incoming-money planning, goal funds, and personal investment tracking
 

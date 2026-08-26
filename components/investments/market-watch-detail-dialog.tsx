@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { RiLineChartLine, RiLoader4Line, RiNotification3Line, RiWallet3Line } from "react-icons/ri";
-import { FinancialChart } from "@/components/charts/financial-chart";
+import { LazyFinancialChart } from "@/components/charts/lazy-financial-chart";
 import { MarketSourceLabel } from "@/components/market/market-source-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onC
           <RangePicker value={range} onChange={setRange} />
           <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => onCreateAlert({ marketId: row.item.marketId, symbol: row.item.symbol, name: row.item.name, source: row.item.source, priceToman: quote?.priceToman, navToman: quote?.navToman, changePercent: quote?.changePercent })}><RiNotification3Line /> ساخت هشدار</Button>{!row.owned && <Button size="sm" onClick={() => onCreateAsset({ id: row.item.marketId, symbol: row.item.symbol, name: row.item.name, priceToman: quote?.priceToman, changePercent: quote?.changePercent, source: row.item.source })}><RiWallet3Line /> افزودن به سبد</Button>}</div>
         </div>
-        {history.loading && !history.candles.length ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed"><div className="text-center"><RiLoader4Line className="mx-auto size-7 animate-spin text-primary" /><div className="mt-2 type-strong">در حال دریافت نمودار…</div></div></div> : history.candles.length >= 2 ? <FinancialChart candles={history.candles} variant="candles" height={360} /> : <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed p-6 text-center"><div><RiLineChartLine className="mx-auto size-7 text-muted-foreground" /><div className="mt-2 type-strong">برای این بازه داده کافی نداریم</div><p className="mt-1 type-caption text-muted-foreground">بازه دیگر را امتحان کن؛ Snapshotهای واقعی دستگاه هم به‌عنوان fallback استفاده می‌شوند.</p></div></div>}
+        {history.loading && !history.candles.length ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed"><div className="text-center"><RiLoader4Line className="mx-auto size-7 animate-spin text-primary" /><div className="mt-2 type-strong">در حال دریافت نمودار…</div></div></div> : history.candles.length >= 2 ? <LazyFinancialChart candles={history.candles} variant="candles" height={360} /> : <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed p-6 text-center"><div><RiLineChartLine className="mx-auto size-7 text-muted-foreground" /><div className="mt-2 type-strong">برای این بازه داده کافی نداریم</div><p className="mt-1 type-caption text-muted-foreground">بازه دیگر را امتحان کن؛ Snapshotهای واقعی دستگاه هم به‌عنوان fallback استفاده می‌شوند.</p></div></div>}
         {history.warning && <p className="rounded-xl bg-muted/45 px-3 py-2 text-[10px] leading-5 text-muted-foreground">{history.warning}</p>}
       </>}
     </DialogContent>

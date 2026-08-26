@@ -85,10 +85,18 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Add accessible names to icon-only financial actions, overlay close controls, drawer descriptions, sortable table headers, and table pagination.
 - Keep all of the above local-only: no analytics event expansion, account requirement, server storage, or financial-data telemetry.
 
+## v0.23 — Performance and Core Web Vitals ✅
+
+- Remove Recharts from Dashboard sparkline rendering by using a lightweight SVG path over real local market snapshots.
+- Put Dashboard portfolio history, Reports monthly bars, and investment market charts behind explicit dynamic-import boundaries.
+- Keep lazy-chart loading states reduced-motion safe and preserve honest empty states when real data is absent.
+- Add `check:performance` as a release regression gate so heavy chart libraries cannot silently move back into high-frequency route entry code.
+- Preserve the existing offline shell, explicit PWA update flow, local-first data model, and analytics privacy boundaries.
+
 ## Likely next phases
 
-- **v0.23 — Performance and Core Web Vitals:** audit route bundles, defer heavy chart/market UI where safe, and add measurable regressions without weakening offline behavior.
 - **v0.24 — Portfolio decision UX:** improve investment review and rebalance guidance only where it helps decisions based on real holdings/quotes.
+- **v0.25 — Reports / decision insights:** make reports more actionable without turning Poolamco into accounting software.
 - **Later — E2E release smoke tests:** add browser automation when the maintenance/dependency cost is justified by the release workflow.
 
 ## Backlog — Background alerts while PWA is closed

@@ -177,3 +177,8 @@ git push origin vX.Y.Z
 - [ ] Sort جدول با Keyboard قابل اجرا باشد و `aria-sort` تغییر کند
 - [ ] Dialog/Drawer با Escape بسته شوند و Close/Description نام و توضیح قابل دسترسی داشته باشند
 - [ ] Focus ring روی Navigation، Search Result و actionهای سفارشی در Light/Dark قابل مشاهده باشد
+
+
+### Performance regression gate
+
+`npm run check:performance` verifies that Dashboard, Reports, and investment market chart engines remain behind the intended lightweight/lazy boundaries. It is a structural guard, not a substitute for checking real Core Web Vitals after deployment.

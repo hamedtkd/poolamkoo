@@ -1,10 +1,10 @@
 "use client";
 
-import { useReducedMotion } from "motion/react";
-import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
+import { sparklinePoints } from "@/lib/sparkline";
 
 export function Sparkline({ data, positive = true }: { data: number[]; positive?: boolean }) {
-  const reduced = useReducedMotion();
-  const rows = data.map((value, i) => ({ i, value }));
-  return <div className="h-12 w-full"><ResponsiveContainer width="100%" height="100%"><AreaChart data={rows} margin={{ top: 3, right: 1, left: 1, bottom: 2 }}><defs><linearGradient id={`spark-${positive ? "p" : "n"}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={positive ? "var(--primary)" : "var(--destructive)"} stopOpacity={.22}/><stop offset="100%" stopColor={positive ? "var(--primary)" : "var(--destructive)"} stopOpacity={0}/></linearGradient></defs><YAxis hide domain={["dataMin - 1", "dataMax + 1"]}/><Area type="monotone" dataKey="value" stroke={positive ? "var(--primary)" : "var(--destructive)"} strokeWidth={2} fill={`url(#spark-${positive ? "p" : "n"})`} dot={false} isAnimationActive={!reduced} /></AreaChart></ResponsiveContainer></div>;
+  const points = sparklinePoints(data);
+  if (!points) return <div className="h-12 w-full" aria-hidden="true" />;
+  const stroke = positive ? "var(--primary)" : "var(--destructive)";
+  return <svg viewBox="0 0 120 48" role="img" aria-label="روند کوتاه قیمت" className="h-12 w-full" preserveAspectRatio="none"><polyline points={points} fill="none" stroke={stroke} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
