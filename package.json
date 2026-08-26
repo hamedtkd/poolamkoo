@@ -1,6 +1,6 @@
 {
   "name": "poolamkoo",
-  "version": "0.25.0",
+  "version": "0.26.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +21,10 @@
     "check:performance": "node scripts/check-performance.mjs",
     "media:capture": "npm run build && node scripts/capture-product-media.mjs",
     "media:capture:built": "node scripts/capture-product-media.mjs",
-    "check:icons": "node scripts/check-icon-imports.mjs"
+    "check:icons": "node scripts/check-icon-imports.mjs",
+    "test:browser:release": "npm run build && node scripts/release-browser-smoke.mjs",
+    "test:browser:release:built": "node scripts/release-browser-smoke.mjs",
+    "check:release": "npm run check && npm run build && npm run test:browser:release:built"
   },
   "dependencies": {
     "@tanstack/react-table": "9.1.2",

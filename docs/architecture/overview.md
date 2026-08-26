@@ -98,3 +98,11 @@ Chart libraries are intentionally kept out of high-frequency route entry code wh
 Landing از v0.25 به‌جای preview کاملاً مصنوعی JSX، دو Asset تصویری تأییدشده Light/Dark را از `public/landing/` نمایش می‌دهد. عددهای این تصویر صریحاً Demo هستند و هیچ داده کاربر برای ساخت Landing خوانده نمی‌شود. Service Worker همچنان فقط در Workspace رجیستر می‌شود، بنابراین اضافه‌شدن این رسانه مرز Public/PWA نسخه v0.24 را تغییر نمی‌دهد.
 
 Capture رسانه برای Windows نیز Production Server را با `process.execPath` و bin نصب‌شده Next.js اجرا می‌کند؛ این کار وابستگی به اجرای مستقیم `npm.cmd` در Child Process را حذف می‌کند و همان Browser Profile موقت/Fixture ساختگی را حفظ می‌کند.
+
+## Production browser release gate (v0.26)
+
+`check:release` یک لایه Browser QA کوچک روی Gateهای ساختاری موجود اضافه می‌کند و جای Unit Testها یا Manual PWA install QA را نمی‌گیرد. Runner با Chrome/Edge/Chromium و Chrome DevTools Protocol اجرا می‌شود تا وابستگی Playwright/Cypress یا Browser bundle جدید وارد پروژه نشود.
+
+هر اجرا یک Browser Profile موقت می‌سازد، Origin تست را پاک می‌کند و Market/Push/Cloudflare requests را Block می‌کند. ابتدا `/` را به‌عنوان Landing عمومی بررسی می‌کند، سپس CTA واقعی را تا Fresh `/dashboard` دنبال می‌کند، ایجاد IndexedDB و Onboarding را تأیید می‌کند، Fixture ساختگی `scripts/media/demo-data.mjs` را داخل همان Profile Seed می‌کند و Dashboard/Reports را از Production Build واقعی می‌خواند. در همان Session، Manifest و Service Worker فقط از Workspace بررسی می‌شوند و بازگشت عادی به `/` نباید به Dashboard redirect شود.
+
+این Gate عمداً محدود است: فقط قراردادهای Release-critical را پوشش می‌دهد و هر Flow جدید را به Browser suite اضافه نمی‌کند. اگر Regression جدیدی ثابت کند پوشش بیشتری لازم است، همان مورد به‌صورت هدفمند اضافه می‌شود.

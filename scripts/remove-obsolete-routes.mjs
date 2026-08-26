@@ -9,6 +9,13 @@ const obsoletePaths = [
   "app/funds",
   "app/reports",
   "app/settings",
+  // v0.24 moved PWA discovery to public/app.webmanifest + workspace metadata.
+  // Full-source replacement does not delete files that disappeared from newer ZIPs,
+  // so old checkouts may still keep this Next.js special route and advertise the
+  // installable manifest on the public Landing page.
+  "app/manifest.ts",
+  "app/manifest.js",
+  "app/manifest.webmanifest",
 ];
 const staleGeneratedTypePaths = [".next/types", ".next/dev/types"];
 

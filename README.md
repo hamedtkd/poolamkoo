@@ -1,4 +1,6 @@
 # Poolamkoo — پولم‌کو
+> v0.26.1 hotfix: full-source replacement now removes the obsolete root `app/manifest.ts` route so the public Landing cannot accidentally advertise the installable PWA; the production browser gate guards this exact regression.
+> v0.26 release note: a real production-browser smoke gate now verifies Landing → Workspace, fresh onboarding/local bootstrap, Reports decision insights and PWA boundaries from an isolated fake-data profile, without adding Playwright/Cypress.
 > v0.25 note: Reports now surface factual plan/allocation/fund follow-ups from recorded local data, and the public Landing hero uses approved local Light/Dark product visuals. Windows product-media capture also avoids the previous `spawn EINVAL` path.
 > v0.24.1 note: the v0.24 portfolio/PWA work is release-hardened, the canonical Latin project name is **Poolamkoo**, and privacy-safe product screenshot capture is available locally and in GitHub Actions.
 > v0.24 decision UX note: Investments now compares each real holding's current share with the user-defined target and keeps PWA installation/runtime inside workspace routes; normal `/` remains the public landing page.
@@ -282,14 +284,20 @@ The experiment has not been deleted. Its implementation and future opt-in instru
 
 ## Quality gate
 
-Run before committing or releasing:
+Run the normal local gate before committing:
 
 ```bash
 npm run check
 npm run build
 ```
 
-`npm run check` covers TypeScript, ESLint, unit tests, file-size rules, UI architecture checks, and regression checks.
+For a release candidate, run the production-browser gate too:
+
+```bash
+npm run check:release
+```
+
+`check:release` runs the normal quality suite, creates one production build, then opens that build in an isolated Chrome/Edge/Chromium profile and verifies Landing → Workspace, fresh onboarding/local bootstrap, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
 
 ## PWA
 

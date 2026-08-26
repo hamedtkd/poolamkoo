@@ -41,3 +41,9 @@ test("service worker does not explicitly precache the landing root", () => {
   assert.equal(precacheLine.includes('"/dashboard"'), true);
   assert.equal(precacheLine.includes('"/offline"'), true);
 });
+
+test("obsolete cleanup removes the legacy root manifest special route", () => {
+  const cleanup = read("scripts/remove-obsolete-routes.mjs");
+  assert.equal(cleanup.includes('"app/manifest.ts"'), true);
+  assert.equal(cleanup.includes('"app/manifest.webmanifest"'), true);
+});

@@ -6,9 +6,10 @@
 
 ```bash
 npm install
-npm run check
-npm run build
+npm run check:release
 ```
+
+برای عیب‌یابی می‌توان همان مسیر را جدا اجرا کرد: `npm run check`، سپس `npm run build` و در پایان `npm run test:browser:release:built`.
 
 موارد زیر باید بدون خطا تمام شوند:
 
@@ -20,6 +21,7 @@ npm run build
 - [ ] UI architecture checks
 - [ ] regression checks
 - [ ] production Next.js build
+- [ ] production browser release smoke
 
 ## 2. Core flows
 
@@ -224,3 +226,21 @@ git push origin vX.Y.Z
 - [ ] `npm run media:capture:built` روی Windows بدون `spawn EINVAL` Production Server را بالا بیاورد
 - [ ] Capture هر دو `landing-light-desktop.png` و `landing-dark-desktop.png` را بسازد
 - [ ] IndexedDB schema روی 6 و Backup/Restore contract بدون تغییر باقی بماند
+
+
+## 19. Production browser release smoke
+
+- [ ] `clean:obsolete` روی checkout ارتقایافته `app/manifest.ts` قدیمی را حذف کند و `public/app.webmanifest` را نگه دارد
+
+- [ ] `npm run check:release` یک Build می‌سازد و Browser Smoke را روی همان Build اجرا می‌کند
+- [ ] تست با Profile موقت `poolamkoo-release-smoke-*` اجرا شود و در پایان Profile حذف شود
+- [ ] Landing عادی `/` بدون Manifest نصب و بدون Service Worker registration اولیه باز شود
+- [ ] CTA «شروع رایگان» واقعاً به `/dashboard` برسد و Fresh Onboarding دیده شود
+- [ ] Fresh IndexedDB مقدار `onboardingComplete: false` داشته باشد و «فعلاً ردش کن» آن را Persist کند
+- [ ] Fixture نمایشی محلی روی Dashboard رندر شود و به Profile واقعی مرورگر دسترسی نداشته باشد
+- [ ] Reports با Fixture نمایشی `جمع‌بندی تصمیمی این بازه` و مقایسه تخصیص ثبت‌شده را نمایش دهد
+- [ ] Workspace Manifest `/app.webmanifest` را advertise کند و `id/start_url=/dashboard`, `scope=/`, `display=standalone` باشد
+- [ ] Service Worker در Workspace ثبت شود اما بازگشت مرورگر عادی به `/` همچنان Landing را نشان دهد
+- [ ] Market/Push/Cloudflare requests در Browser Smoke مسدود باشند تا سهمیه بیرونی مصرف نشود
+- [ ] Workflow دستی GitHub Actions با نام `Release smoke` همان `npm run check:release` را اجرا کند
+- [ ] نصب واقعی PWA روی Desktop/Android همچنان Manual QA باقی بماند؛ Browser Smoke جای تست نصب واقعی را نمی‌گیرد

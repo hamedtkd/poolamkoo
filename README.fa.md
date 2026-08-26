@@ -1,4 +1,6 @@
 # پولم‌کو
+> نکته v0.26.1: پاک‌سازی جایگزینی سورس حالا `app/manifest.ts` قدیمی را حذف می‌کند تا Landing عمومی به‌اشتباه Manifest نصب PWA را advertise نکند؛ Browser Smoke واقعی همین Regression را پوشش می‌دهد.
+> نکته v0.26: یک Browser Smoke واقعی روی Production Build اضافه شده که Landing → Workspace، آنبوردینگ/بوت‌استرپ داده محلی، Reports و مرزهای PWA را با Profile موقت و دیتای نمایشی بررسی می‌کند؛ بدون اضافه‌کردن Playwright/Cypress.
 > نکته v0.25: گزارش‌ها حالا از داده محلی ثبت‌شده جمع‌بندی تصمیمی برای اجرای برنامه، تعادل قانون پول و صندوق‌ها می‌سازند؛ Hero لندینگ هم از دو تصویر تأییدشده روشن/تاریک استفاده می‌کند و مسیر Capture ویندوز برای رفع `spawn EINVAL` سخت‌سازی شده است.
 > نکته v0.24.1: نسخه v0.24 برای انتشار سخت‌سازی شده، نام لاتین استاندارد پروژه در همه سطوح **Poolamkoo** است و Capture امن اسکرین‌شات با دیتای نمایشی به‌صورت محلی و در GitHub Actions اضافه شده است.
 > نکته v0.24: صفحه سرمایه‌گذاری حالا سهم فعلی هر دارایی را با هدفی که خود کاربر تعیین کرده مقایسه می‌کند و نصب/اجرای PWA به مسیرهای Workspace محدود شده؛ `/` همچنان Landing عمومی است.
@@ -240,14 +242,20 @@ Cloudflare Web Analytics آمار کلی مثل Visits، Page Views، مسیر �
 
 ## Quality Gate
 
-قبل از Commit یا Release اجرا کن:
+قبل از Commit، Gate معمول را اجرا کن:
 
 ```bash
 npm run check
 npm run build
 ```
 
-`npm run check` شامل TypeScript، ESLint، تست‌ها، بررسی معتبر بودن Remix Iconها، محدودیت طول فایل‌ها، قوانین UI و Regression Checkها است.
+برای Release Candidate، Browser Gate را هم اجرا کن:
+
+```bash
+npm run check:release
+```
+
+`check:release` ابتدا Quality Gate معمول را اجرا می‌کند، یک Production Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای Landing → Workspace، آنبوردینگ/داده محلی، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
 
 
 ## تصویر محصول در لندینگ

@@ -115,10 +115,21 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Harden product-media capture on Windows by launching the installed Next.js runtime directly instead of spawning `npm.cmd`.
 - Keep IndexedDB schema 6, privacy boundaries, market-provider behavior, and Background Push backlog unchanged.
 
+## v0.26 — E2E release smoke tests ✅
+
+> v0.26.1 hotfix: `clean:obsolete` now removes legacy root Manifest special routes left behind by full-source replacement, preventing old `app/manifest.ts` from re-advertising PWA install metadata on the public Landing.
+
+- Add a small production-browser release gate without Playwright/Cypress or another browser-test dependency.
+- Verify normal Landing → Workspace navigation, fresh onboarding, local IndexedDB bootstrap/persistence, seeded Dashboard data and Reports decision insights.
+- Verify PWA boundaries in the real production build: public root has no install manifest/runtime initialization, workspace advertises `/app.webmanifest`, and the service worker registers from workspace.
+- Keep release fixtures isolated in a temporary browser profile and block market/push/analytics requests so smoke tests do not consume real quotas or read user data.
+- Add `npm run check:release` plus a manual GitHub Actions **Release smoke** workflow using the same gate.
+- Keep IndexedDB schema 6, backup formats, market providers and Background Push backlog unchanged.
+
 ## Likely next phases
 
-- **v0.26 — E2E release smoke tests:** add a small browser release gate for landing → workspace, onboarding/data bootstrap, reports, and PWA boundaries without creating a large maintenance burden.
-- **Later — Export/share refinements:** consider user-requested report export only if it stays privacy-safe and does not turn Poolamkoo into accounting software.
+- **v0.27 — Export/share refinements:** consider privacy-safe report export/share for user-requested summaries without turning Poolamkoo into accounting software.
+- **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 
 ## Backlog — Background alerts while PWA is closed
 
