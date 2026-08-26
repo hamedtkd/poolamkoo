@@ -71,7 +71,7 @@ function WatchCard({ row, settings, onDetail, onCreateAsset, onCreateAlert }: { 
   return <div className="rounded-2xl border bg-muted/15 p-4 transition hover:border-primary/20 hover:bg-muted/25">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="type-section-title">{row.item.symbol}</span>{row.owned && <Badge>در سبد</Badge>}<NavBadge label={signal.label} tone={signal.tone} /></div><div className="mt-1 truncate type-caption text-muted-foreground">{row.item.name}</div></div>
-      <Button size="icon" variant="ghost" className="size-8 shrink-0 text-destructive" onClick={() => row.item.id && void db.marketWatchlist.delete(row.item.id)} title="حذف از دیده‌بان"><RiDeleteBin6Line /></Button>
+      <Button size="icon" variant="ghost" className="size-8 shrink-0 text-destructive" onClick={() => row.item.id && void db.marketWatchlist.delete(row.item.id)} title="حذف از دیده‌بان" aria-label={`حذف ${row.item.symbol} از دیده‌بان`}><RiDeleteBin6Line /></Button>
     </div>
     <div className="mt-4 grid grid-cols-2 gap-3">
       <Metric label="قیمت بازار" value={quote ? formatMoney(quote.priceToman, settings.displayUnit, true) : "—"} />

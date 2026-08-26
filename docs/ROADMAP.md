@@ -76,6 +76,21 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Stamp new Recovery Snapshots with schema/app versions while preserving old snapshots as legacy-compatible data.
 - Keep direct WebRTC transfer zero-cost and backward-friendly by retaining its v1 encrypted envelope while adding schema compatibility metadata to the transfer frame.
 
+## v0.22 — Mobile navigation and accessibility hardening ✅
+
+- Keep the four highest-frequency money workflows visible in the mobile bottom navigation: Home, Incoming Money, Investments, and Funds; move lower-frequency reports/settings behind the More sheet.
+- Respect mobile safe-area insets so the fixed bottom navigation never covers financial content or device gesture areas.
+- Expose active/expanded navigation state with `aria-current`, `aria-expanded`, labelled navigation landmarks, and consistent keyboard focus rings.
+- Upgrade global search from "Enter opens first result" to a real keyboard-navigable combobox with Up/Down/Home/End selection and live result-count announcements.
+- Add accessible names to icon-only financial actions, overlay close controls, drawer descriptions, sortable table headers, and table pagination.
+- Keep all of the above local-only: no analytics event expansion, account requirement, server storage, or financial-data telemetry.
+
+## Likely next phases
+
+- **v0.23 — Performance and Core Web Vitals:** audit route bundles, defer heavy chart/market UI where safe, and add measurable regressions without weakening offline behavior.
+- **v0.24 — Portfolio decision UX:** improve investment review and rebalance guidance only where it helps decisions based on real holdings/quotes.
+- **Later — E2E release smoke tests:** add browser automation when the maintenance/dependency cost is justified by the release workflow.
+
 ## Backlog — Background alerts while PWA is closed
 
 See `docs/backlog/background-push.md`. Reconsider only when a sustainable free/voluntary hosting model and market-data quota make it responsible to enable.

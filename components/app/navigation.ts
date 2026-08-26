@@ -15,3 +15,10 @@ export const appNav = [
   { href: "/reports", label: "گزارش‌ها", shortLabel: "گزارش", icon: RiBarChartBoxLine, tour: "reports" },
   { href: "/settings", label: "تنظیمات", shortLabel: "تنظیمات", icon: RiSettings3Line, tour: "settings" },
 ] as const;
+
+// Mobile keeps the four highest-frequency money flows visible; reports/settings stay one tap away in More.
+export const mobilePrimaryNav = [appNav[0], appNav[1], appNav[2], appNav[3]] as const;
+
+export function isAppNavActive(pathname: string, href: string) {
+  return href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+}

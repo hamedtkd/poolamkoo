@@ -118,9 +118,10 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 
 - Persian-first RTL interface
 - PWA with offline shell
-- Responsive, mobile-first layout
-- Collapsible desktop sidebar
-- Global search across sections, incoming money, funds, and assets
+- Responsive, mobile-first layout with safe-area-aware fixed navigation
+- Four daily mobile destinations kept one tap away: Home, Incoming Money, Investments, and Funds
+- Collapsible desktop sidebar with active-route semantics
+- Keyboard-navigable global search across sections, incoming money, funds, and assets
 - Light, dark, and system themes
 - Gold-first visual palette
 - Product tour and contextual financial help

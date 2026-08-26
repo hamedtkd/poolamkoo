@@ -64,7 +64,7 @@ export function ExchangeInstrumentPicker({ selected, settings, onSelect, onClear
   return <div className="space-y-2">
     {selected && <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
       <div className="min-w-0"><div className="flex items-center gap-2"><RiStockLine className="shrink-0 text-primary" /><span className="type-strong">{selected.symbol}</span><span className="truncate type-caption text-muted-foreground">{selected.name}</span></div><div className="mt-1 text-[10px] text-muted-foreground">قیمت خودکار بازار فعال است · <MarketSourceLabel source="tindex" /></div></div>
-      <Button type="button" size="icon" variant="ghost" className="size-8 shrink-0" onClick={onClear} title="قطع اتصال بازار"><RiCloseLine /></Button>
+      <Button type="button" size="icon" variant="ghost" className="size-8 shrink-0" onClick={onClear} title="قطع اتصال بازار" aria-label="قطع اتصال بازار"><RiCloseLine /></Button>
     </div>}
     <div className="relative"><RiSearch2Line className="absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => search(event.target.value)} className="pe-9" placeholder={selected ? "برای تغییر نماد جست‌وجو کن…" : "مثلاً عیار، سیمین، فولاد یا شستا"} /></div>
     {loading && <div className="rounded-xl bg-muted/40 px-3 py-2 type-caption text-muted-foreground">در حال جست‌وجوی بازار…</div>}

@@ -45,7 +45,7 @@ export function AppShell({ settings, market, onNewMoney, children }: {
   }, []);
 
   return (
-    <div className={cn("min-h-svh pb-24 md:pb-0", settings.hideFinancialData && "privacy-hidden")}>
+    <div className={cn("app-mobile-safe-bottom min-h-svh", settings.hideFinancialData && "privacy-hidden")}>
       <a href="#app-main" className="skip-link">رفتن به محتوای اصلی</a>
       <DesktopSidebar pathname={pathname} collapsed={sidebar.collapsed} onToggleCollapsed={sidebar.toggle} onNewMoney={onNewMoney} />
       <MobileNavigation

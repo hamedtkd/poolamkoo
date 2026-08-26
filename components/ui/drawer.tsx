@@ -8,7 +8,7 @@ export const Drawer = DialogPrimitive.Root;
 export const DrawerTrigger = DialogPrimitive.Trigger;
 export const DrawerClose = DialogPrimitive.Close;
 
-export function DrawerContent({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DrawerContent({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
   const closeRef = React.useRef<HTMLButtonElement>(null);
   const startY = React.useRef(0);
   const [dragY, setDragY] = React.useState(0);
@@ -38,6 +38,7 @@ export function DrawerContent({ children, className }: { children: React.ReactNo
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-[105] bg-black/50 backdrop-blur-[3px] data-[state=open]:animate-in data-[state=closed]:animate-out" />
       <DialogPrimitive.Content
+        id={id}
         dir="rtl"
         style={{ transform: `translate3d(0, ${dragY}px, 0)` }}
         className={cn(
@@ -53,7 +54,12 @@ export function DrawerContent({ children, className }: { children: React.ReactNo
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          aria-label="برای بستن به پایین بکشید"
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            closeRef.current?.click();
+          }}
+          aria-label="بستن پنجره؛ در لمس به پایین بکشید"
         >
           <span className="h-1.5 w-12 rounded-full bg-muted-foreground/35" />
         </button>
@@ -68,4 +74,8 @@ export function DrawerContent({ children, className }: { children: React.ReactNo
 
 export function DrawerTitle({ children, className }: { children: React.ReactNode; className?: string }) {
   return <DialogPrimitive.Title className={cn("mb-3 text-center type-label", className)}>{children}</DialogPrimitive.Title>;
+}
+
+export function DrawerDescription({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <DialogPrimitive.Description className={cn("type-caption text-muted-foreground", className)}>{children}</DialogPrimitive.Description>;
 }

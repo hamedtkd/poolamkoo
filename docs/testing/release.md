@@ -164,3 +164,16 @@ git push origin vX.Y.Z
 - [ ] Device Transfer از فرستنده جدید `schemaVersion` را اعلام کند و گیرنده داده Schema جدیدتر را قبل از Import رد کند
 - [ ] Restore موفق همچنان قبل از جایگزینی یک Recovery Snapshot از وضعیت فعلی بسازد
 - [ ] هیچ خطای Backup/Recovery پیشنهاد Clear Site Data ندهد
+
+## 15. Mobile accessibility and navigation
+
+- [ ] Bottom Navigation روی 360px / 390px / 430px «خانه، ورودی‌ها، سرمایه، صندوق‌ها، بیشتر» را بدون بریدگی نمایش دهد
+- [ ] روی دستگاه/شبیه‌ساز دارای Home Indicator، Bottom Navigation و آخرین محتوای صفحه با Safe Area تداخل نداشته باشند
+- [ ] Route فعال در Desktop و Mobile برای Screen Reader با `aria-current` مشخص باشد
+- [ ] دکمه «بیشتر» وضعیت باز/بسته و ارتباطش با Drawer را اعلام کند
+- [ ] Global Search با Arrow Up/Down، Home/End و Enter فقط نتیجه فعال را باز کند
+- [ ] تغییر Query در Global Search انتخاب را به اولین نتیجه برگرداند و تعداد نتایج اعلام شود
+- [ ] تمام Icon-only actionهای اصلی Income/Funds/Portfolio/Alerts نام قابل خواندن برای Screen Reader داشته باشند
+- [ ] Sort جدول با Keyboard قابل اجرا باشد و `aria-sort` تغییر کند
+- [ ] Dialog/Drawer با Escape بسته شوند و Close/Description نام و توضیح قابل دسترسی داشته باشند
+- [ ] Focus ring روی Navigation، Search Result و actionهای سفارشی در Light/Dark قابل مشاهده باشد

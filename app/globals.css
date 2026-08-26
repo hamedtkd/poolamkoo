@@ -334,7 +334,12 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
 }
 .privacy-hidden [data-sensitive="true"]::selection { background: transparent; }
 
+.app-mobile-safe-bottom {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+}
+
 .mobile-bottom-nav {
+  bottom: max(.75rem, env(safe-area-inset-bottom));
   background: color-mix(in oklab, var(--background) 94%, transparent);
   border: 1px solid color-mix(in oklab, var(--border) 80%, var(--primary) 20%);
   box-shadow: 0 18px 48px color-mix(in oklab, black 24%, transparent), inset 0 1px 0 color-mix(in oklab, white 14%, transparent);
@@ -345,6 +350,10 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
 .dark .mobile-bottom-nav {
   background: color-mix(in oklab, var(--background) 91%, transparent);
   box-shadow: 0 18px 52px rgb(0 0 0 / 45%), inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
+@media (min-width: 768px) {
+  .app-mobile-safe-bottom { padding-bottom: 0; }
 }
 
 @media (max-width: 767px) {

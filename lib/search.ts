@@ -9,3 +9,9 @@ export function normalizeSearchText(value: string) {
     .replace(/[٬,،]/g, "")
     .replace(/\s+/g, " ");
 }
+
+export function moveSearchSelection(current: number, total: number, direction: 1 | -1) {
+  if (total <= 0) return -1;
+  if (current < 0) return direction > 0 ? 0 : total - 1;
+  return (current + direction + total) % total;
+}

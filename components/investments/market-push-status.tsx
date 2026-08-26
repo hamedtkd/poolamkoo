@@ -26,7 +26,7 @@ export function MarketPushStatus({ push }: { push: BackgroundPushControls }) {
       </div>
       <div className="flex shrink-0 flex-wrap gap-2">
         {enabled ? <Button variant="outline" onClick={() => void push.disable()}>خاموش‌کردن Push</Button> : <Button onClick={() => void push.enable()} disabled={push.status === "checking" || push.status === "unsupported" || push.status === "unconfigured" || push.status === "denied"}><RiNotification3Line /> فعال‌سازی Push</Button>}
-        {push.status === "error" && <Button size="icon" variant="outline" title="تلاش دوباره" onClick={() => void push.refresh()}><RiRefreshLine /></Button>}
+        {push.status === "error" && <Button size="icon" variant="outline" title="تلاش دوباره" aria-label="تلاش دوباره برای وضعیت اعلان" onClick={() => void push.refresh()}><RiRefreshLine /></Button>}
       </div>
     </div>
     <div className="mt-3 grid gap-2 text-[10px] leading-5 text-muted-foreground sm:grid-cols-2">

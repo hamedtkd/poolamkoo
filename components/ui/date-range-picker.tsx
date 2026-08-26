@@ -3,7 +3,7 @@
 import * as React from "react";
 import { RiCalendar2Line, RiCloseLine } from "react-icons/ri";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { PersianCalendar } from "@/components/ui/persian-calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -56,7 +56,7 @@ export function DateRangePicker({ value, onValueChange, className }: {
         <DrawerTrigger asChild>{trigger}</DrawerTrigger>
         <DrawerContent className="px-4">
           <DrawerTitle className="mb-1 text-start">بازه زمانی</DrawerTitle>
-          <p className="mb-3 type-caption text-muted-foreground">داده‌های صفحه‌ها بر اساس این بازه فیلتر می‌شوند.</p>
+          <DrawerDescription className="mb-3">داده‌های همین صفحه بر اساس این بازه فیلتر می‌شوند.</DrawerDescription>
           <PresetGrid onSelect={(key) => applyPreset(key, false)} />
           <div className="mt-3 flex justify-center rounded-2xl border bg-background/62 p-2">
             <PersianCalendar mode="range" range={draft} onRangeChange={setDraft} />

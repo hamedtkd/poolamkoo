@@ -3,7 +3,7 @@
 import * as React from "react";
 import { RiCalendarLine } from "react-icons/ri";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { PersianCalendar } from "@/components/ui/persian-calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -97,6 +97,7 @@ export function DatePicker({
         <DrawerTrigger asChild>{trigger}</DrawerTrigger>
         <DrawerContent>
           <DrawerTitle>{drawerTitle ?? placeholder}</DrawerTitle>
+          <DrawerDescription className="sr-only">یک تاریخ شمسی انتخاب کن و در صورت نیاز آن را تأیید کن.</DrawerDescription>
           <div className="flex justify-center"><PersianCalendar value={draft} onValueChange={select} /></div>
           {resolvedConfirm === "explicit" && <div className="mt-4 grid grid-cols-2 gap-2"><Button type="button" variant="outline" onClick={() => { setDraft(value); setOpen(false); }}>{cancelLabel}</Button><Button type="button" disabled={!draft} onClick={() => { commit(draft); setOpen(false); }}>{confirmLabel}</Button></div>}
         </DrawerContent>

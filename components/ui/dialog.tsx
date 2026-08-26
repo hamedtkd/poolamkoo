@@ -27,7 +27,7 @@ export function DialogContent({ children, className }: { children: React.ReactNo
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted-foreground/20 sm:hidden" />
             {children}
           </m.div>
-          <DialogPrimitive.Close className="absolute left-4 top-4 rounded-lg p-2 text-muted-foreground transition hover:bg-accent">
+          <DialogPrimitive.Close aria-label="بستن پنجره" className="absolute left-4 top-4 rounded-lg p-2 text-muted-foreground transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <RiCloseLine className="size-5" />
           </DialogPrimitive.Close>
         </DialogPrimitive.Content>
