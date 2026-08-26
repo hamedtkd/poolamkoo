@@ -8,7 +8,7 @@ import {
 } from "react-icons/ri";
 
 export const appNav = [
-  { href: "/", label: "خانه", shortLabel: "خانه", icon: RiHome5Line, tour: "home" },
+  { href: "/dashboard", label: "خانه", shortLabel: "خانه", icon: RiHome5Line, tour: "home" },
   { href: "/income", label: "پول‌های ورودی", shortLabel: "ورودی‌ها", icon: RiWallet3Line, tour: "income" },
   { href: "/investments", label: "سرمایه‌گذاری", shortLabel: "سرمایه", icon: RiFundsLine, tour: "investments" },
   { href: "/funds", label: "صندوق‌ها", shortLabel: "صندوق‌ها", icon: RiSafe2Line, tour: "funds" },

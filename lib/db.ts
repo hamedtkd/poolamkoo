@@ -1,6 +1,7 @@
 "use client";
 
 import Dexie, { type EntityTable } from "dexie";
+import { LOCAL_DATA_BLOCKED_EVENT, LOCAL_DATA_VERSION_CHANGE_EVENT } from "@/lib/local-data-issues";
 import type {
   AllocationEntry,
   AllocationRule,
@@ -101,6 +102,16 @@ export class PoolYarDB extends Dexie {
 }
 
 export const db = new PoolYarDB();
+
+function dispatchLocalDataEvent(name: string) {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(name));
+}
+
+db.on("blocked", () => dispatchLocalDataEvent(LOCAL_DATA_BLOCKED_EVENT));
+db.on("versionchange", () => {
+  db.close();
+  dispatchLocalDataEvent(LOCAL_DATA_VERSION_CHANGE_EVENT);
+});
 
 export const defaultSettings: AppSettings = {
   id: "settings",

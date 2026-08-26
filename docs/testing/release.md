@@ -123,3 +123,32 @@ git push origin vX.Y.Z
 - [ ] هیچ Custom Event یا payload حاوی مبلغ، نام دارایی، تراکنش، Search، فرم یا Backup وجود نداشته باشد
 - [ ] صفحه `/analytics` و `/privacy` وضعیت و مرز داده را به‌درستی توضیح دهند
 - [ ] اگر Cloudflare automatic injection روی دامنه فعال است، manual + automatic هم‌زمان استفاده نشوند
+
+## 12. Landing page and production hardening
+
+- [ ] `/` Landing Page عمومی را بدون ساخت/Seed کردن دیتابیس مالی نمایش دهد
+- [ ] CTA اصلی Landing و لوگوی داخل اپ به `/dashboard` برسند
+- [ ] PWA نصب‌شده با `/dashboard` شروع شود
+- [ ] داده IndexedDB نسخه قبلی بعد از تغییر مسیر `/` → `/dashboard` همان‌جا در دسترس بماند
+- [ ] `robots.txt` routeهای مالی و `/api/` را disallow کند
+- [ ] `sitemap.xml` فقط routeهای عمومی را فهرست کند
+- [ ] metadata routeهای داخل `(workspace)` دارای `noindex` باشد
+- [ ] قطع شبکه Banner کوچک Offline را نشان دهد و داده محلی همچنان قابل استفاده باشد
+- [ ] `/offline` بعد از برگشت اتصال امکان Retry واضح داشته باشد
+- [ ] خطای بازشدن/مسدودشدن IndexedDB به‌جای Skeleton بی‌پایان پیام امن نشان دهد
+- [ ] هیچ Error UI به‌عنوان اولین راه‌حل پیشنهاد پاک‌کردن Site Data ندهد
+- [ ] 404 و Global Error روی موبایل و دسکتاپ قابل استفاده باشند
+- [ ] Skip link با Tab روی Public Shell و App Shell ظاهر و قابل استفاده باشد
+
+
+## 13. Safe updates and multi-tab local data
+
+- [ ] Deploy نسخه جدید در حالی که نسخه قبلی باز است، Banner «نسخه جدید پولم‌کو آماده است» را بدون Reload ناگهانی نشان دهد
+- [ ] انتخاب «بعداً» Session فعلی را قطع نکند
+- [ ] انتخاب «به‌روزرسانی» Worker منتظر را فعال کند و فقط بعد از `controllerchange` یک Reload انجام شود
+- [ ] اولین نصب Service Worker بدون نمایش Update کاذب انجام شود
+- [ ] Cache نسخه قبلی فقط هنگام Activate شدن Worker جدید پاک شود
+- [ ] اگر یک تب قدیمی Upgrade IndexedDB را Block کند، تب جدید پیام بستن/تازه‌سازی تب دیگر را نشان دهد
+- [ ] اگر تب دیگری Schema جدید را باز کرد، تب قدیمی اتصال DB را ببندد و ادامه نوشتن ندهد
+- [ ] Reload بعد از `versionchange` داده موجود را روی همان Origin/IndexedDB نگه دارد
+- [ ] هیچ Flow به‌روزرسانی پیشنهاد Clear Site Data ندهد

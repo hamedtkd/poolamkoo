@@ -40,7 +40,7 @@ export function MobileNavigation({ pathname, market, menuOpen, setMenuOpen, onOp
   onToggleTheme: (origin?: ThemeOrigin) => void | Promise<void>;
   hideFinancialData: boolean;
 }) {
-  const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const active = (href: string) => (href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href));
   const visible = [appNav[0], appNav[2], appNav[3], appNav[4]];
 
   return (
@@ -48,7 +48,7 @@ export function MobileNavigation({ pathname, market, menuOpen, setMenuOpen, onOp
       <header className="sticky top-0 z-20 border-b bg-background/92 px-3 py-2 backdrop-blur-xl md:hidden">
         <div className="flex h-11 items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <Link href="/" aria-label="خانه" className="grid size-10 shrink-0 place-items-center rounded-xl border bg-background/72 px-1.5 transition active:scale-95">
+            <Link href="/dashboard" aria-label="خانه" className="grid size-10 shrink-0 place-items-center rounded-xl border bg-background/72 px-1.5 transition active:scale-95">
               <BrandLogo className="size-8" />
             </Link>
             <TodayDate compact className="rounded-xl bg-muted/35 px-2.5 py-1.5" />

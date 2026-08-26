@@ -372,3 +372,22 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer { animation: none; background-image: none; }
 }
+
+/* Keyboard accessibility: hidden until focused. */
+.skip-link {
+  position: fixed;
+  top: .75rem;
+  right: .75rem;
+  z-index: 200;
+  transform: translateY(-180%);
+  border: 1px solid var(--border);
+  border-radius: .75rem;
+  background: var(--background);
+  color: var(--foreground);
+  padding: .65rem .9rem;
+  font-size: .8125rem;
+  font-weight: var(--type-weight-label);
+  box-shadow: 0 14px 40px color-mix(in oklab, black 18%, transparent);
+  transition: transform .16s ease;
+}
+.skip-link:focus { transform: translateY(0); outline: 2px solid var(--ring); outline-offset: 2px; }

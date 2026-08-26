@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "پولم‌کو",
     short_name: "پولم‌کو",
     description: "برنامه‌ریزی پول‌های ورودی، صندوق‌ها و سرمایه‌گذاری به‌صورت Local-First",
-    start_url: "/",
+    start_url: "/dashboard",
     display: "standalone",
     orientation: "portrait-primary",
     background_color: "#0d0e13",

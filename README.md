@@ -26,6 +26,10 @@ Reports and feedback
 
 Core personal-finance data is stored locally in the user's browser through IndexedDB. Normal use does not require an account or a central user database.
 
+## Website and app entry
+
+Since v0.19, `/` is the public product landing page while the local-first financial application starts at `/dashboard`. The installed PWA also starts at `/dashboard`. This route split does not move or recreate IndexedDB because browser storage is scoped to the origin, not the URL path.
+
 ## Product scope
 
 ### Incoming money and planning
@@ -95,6 +99,17 @@ Core personal-finance data is stored locally in the user's browser through Index
 - Device-local backup metadata and recovery history excluded from exported financial payloads
 - Direct encrypted WebRTC device transfer with copy/share pairing codes and preview before import
 - Recovery snapshot before destination replacement, with encrypted backup files kept as the universal fallback
+
+### Public landing and production resilience
+
+- Public Persian landing page at `/` and financial app entry at `/dashboard`
+- `robots.txt`, `sitemap.xml`, and app-route `noindex` boundaries
+- Explicit IndexedDB bootstrap error/timeout state instead of an indefinite skeleton
+- Offline status banner plus improved offline fallback
+- Global error, route error, and 404 recovery surfaces without destructive reset shortcuts
+- Keyboard skip links on public and app shells
+- Explicit PWA update prompt that activates a waiting Service Worker only after user confirmation
+- Multi-tab IndexedDB upgrade protection for blocked/outdated tabs before financial live queries start
 
 ### User experience
 
@@ -179,11 +194,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The local development server normally runs at:
-
-```text
-http://localhost:3000
-```
+The public landing page normally runs at `http://localhost:3000`, while the local-first application starts at `http://localhost:3000/dashboard`.
 
 ## Market data
 

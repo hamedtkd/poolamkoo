@@ -1,7 +1,8 @@
 import { access, rm } from "node:fs/promises";
 
-const routeGroupEntry = "app/(app)/page.tsx";
+const workspaceEntry = "app/(workspace)/dashboard/page.tsx";
 const obsoletePaths = [
+  "app/(app)",
   "app/page.tsx",
   "app/income",
   "app/investments",
@@ -9,6 +10,7 @@ const obsoletePaths = [
   "app/reports",
   "app/settings",
 ];
+const staleGeneratedTypePaths = [".next/types", ".next/dev/types"];
 
 async function exists(path) {
   try {
@@ -19,17 +21,26 @@ async function exists(path) {
   }
 }
 
-if (!(await exists(routeGroupEntry))) {
-  console.log("Route-group entry not found; obsolete-route cleanup skipped.");
-  process.exit(0);
+let removedRoutes = 0;
+if (await exists(workspaceEntry)) {
+  for (const path of obsoletePaths) {
+    if (!(await exists(path))) continue;
+    await rm(path, { recursive: true, force: true });
+    removedRoutes += 1;
+    console.log(`Removed obsolete route: ${path}`);
+  }
+} else {
+  console.log("Workspace route entry not found; obsolete-route cleanup skipped.");
 }
 
-let removed = 0;
-for (const path of obsoletePaths) {
+let removedGeneratedTypes = 0;
+for (const path of staleGeneratedTypePaths) {
   if (!(await exists(path))) continue;
   await rm(path, { recursive: true, force: true });
-  removed += 1;
-  console.log(`Removed obsolete route: ${path}`);
+  removedGeneratedTypes += 1;
+  console.log(`Removed stale generated route types: ${path}`);
 }
 
-if (!removed) console.log("No obsolete pre-route-group entries found.");
+if (!removedRoutes && !removedGeneratedTypes) {
+  console.log("No obsolete routes or stale generated route types found.");
+}

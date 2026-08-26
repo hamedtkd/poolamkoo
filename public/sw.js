@@ -1,9 +1,12 @@
-const CACHE = "poolamco-v32";
-const PRECACHE = ["/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamco.svg"];
+const CACHE = "poolamco-v36";
+const PRECACHE = ["/", "/dashboard", "/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamco.svg"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
-  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE).then((cache) => Promise.allSettled(PRECACHE.map((path) => cache.add(path)))));
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener("activate", (event) => {

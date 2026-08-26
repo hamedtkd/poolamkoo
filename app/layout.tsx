@@ -2,13 +2,24 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { CloudflareWebAnalytics } from "@/components/analytics/cloudflare-web-analytics";
 import { Providers } from "@/components/providers";
+import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "پولم‌کو",
-  description: "مدیریت پول‌های ورودی، صندوق‌های هدف و سرمایه‌گذاری به‌صورت Local-First",
-  applicationName: "پولم‌کو",
+  metadataBase: new URL(siteUrl()),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
   icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }], apple: "/icon-192.png" },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "پولم‌کو" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
+  category: "finance",
+  creator: "Poolamco open-source contributors",
+  openGraph: {
+    type: "website",
+    locale: "fa_IR",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = { themeColor: "#9a6f0a", width: "device-width", initialScale: 1, viewportFit: "cover" };

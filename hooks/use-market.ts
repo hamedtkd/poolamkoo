@@ -45,7 +45,7 @@ async function latestCachedQuotes() {
   return [...latest.values()];
 }
 
-export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [], alerts: MarketAlert[] = []) {
+export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [], alerts: MarketAlert[] = [], enabled = true) {
   const idsKey = useMemo(() => JSON.stringify(targetIds(assets, watchlist, alerts)), [alerts, assets, watchlist]);
   const ids = useMemo(() => JSON.parse(idsKey) as string[], [idsKey]);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
@@ -78,6 +78,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
   }, []);
 
   const refresh = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     try {
       await applyResponse(await requestMarket(ids));
@@ -90,9 +91,10 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
     } finally {
       setLoading(false);
     }
-  }, [applyResponse, ids]);
+  }, [applyResponse, enabled, ids]);
 
   useEffect(() => {
+    if (!enabled) return;
     let active = true;
     void latestCachedQuotes().then(async (cached) => {
       if (!active) return;
@@ -111,7 +113,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
       }
     });
     return () => { active = false; };
-  }, [applyResponse, ids, idsKey]);
+  }, [applyResponse, enabled, ids, idsKey]);
 
   return { quotes, loading, mode, lastUpdated, warning, refresh };
 }

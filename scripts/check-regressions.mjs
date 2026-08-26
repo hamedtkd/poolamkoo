@@ -22,7 +22,7 @@ const [
   read("components/ui/tooltip.tsx"), read("components/app/product-tour.tsx"), read("hooks/use-product-tour.ts"),
   read("components/ui/button.tsx"), read("lib/types.ts"), read("components/app/market-refresh-button.tsx"),
   read("components/app/app-route-layout.tsx"), read("components/brand-logo.tsx"), read("components/sections/settings.tsx"),
-  read("lib/plan-progress.ts"), read("app/(app)/error.tsx"), read("components/sections/reports.tsx"), read("components/charts/monthly-bars.tsx"), read("components/app/privacy-toggle.tsx"), read("app/globals.css"),
+  read("lib/plan-progress.ts"), read("app/(workspace)/error.tsx"), read("components/sections/reports.tsx"), read("components/charts/monthly-bars.tsx"), read("components/app/privacy-toggle.tsx"), read("app/globals.css"),
   read("components/data-table.tsx"), read("components/app/global-search.tsx"), read("app/layout.tsx"), read("app/manifest.ts"), read("public/sw.js"), read("public/favicon.svg"),
 ]);
 
@@ -81,7 +81,7 @@ const [marketWatchlistSource, navSource, appDataSource, investmentsPageSource] =
   read("components/investments/market-watchlist-card.tsx"),
   read("lib/market/nav.ts"),
   read("hooks/use-app-data.ts"),
-  read("app/(app)/investments/page.tsx"),
+  read("app/(workspace)/investments/page.tsx"),
 ]);
 
 const [marketWatchToolbarSource, marketWatchDetailSource, marketWatchHelperSource] = await Promise.all([
@@ -141,7 +141,36 @@ const [analyticsComponentSource, analyticsHelperSource, analyticsSettingsSource,
   read("docs/analytics.md"), read(".env.example"),
 ]);
 
+
+const [landingPageSource, landingHeroSource, landingSectionsSource, siteSource, workspaceLayoutSource, robotsSource, sitemapSource, localDataUnavailableSource, networkStatusSource, offlineScreenSource, notFoundSource] = await Promise.all([
+  read("app/(public)/page.tsx"), read("components/landing/landing-hero.tsx"), read("components/landing/landing-sections.tsx"),
+  read("lib/site.ts"), read("app/(workspace)/layout.tsx"), read("app/robots.ts"), read("app/sitemap.ts"),
+  read("components/system/local-data-unavailable.tsx"), read("components/system/network-status-banner.tsx"),
+  read("components/system/offline-screen.tsx"), read("app/not-found.tsx"),
+]);
+
+const [networkStatusHookSource, obsoleteRouteCleanupSource] = await Promise.all([
+  read("hooks/use-network-status.ts"), read("scripts/remove-obsolete-routes.mjs"),
+]);
+
+const [pwaUpdateHookSource, pwaUpdateNoticeSource, pwaUpdateHelperSource, localDataIssuesSource] = await Promise.all([
+  read("hooks/use-pwa-update.ts"), read("components/system/pwa-update-notice.tsx"),
+  read("lib/pwa-update.ts"), read("lib/local-data-issues.ts"),
+]);
+
 const checks = [
+
+  [landingPageSource.includes("LandingHero") && landingPageSource.includes("LandingSections") && landingHeroSource.includes("شروع رایگان") && landingHeroSource.includes("Local-first"), "Public root must present a clear Persian landing page before entering the financial app"],
+  [siteSource.includes('APP_ENTRY_PATH = "/dashboard"') && manifest.includes('start_url: "/dashboard"') && desktopSidebar.includes('href="/dashboard"') && mobileNavigation.includes('href="/dashboard"'), "Landing and installed app must keep separate root and dashboard entry points"],
+  [workspaceLayoutSource.includes("index: false") && robotsSource.includes('disallow: ["/dashboard"') && sitemapSource.includes("PUBLIC_INDEX_ROUTES"), "Financial app routes must stay out of search indexing while public trust pages remain discoverable"],
+  [landingSectionsSource.includes("بکاپ رمزنگاری‌شده") && landingSectionsSource.includes("انتقال مستقیم دستگاه") && landingSectionsSource.includes("رایگان، متن‌باز"), "Landing page must explain data ownership, recovery and open-source positioning"],
+  [appDataSource.includes("bootstrapError") && appDataSource.includes("BOOT_TIMEOUT_MS") && appDataSource.includes("performBootstrap(run)") && !appDataSource.includes("retryBootstrap();") && appRouteLayout.includes("LocalDataUnavailable") && localDataUnavailableSource.includes("Site Data") && !providersSource.includes("ensureSeedData"), "IndexedDB bootstrap failures must stay retryable without synchronous setState inside the mount effect"],
+  [db.includes('db.on("blocked"') && db.includes('db.on("versionchange"') && appDataSource.includes("LOCAL_DATA_BLOCKED_EVENT") && appDataSource.includes("const canQuery = bootstrap.status === \"ready\"") && localDataIssuesSource.includes('name === "VersionError"') && localDataUnavailableSource.includes("classifyLocalDataIssue") && marketHook.includes("enabled = true") && backupSafetyHookSource.includes("enabled = true") && communityHookSource.includes("enabled ? db.appMeta") && appRouteLayout.includes("data.marketAlerts, data.ready"), "Multi-tab IndexedDB upgrades must block stale writes and delay financial database consumers until bootstrap succeeds"],
+  [providersSource.includes("PwaUpdateNotice") && pwaUpdateNoticeSource.includes("نسخه جدید پولم‌کو آماده است") && pwaUpdateHookSource.includes("controllerchange") && pwaUpdateHookSource.includes("waiting.postMessage({ type: PWA_UPDATE_MESSAGE })") && pwaUpdateHelperSource.includes('PWA_UPDATE_MESSAGE = "SKIP_WAITING"'), "PWA updates must wait for explicit acceptance and reload only after the new worker controls the page"],
+  [serviceWorker.includes('const CACHE = "poolamco-v36"') && serviceWorker.includes('event.data?.type === "SKIP_WAITING"') && serviceWorker.indexOf('addEventListener("message"') < serviceWorker.indexOf("self.skipWaiting()"), "Service worker updates must not skip waiting unconditionally during install"],
+  [networkStatusHookSource.includes("useSyncExternalStore") && !networkStatusHookSource.includes("useState") && shell.includes("NetworkStatusBanner") && networkStatusSource.includes("آفلاین هستی") && offlineScreenSource.includes("Local-first"), "Network state must use an external-store subscription without synchronous hydration setState"],
+  [obsoleteRouteCleanupSource.includes('"app/(app)"') && obsoleteRouteCleanupSource.includes('".next/types"') && obsoleteRouteCleanupSource.includes('".next/dev/types"'), "Replacement installs must remove the legacy route group and stale Next.js route validators before typecheck/build"],
+  [notFoundSource.includes("۴۰۴") && notFoundSource.includes("/data") === false, "Unknown routes must fail safely without offering destructive data actions"],
   [rootLayout.includes("CloudflareWebAnalytics") && analyticsComponentSource.includes("next/script") && analyticsHelperSource.includes("static.cloudflareinsights.com") && analyticsHelperSource.includes('nodeEnv === "production"'), "Cloudflare Web Analytics must be optional, production-only and wired through the root layout"],
   [analyticsComponentSource.includes("NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN") && envExampleSource.includes("NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN") && !analyticsComponentSource.includes("fetch("), "Analytics must use only the public site token and the official beacon without a custom telemetry transport"],
   [settingsSection.includes("AnalyticsSettingsCard") && analyticsSettingsSource.includes("مبلغ") && analyticsSettingsSource.includes("Custom Event") && analyticsPageSource.includes("بدون Cookie"), "Analytics status and privacy boundaries must be visible in the app"],
@@ -154,7 +183,7 @@ const checks = [
   [dashboardMotionSource.includes("هنوز صندوق هدفی نداری") && dashboardMotionSource.includes("قیمت بازار فعلاً در دسترس نیست") && dashboardMotionSource.includes("نمودار بعد از اولین خرید شکل می‌گیرد"), "Dashboard must show explicit empty states instead of blank or misleading loading states"],
   [gitattributesSource.includes("* text=auto eol=lf"), "Repository text files must keep deterministic LF line endings across Windows and Unix"],
   [communitySource.includes("SUPPORT_PROMPT_ACTIVE_DAYS = 7") && communitySource.includes("SUPPORT_PROMPT_SNOOZE_DAYS = 60") && communitySource.includes("SUPPORT_PROMPT_THANKS_DAYS = 180") && communityHookSource.includes("withUsageDay"), "Community support prompt must require seven distinct active days and use long local cooldowns"],
-  [supportPromptSource.includes("ستاره در GitHub") && supportPromptSource.includes("حمایت اختیاری") && supportPromptSource.includes('pathname === "/"'), "Support prompt must stay gentle, optional, and dashboard-only"],
+  [supportPromptSource.includes("ستاره در GitHub") && supportPromptSource.includes("حمایت اختیاری") && supportPromptSource.includes('pathname === "/dashboard"'), "Support prompt must stay gentle, optional, and dashboard-only"],
   [githubStatsApiSource.includes("api.github.com/repos/hamedtkd/poolamkoo") && githubStatsApiSource.includes("revalidate: 21_600") && sidebarCommunitySource.includes("RiStarFill"), "GitHub entry must use a cached public star count without requiring a client token"],
   [privacyPageSource.includes("IndexedDB") && privacyPageSource.includes("Analytics اختیاری و بدون داده مالی") && privacyPageSource.includes("WebRTC") && aboutPageSource.includes("متن‌باز") && guidePageSource.includes("بکاپ") && securityPageSource.includes("Secretهای سرور") && licensePageSource.includes("مجوز MIT"), "Public trust pages must explain local-first privacy, security, licensing, and backup reality"],
   [desktopSidebar.includes("SidebarCommunity") && mobileNavigation.includes("GithubLink") && settingsSection.includes("OpenSourceCard") && openSourceCardSource.includes("/privacy"), "Open-source, guide, privacy and GitHub surfaces must be reachable from desktop, mobile and settings"],
@@ -268,7 +297,7 @@ const checks = [
 
   [!desktopSidebar.includes("جست‌وجوی کلی") && appTopbar.includes("جست‌وجوی کلی") && globalSearch.includes("Ctrl / ⌘ + K"), "Desktop global search must have one clear entry point in the topbar"],
   [mobileNavigation.includes("onOpenSearch") && mobileNavigation.includes("RiSearch2Line"), "Global search must be accessible on mobile"],
-  [desktopSidebar.includes('href="/"') && mobileNavigation.includes('href="/"') && desktopSidebar.includes("BrandLogo") && mobileNavigation.includes("BrandLogo"), "Brand logo must link to the dashboard in desktop and mobile navigation"],
+  [desktopSidebar.includes('href="/dashboard"') && mobileNavigation.includes('href="/dashboard"') && desktopSidebar.includes("BrandLogo") && mobileNavigation.includes("BrandLogo"), "Brand logo must link to the dashboard in desktop and mobile navigation"],
   [drawer.includes("dragY") && drawer.includes("onPointerMove") && drawer.includes("closeRef.current?.click()"), "Mobile Drawer must support swipe-down dismissal"],
   [appTopbar.includes("MarketRefreshButton") && appTopbar.includes("PrivacyToggle") && appTopbar.includes("ThemeToggle") && !appTopbar.includes("DateRangePicker") && pageDateFilterBar.includes("DateRangePicker"), "Desktop utilities belong in the topbar while date filtering must stay page-scoped"],
   [!desktopSidebar.includes("MarketRefreshButton") && !desktopSidebar.includes("PrivacyToggle") && !desktopSidebar.includes("ThemeToggle"), "Desktop sidebar must stay focused on navigation instead of utility controls"],
@@ -286,4 +315,4 @@ if (failures.length) {
   console.error(`Regression checks failed:\n${failures.join("\n")}`);
   process.exit(1);
 }
-console.log("Regression checks passed: Persian forms, resilient local data, semantic DataTable headers, global search, PWA identity, privacy-first analytics, market cache, and responsive UI are wired.");
+console.log("Regression checks passed: landing/app separation, safe PWA/database updates, resilient local data, offline/error recovery, privacy-first analytics, market cache, and responsive UI are wired.");

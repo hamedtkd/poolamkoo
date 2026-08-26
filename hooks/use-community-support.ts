@@ -14,7 +14,7 @@ async function writeUsage(update: (state: CommunityUsageState | null) => Communi
 }
 
 export function useCommunitySupport(enabled: boolean) {
-  const row = useLiveQuery(() => db.appMeta.get(COMMUNITY_USAGE_META_KEY), []);
+  const row = useLiveQuery(() => enabled ? db.appMeta.get(COMMUNITY_USAGE_META_KEY) : undefined, [enabled]);
   const state = useMemo(() => parseCommunityUsage(row?.value), [row?.value]);
   const due = enabled && isSupportPromptDue(state);
 

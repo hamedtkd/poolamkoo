@@ -49,6 +49,24 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - No custom analytics event layer and no analytics npm dependency; token/config absent means no third-party beacon at all.
 - Dedicated in-app Analytics page, Settings status card, privacy documentation and release QA.
 
+
+## v0.19 — Landing page and release hardening ✅
+
+- Public Persian landing page at `/` with the local-first financial app moved to `/dashboard`.
+- SEO metadata, sitemap/robots boundaries, and noindex protection for financial application routes.
+- IndexedDB startup failure/timeout handling without destructive reset guidance.
+- Offline status UX, global/route error recovery, 404 handling, and keyboard skip links.
+- PWA entry/cache alignment and baseline response-header hardening.
+
+## v0.20 — Safe app updates and local database upgrades ✅
+
+- Replace unconditional Service Worker activation with an explicit, user-visible update flow.
+- Reload only after the waiting worker is accepted, avoiding mixed old/new application shells.
+- Detect IndexedDB `blocked` and `versionchange` lifecycle events across tabs.
+- Stop stale tabs from continuing to write after another tab upgrades the local database.
+- Delay live financial queries until local database bootstrap completes successfully.
+- Keep all recovery guidance non-destructive and preserve the same local-first origin/database.
+
 ## Backlog — Background alerts while PWA is closed
 
 See `docs/backlog/background-push.md`. Reconsider only when a sustainable free/voluntary hosting model and market-data quota make it responsible to enable.

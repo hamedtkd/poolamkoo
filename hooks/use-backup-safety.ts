@@ -21,11 +21,11 @@ function firstTime(values: Array<string | undefined>) {
   return times.length ? new Date(Math.min(...times)).toISOString() : undefined;
 }
 
-export function useBackupSafety(data: BackupUsageData) {
-  const metaQuery = useLiveQuery(() => db.appMeta.toArray(), []);
-  const snapshotsQuery = useLiveQuery(() => db.recoverySnapshots.orderBy("createdAt").reverse().limit(5).toArray(), []);
+export function useBackupSafety(data: BackupUsageData, enabled = true) {
+  const metaQuery = useLiveQuery(() => enabled ? db.appMeta.toArray() : [], [enabled]);
+  const snapshotsQuery = useLiveQuery(() => enabled ? db.recoverySnapshots.orderBy("createdAt").reverse().limit(5).toArray() : [], [enabled]);
   const snapshots = snapshotsQuery ?? [];
-  const ready = metaQuery !== undefined && snapshotsQuery !== undefined;
+  const ready = enabled && metaQuery !== undefined && snapshotsQuery !== undefined;
   const metaMap = useMemo(() => new Map((metaQuery ?? []).map((row) => [row.key, row.value])), [metaQuery]);
   const meaningfulFunds = data.funds.filter((fund) => fund.currentToman > 0);
   const meaningfulCount = data.incomes.length + data.transactions.length + data.planItems.length + meaningfulFunds.length;
@@ -44,8 +44,8 @@ export function useBackupSafety(data: BackupUsageData) {
   const health = ready ? calculatedHealth : { ...calculatedHealth, shouldRemind: false };
 
   useEffect(() => {
-    if (meaningfulCount > 0) void ensurePeriodicRecoverySnapshot().catch(() => undefined);
-  }, [meaningfulCount]);
+    if (enabled && meaningfulCount > 0) void ensurePeriodicRecoverySnapshot().catch(() => undefined);
+  }, [enabled, meaningfulCount]);
 
   async function snoozeReminder() {
     const until = new Date(Date.now() + BACKUP_SNOOZE_DAYS * 24 * 60 * 60 * 1000).toISOString();

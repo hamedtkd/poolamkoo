@@ -8,6 +8,7 @@ import { AppRuntimeProvider } from "@/components/app/app-runtime";
 import { NewMoneyDialog } from "@/components/new-money-dialog";
 import { Onboarding } from "@/components/onboarding";
 import { FullAppSkeleton } from "@/components/skeletons/page-skeleton";
+import { LocalDataUnavailable } from "@/components/system/local-data-unavailable";
 import { useAppData } from "@/hooks/use-app-data";
 import { useAppDateFilter } from "@/hooks/use-app-date-filter";
 import { useBackgroundPush } from "@/hooks/use-background-push";
@@ -19,11 +20,11 @@ import { useMarketAlerts } from "@/hooks/use-market-alerts";
 export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const [newMoneyOpen, setNewMoneyOpen] = useState(false);
   const data = useAppData();
-  const market = useMarket(data.assets, data.watchlist, data.marketAlerts);
+  const market = useMarket(data.assets, data.watchlist, data.marketAlerts, data.ready);
   useMarketAlerts(data.marketAlerts, market.quotes, market.mode, data.settings.displayUnit);
-  const backgroundPush = useBackgroundPush(data.marketAlerts);
+  const backgroundPush = useBackgroundPush(data.marketAlerts, data.ready);
   const dateFilter = useAppDateFilter(data);
-  const backupSafety = useBackupSafety(data);
+  const backupSafety = useBackupSafety(data, data.ready);
   const communitySupport = useCommunitySupport(data.ready && data.settings.onboardingComplete);
 
   useEffect(() => {
@@ -32,6 +33,11 @@ export function AppRouteLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("poolyar:new-money", open);
   }, []);
 
+  useEffect(() => {
+    if (data.ready && navigator.storage?.persist) navigator.storage.persist().catch(() => undefined);
+  }, [data.ready]);
+
+  if (data.bootstrapError) return <LocalDataUnavailable error={data.bootstrapError} onRetry={data.retryBootstrap} />;
   if (!data.ready) return <FullAppSkeleton />;
   if (!data.settings.onboardingComplete) return <Onboarding onDone={() => undefined} />;
 

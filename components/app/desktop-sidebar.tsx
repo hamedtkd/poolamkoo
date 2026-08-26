@@ -16,7 +16,7 @@ export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMo
   onToggleCollapsed: () => void;
   onNewMoney: () => void;
 }) {
-  const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const active = (href: string) => href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
   return (
     <aside className={cn(
@@ -72,7 +72,7 @@ function SidebarHeader({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
 
   return (
     <div className="flex h-16 shrink-0 items-center justify-between border-b px-3">
-      <Link href="/" aria-label="رفتن به خانه" className="flex items-center gap-3 rounded-xl px-1.5 py-1 transition hover:bg-accent">
+      <Link href="/dashboard" aria-label="رفتن به خانه" className="flex items-center gap-3 rounded-xl px-1.5 py-1 transition hover:bg-accent">
         <BrandLogo className="h-9 w-[38px]" />
         <div className="min-w-0 type-label">پولم‌کو</div>
       </Link>

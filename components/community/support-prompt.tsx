@@ -12,7 +12,7 @@ type SupportState = ReturnType<typeof useCommunitySupport>;
 
 export function SupportPrompt({ support }: { support: SupportState }) {
   const pathname = usePathname();
-  const open = pathname === "/" && support.due;
+  const open = pathname === "/dashboard" && support.due;
 
   function choose(action: "github" | "support") {
     window.open(action === "github" ? COMMUNITY_LINKS.repository : COMMUNITY_LINKS.support, "_blank", "noopener,noreferrer");

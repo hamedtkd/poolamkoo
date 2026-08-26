@@ -9,6 +9,7 @@ import type { MarketRefreshControls } from "@/components/app/market-refresh-butt
 import { MobileNavigation } from "@/components/app/mobile-navigation";
 import { ProductTour } from "@/components/app/product-tour";
 import { RouteTransition } from "@/components/motion/reveal";
+import { NetworkStatusBanner } from "@/components/system/network-status-banner";
 import { useAppTheme } from "@/hooks/use-app-theme";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import type { AppSettings } from "@/lib/types";
@@ -45,6 +46,7 @@ export function AppShell({ settings, market, onNewMoney, children }: {
 
   return (
     <div className={cn("min-h-svh pb-24 md:pb-0", settings.hideFinancialData && "privacy-hidden")}>
+      <a href="#app-main" className="skip-link">رفتن به محتوای اصلی</a>
       <DesktopSidebar pathname={pathname} collapsed={sidebar.collapsed} onToggleCollapsed={sidebar.toggle} onNewMoney={onNewMoney} />
       <MobileNavigation
         pathname={pathname}
@@ -59,9 +61,10 @@ export function AppShell({ settings, market, onNewMoney, children }: {
         hideFinancialData={settings.hideFinancialData}
       />
 
-      <main className={cn("transition-[margin] duration-300 ease-out", sidebar.collapsed ? "md:mr-[64px]" : "md:mr-64")}>
+      <main id="app-main" className={cn("transition-[margin] duration-300 ease-out", sidebar.collapsed ? "md:mr-[64px]" : "md:mr-64")}>
         <div className="mx-auto w-full max-w-[1920px] p-3 sm:p-5 lg:p-7 2xl:p-8">
           <AppTopbar market={market} onOpenSearch={() => setSearchOpen(true)} onStartTour={startTour} resolvedTheme={resolvedTheme} onToggleTheme={toggleTheme} hideFinancialData={settings.hideFinancialData} />
+          <NetworkStatusBanner />
           <RouteTransition routeKey={pathname}>{children}</RouteTransition>
         </div>
       </main>

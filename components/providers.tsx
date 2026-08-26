@@ -2,22 +2,20 @@
 
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "motion/react";
-import { useEffect } from "react";
-import { ensureSeedData } from "@/lib/db";
+import { PwaUpdateNotice } from "@/components/system/pwa-update-notice";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toast";
 
-function PwaBootstrap() {
-  useEffect(() => {
-    void ensureSeedData();
-    if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
-      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-    }
-    if (navigator.storage?.persist) navigator.storage.persist().catch(() => undefined);
-  }, []);
-  return null;
-}
-
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <MotionConfig reducedMotion="user"><ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange><TooltipProvider delayDuration={260}><PwaBootstrap />{children}<Toaster /></TooltipProvider></ThemeProvider></MotionConfig>;
+  return (
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <TooltipProvider delayDuration={260}>
+          {children}
+          <PwaUpdateNotice />
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </MotionConfig>
+  );
 }

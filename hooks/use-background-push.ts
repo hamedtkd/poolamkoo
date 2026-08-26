@@ -76,7 +76,7 @@ async function inspectPush(alerts: MarketAlert[]): Promise<Inspection> {
   return { status: "enabled" };
 }
 
-export function useBackgroundPush(alerts: MarketAlert[]) {
+export function useBackgroundPush(alerts: MarketAlert[], runtimeReady = true) {
   const featureEnabled = BACKGROUND_PUSH_EXPERIMENT_ENABLED;
   const [status, setStatus] = useState<BackgroundPushStatus>(featureEnabled ? "checking" : "disabled");
   const [message, setMessage] = useState("");
@@ -88,22 +88,22 @@ export function useBackgroundPush(alerts: MarketAlert[]) {
   }, []);
 
   const refresh = useCallback(async () => {
-    if (!featureEnabled) return;
+    if (!featureEnabled || !runtimeReady) return;
     try { applyInspection(await inspectPush(alerts)); }
     catch (error) { applyInspection({ status: "error", message: error instanceof Error ? error.message : "اتصال Push برقرار نشد." }); }
-  }, [alerts, applyInspection, featureEnabled]);
+  }, [alerts, applyInspection, featureEnabled, runtimeReady]);
 
   useEffect(() => {
-    if (!featureEnabled) return;
+    if (!featureEnabled || !runtimeReady) return;
     let active = true;
     void inspectPush(alerts).then((result) => { if (active) applyInspection(result); }).catch((error) => {
       if (active) applyInspection({ status: "error", message: error instanceof Error ? error.message : "اتصال Push برقرار نشد." });
     });
     return () => { active = false; };
-  }, [alerts, alertsKey, applyInspection, featureEnabled]);
+  }, [alerts, alertsKey, applyInspection, featureEnabled, runtimeReady]);
 
   const enable = useCallback(async () => {
-    if (!featureEnabled) return;
+    if (!featureEnabled || !runtimeReady) return;
     setMessage("");
     if (!supportsPush()) { setStatus("unsupported"); return; }
     try {
@@ -120,10 +120,10 @@ export function useBackgroundPush(alerts: MarketAlert[]) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "فعال‌سازی هشدار پس‌زمینه ناموفق بود.");
     }
-  }, [alerts, featureEnabled]);
+  }, [alerts, featureEnabled, runtimeReady]);
 
   const disable = useCallback(async () => {
-    if (!featureEnabled) return;
+    if (!featureEnabled || !runtimeReady) return;
     setMessage("");
     try {
       const token = typeof window !== "undefined" ? deviceToken(false) : "";
@@ -137,7 +137,7 @@ export function useBackgroundPush(alerts: MarketAlert[]) {
       setStatus("error");
       setMessage("غیرفعال‌سازی کامل Push ممکن نشد؛ دوباره تلاش کن.");
     }
-  }, [featureEnabled]);
+  }, [featureEnabled, runtimeReady]);
 
   return { featureEnabled, status, message, enable, disable, refresh, remoteAlertCount: toRemoteAlerts(alerts).filter((alert) => alert.enabled).length };
 }

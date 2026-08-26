@@ -26,6 +26,10 @@
 
 داده‌های شخصی مالی در حالت عادی داخل مرورگر کاربر و در IndexedDB ذخیره می‌شوند. برای استفاده روزمره حساب کاربری یا دیتابیس مرکزی لازم نیست.
 
+## مسیر وب‌سایت و برنامه
+
+از نسخه 0.19، صفحه اصلی `/` یک Landing Page عمومی برای معرفی محصول است و برنامه Local-first از `/dashboard` شروع می‌شود. PWA نصب‌شده نیز مستقیماً داشبورد را باز می‌کند. تغییر مسیر، IndexedDB موجود را جابه‌جا یا پاک نمی‌کند چون داده مرورگر به Origin وابسته است، نه Path.
+
 ## قابلیت‌ها
 
 ### پول‌های ورودی و برنامه‌ریزی
@@ -113,6 +117,18 @@
 - بدون ارسال مبلغ، موجودی، نام دارایی شخصی، تراکنش، Search، فرم یا محتوای Backup
 - بدون توکن، هیچ Beacon تحلیلی خارجی Render نمی‌شود
 
+### Landing Page و پایداری Production
+
+- Landing Page فارسی و عمومی در `/` برای معرفی روشن محصول قبل از ورود اطلاعات مالی
+- ورود به اپ از `/dashboard` و PWA start URL هماهنگ با همان مسیر
+- `robots.txt`، `sitemap.xml` و `noindex` برای جداکردن صفحات عمومی از routeهای مالی
+- صفحه خطای عمومی، 404 و خطای route با مسیر بازیابی بدون پیشنهاد Reset مخرب
+- تشخیص خطا/Timeout در آماده‌شدن IndexedDB به‌جای Skeleton بی‌پایان
+- Banner وضعیت Offline با تأکید بر در‌دسترس‌بودن داده محلی
+- Skip link برای دسترسی بهتر با کیبورد
+- اعلان صریح نسخه جدید PWA؛ Service Worker منتظر فقط بعد از تأیید کاربر فعال می‌شود
+- محافظت از Upgrade دیتابیس بین چند تب و توقف تب قدیمی قبل از ادامه Live Queryهای مالی
+
 ### تجربه کاربری
 
 - فارسی و RTL از پایه
@@ -186,11 +202,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-اپ به‌صورت پیش‌فرض روی آدرس زیر اجرا می‌شود:
-
-```text
-http://localhost:3000
-```
+Landing Page به‌صورت پیش‌فرض روی `http://localhost:3000` و خود برنامه روی `http://localhost:3000/dashboard` اجرا می‌شود.
 
 ## داده بازار
 
@@ -216,7 +228,7 @@ Cloudflare Web Analytics آمار کلی مثل Visits، Page Views، مسیر �
 
 هشدارهای محلی بازار بدون Backend کار می‌کنند و هنگام اجرای اپ با Refresh قیمت‌ها بررسی می‌شوند. آزمایش Background Web Push نسخه v0.13.0 از v0.13.1 **عمداً در Backlog قرار گرفته و در Build عادی غیرفعال است** تا پروژه رایگان، Local-First و بدون Redis/Cron اجباری باقی بماند. برای Deploy معمول هیچ VAPID key، Upstash یا `CRON_SECRET` لازم نیست.
 
-کد آزمایشی حذف نشده است؛ جزئیات فنی و روش فعال‌سازی فقط برای توسعه آینده در [docs/backlog/background-push.md](./docs/backlog/background-push.md) نگهداری می‌شود. فاز Analytics رایگان در v0.18 تکمیل شده و مراحل بعدی در [docs/ROADMAP.md](./docs/ROADMAP.md) ثبت می‌شوند.
+کد آزمایشی حذف نشده است؛ جزئیات فنی و روش فعال‌سازی فقط برای توسعه آینده در [docs/backlog/background-push.md](./docs/backlog/background-push.md) نگهداری می‌شود. فاز Analytics رایگان در v0.18 و Landing/Production Hardening در v0.19 تکمیل شده‌اند؛ مراحل بعدی در [docs/ROADMAP.md](./docs/ROADMAP.md) ثبت می‌شوند.
 
 ## Quality Gate
 

@@ -4,6 +4,8 @@
 
 PoolamCo is local-first. Personal finance records are stored in the browser's IndexedDB and are not sent to the Next.js server.
 
+Public informational routes, including the landing page at `/`, do not seed the financial IndexedDB. Local financial storage is initialized when the application is opened at `/dashboard` or another app route. Financial app routes are marked `noindex` and excluded from the public sitemap.
+
 ## Secrets
 
 `BRS_API_KEY` and `TINDEX_API_TOKEN` are the normal server environment variables. Do not expose them through `NEXT_PUBLIC_*` variables or client bundles. Background Push is paused by default; its experimental VAPID/Redis/Cron secrets are documented separately in `.env.push.example` and must remain server-side if that experiment is ever enabled.
