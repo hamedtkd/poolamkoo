@@ -1,5 +1,5 @@
-const CACHE = "poolamco-v39";
-const PRECACHE = ["/", "/dashboard", "/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamco.svg"];
+const CACHE = "poolamkoo-v42";
+const PRECACHE = ["/dashboard", "/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamkoo.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => Promise.allSettled(PRECACHE.map((path) => cache.add(path)))));
@@ -72,7 +72,7 @@ self.addEventListener("push", (event) => {
     body: typeof data.body === "string" ? data.body : "شرط یکی از هشدارهای بازار برقرار شده است.",
     icon: data.icon || "/icon-192.png",
     badge: data.badge || "/icon-192.png",
-    tag: data.tag || "poolamco-market-alert",
+    tag: data.tag || "poolamkoo-market-alert",
     data: { url: data.url || "/investments", alertId: data.alertId, triggeredAt: data.triggeredAt },
   };
   event.waitUntil(Promise.all([

@@ -57,8 +57,8 @@ test("push subscription validation accepts only HTTPS capability endpoints", () 
 });
 
 test("push sync rejects cross-origin requests", () => {
-  const good = new Request("https://poolamco.example/api/push/subscription", { headers: { Origin: "https://poolamco.example" } });
-  const bad = new Request("https://poolamco.example/api/push/subscription", { headers: { Origin: "https://evil.example" } });
+  const good = new Request("https://poolamkoo.example/api/push/subscription", { headers: { Origin: "https://poolamkoo.example" } });
+  const bad = new Request("https://poolamkoo.example/api/push/subscription", { headers: { Origin: "https://evil.example" } });
   assert.equal(sameOrigin(good), true);
   assert.equal(sameOrigin(bad), false);
 });

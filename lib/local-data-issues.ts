@@ -1,8 +1,8 @@
 export const LOCAL_DATA_TIMEOUT_CODE = "local-storage-timeout";
 export const LOCAL_DATA_BLOCKED_CODE = "local-storage-blocked";
 export const LOCAL_DATA_VERSION_CHANGE_CODE = "local-storage-versionchange";
-export const LOCAL_DATA_BLOCKED_EVENT = "poolamco:local-data-blocked";
-export const LOCAL_DATA_VERSION_CHANGE_EVENT = "poolamco:local-data-versionchange";
+export const LOCAL_DATA_BLOCKED_EVENT = "poolamkoo:local-data-blocked";
+export const LOCAL_DATA_VERSION_CHANGE_EVENT = "poolamkoo:local-data-versionchange";
 
 export type LocalDataIssue = {
   kind: "timeout" | "blocked" | "outdated" | "generic";

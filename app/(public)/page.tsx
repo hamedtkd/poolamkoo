@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingSections } from "@/components/landing/landing-sections";
+import { StandaloneLandingRedirect } from "@/components/landing/standalone-landing-redirect";
 import { DEFAULT_SITE_URL, SITE_DESCRIPTION } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="space-y-20 pb-8 sm:space-y-24">
+      <StandaloneLandingRedirect />
       <LandingHero />
       <LandingSections />
     </div>

@@ -5,7 +5,7 @@ const [
   price, money, dialog, alertDialog, css, validation, skeleton, newMoney, allocationEditor, pageDateFilterBar,
   newMoneyHook, marketApi, marketProvider, marketHook, marketHistoryHook, db, txDialog,
   pendingPlans, shell, themeHook, planPage, planCard, quickPlan, planEdit, planActions,
-  desktopSidebar, mobileNavigation, appTopbar, drawer, dateRangePicker, dateFilterHook, tooltip, productTour, tourHook, button, types, marketRefreshButton, appRouteLayout, brandLogo, settingsSection, planProgress, appError, reportsSection, monthlyBars, privacyToggle, shellCss, dataTable, globalSearch, rootLayout, manifest, serviceWorker, favicon,
+  desktopSidebar, mobileNavigation, appTopbar, drawer, dateRangePicker, dateFilterHook, tooltip, productTour, tourHook, button, types, marketRefreshButton, appRouteLayout, brandLogo, settingsSection, planProgress, appError, reportsSection, monthlyBars, privacyToggle, shellCss, dataTable, globalSearch, rootLayout, appManifest, serviceWorker, favicon,
 ] = await Promise.all([
   read("components/ui/price-input.tsx"), read("components/ui/money-input.tsx"), read("components/ui/dialog.tsx"),
   read("components/ui/alert-dialog.tsx"), read("app/globals.css"), read("lib/validation.ts"),
@@ -23,7 +23,7 @@ const [
   read("components/ui/button.tsx"), read("lib/types.ts"), read("components/app/market-refresh-button.tsx"),
   read("components/app/app-route-layout.tsx"), read("components/brand-logo.tsx"), read("components/sections/settings.tsx"),
   read("lib/plan-progress.ts"), read("app/(workspace)/error.tsx"), read("components/sections/reports.tsx"), read("components/charts/monthly-bars.tsx"), read("components/app/privacy-toggle.tsx"), read("app/globals.css"),
-  read("components/data-table.tsx"), read("components/app/global-search.tsx"), read("app/layout.tsx"), read("app/manifest.ts"), read("public/sw.js"), read("public/favicon.svg"),
+  read("components/data-table.tsx"), read("components/app/global-search.tsx"), read("app/layout.tsx"), read("public/app.webmanifest"), read("public/sw.js"), read("public/favicon.svg"),
 ]);
 
 const [onboardingSource, onboardingHookSource, openingHoldingSource, investmentsSource, arcGaugeSource, dashboardMetricsSource, appearanceSettingsSource, calculationsSource] = await Promise.all([
@@ -57,13 +57,16 @@ const [directFundsSource, relatedSelectSource, onboardingHoldingsSource, uiArchi
 ]);
 
 
-const [historyImportDialogSource, historicalImportSource, assetDialogSource, tindexProviderSource, marketSearchSource, portfolioSource, exchangePickerSource, marketPrioritySource, marketSourceLabelSource] = await Promise.all([
+const [historyImportDialogSource, historicalImportSource, assetDialogSource, tindexProviderSource, marketSearchSource, portfolioSource, portfolioDecisionSource, portfolioAllocationSource, portfolioTablesSource, exchangePickerSource, marketPrioritySource, marketSourceLabelSource] = await Promise.all([
   read("components/investments/history-import-dialog.tsx"),
   read("lib/historical-import.ts"),
   read("components/investments/asset-dialog.tsx"),
   read("lib/market/tindex.ts"),
   read("app/api/market/search/route.ts"),
   read("hooks/use-investment-portfolio.ts"),
+  read("components/investments/portfolio-decision-card.tsx"),
+  read("lib/portfolio-allocation.ts"),
+  read("components/investments/portfolio-tables.tsx"),
   read("components/investments/exchange-instrument-picker.tsx"),
   read("lib/market/priority.ts"),
   read("components/market/market-source-label.tsx"),
@@ -147,9 +150,9 @@ const [analyticsComponentSource, analyticsHelperSource, analyticsSettingsSource,
 ]);
 
 
-const [landingPageSource, landingHeroSource, landingSectionsSource, siteSource, workspaceLayoutSource, robotsSource, sitemapSource, localDataUnavailableSource, networkStatusSource, offlineScreenSource, notFoundSource] = await Promise.all([
-  read("app/(public)/page.tsx"), read("components/landing/landing-hero.tsx"), read("components/landing/landing-sections.tsx"),
-  read("lib/site.ts"), read("app/(workspace)/layout.tsx"), read("app/robots.ts"), read("app/sitemap.ts"),
+const [landingPageSource, landingHeroSource, landingVisualSource, landingSectionsSource, standaloneLandingRedirectSource, siteSource, workspaceLayoutSource, robotsSource, sitemapSource, localDataUnavailableSource, networkStatusSource, offlineScreenSource, notFoundSource] = await Promise.all([
+  read("app/(public)/page.tsx"), read("components/landing/landing-hero.tsx"), read("components/landing/landing-product-visual.tsx"), read("components/landing/landing-sections.tsx"),
+  read("components/landing/standalone-landing-redirect.tsx"), read("lib/site.ts"), read("app/(workspace)/layout.tsx"), read("app/robots.ts"), read("app/sitemap.ts"),
   read("components/system/local-data-unavailable.tsx"), read("components/system/network-status-banner.tsx"),
   read("components/system/offline-screen.tsx"), read("app/not-found.tsx"),
 ]);
@@ -164,17 +167,32 @@ const [pwaUpdateHookSource, pwaUpdateNoticeSource, pwaUpdateHelperSource, localD
 ]);
 
 const appNavigationSource = await read("components/app/navigation.ts");
+const [reportInsightsSource, decisionInsightsSource] = await Promise.all([
+  read("lib/report-insights.ts"), read("components/reports/decision-insights-card.tsx"),
+]);
+const [mediaCaptureSource, mediaDemoSource, mediaDocsSource, mediaWorkflowSource, iconCheckSource] = await Promise.all([
+  read("scripts/capture-product-media.mjs"), read("scripts/media/demo-data.mjs"), read("docs/assets/README.md"),
+  read(".github/workflows/product-media.yml"), read("scripts/check-icon-imports.mjs"),
+]);
 
 const checks = [
 
   [landingPageSource.includes("LandingHero") && landingPageSource.includes("LandingSections") && landingHeroSource.includes("شروع رایگان") && landingHeroSource.includes("Local-first"), "Public root must present a clear Persian landing page before entering the financial app"],
-  [siteSource.includes('APP_ENTRY_PATH = "/dashboard"') && manifest.includes('start_url: "/dashboard"') && desktopSidebar.includes('href="/dashboard"') && mobileNavigation.includes('href="/dashboard"'), "Landing and installed app must keep separate root and dashboard entry points"],
+  [landingHeroSource.includes("LandingProductVisual") && landingVisualSource.includes("poolamkoo-finance-light.webp") && landingVisualSource.includes("poolamkoo-finance-dark.webp") && landingVisualSource.includes("داده‌های نمایش‌داده‌شده نمونه‌اند"), "Landing hero must use the approved theme-aware product visuals and label their values as sample presentation data"],
+  [packageSource.includes('"name": "poolamkoo"') && packageSource.includes('"version": "0.25.0"') && appVersionSource.includes('APP_VERSION = "0.25.0"'), "Package and runtime versions must use the canonical Poolamkoo v0.25.0 identity"],
+  [rootLayout.includes("Poolamkoo open-source contributors") && serviceWorker.includes('const CACHE = "poolamkoo-v42"') && serviceWorker.includes('/logo-poolamkoo.svg'), "Active runtime branding and PWA cache/assets must use the Poolamkoo spelling"],
+  [portfolioDecisionSource.includes("RiScalesLine") && !portfolioDecisionSource.includes("RiScaleLine") && iconCheckSource.includes("react-icons/ri named imports"), "Portfolio decision UI must use a real Remix Icon export and keep the icon-import quality gate"],
+  [packageSource.includes('"media:capture"') && packageSource.includes('"media:capture:built"') && mediaCaptureSource.includes("createPoolamkooMediaDemoData") && mediaCaptureSource.includes("Storage.clearDataForOrigin") && mediaCaptureSource.includes('resolve(ROOT, "node_modules", "next", "dist", "bin", "next")') && mediaCaptureSource.includes("landing-dark-desktop.png") && mediaDemoSource.includes("Fixture نمایشی") && mediaDocsSource.includes("Browser Profile موقت") && mediaWorkflowSource.includes("poolamkoo-product-screenshots"), "Product screenshots must be reproducible cross-platform from isolated fake data locally and through the manual GitHub artifact workflow"],
+  [siteSource.includes('APP_ENTRY_PATH = "/dashboard"') && appManifest.includes('\"start_url\": \"/dashboard\"') && appManifest.includes('\"id\": \"/dashboard\"') && desktopSidebar.includes('href="/dashboard"') && mobileNavigation.includes('href="/dashboard"'), "Landing and installed app must keep separate root and dashboard entry points"],
+  [!rootLayout.includes("app.webmanifest") && !rootLayout.includes("appleWebApp") && workspaceLayoutSource.includes('manifest: "/app.webmanifest"') && workspaceLayoutSource.includes("appleWebApp"), "Only workspace routes may advertise the installable PWA and iOS standalone metadata"],
+  [landingPageSource.includes("StandaloneLandingRedirect") && standaloneLandingRedirectSource.includes('(display-mode: standalone)') && standaloneLandingRedirectSource.includes('window.location.pathname !== "/"') && standaloneLandingRedirectSource.includes('window.location.replace("/dashboard")'), "Standalone root launches must enter the dashboard without redirecting normal landing visitors"],
+  [!serviceWorker.split("\n").find((line) => line.startsWith("const PRECACHE"))?.includes('["/",') && serviceWorker.includes('"/dashboard"') && serviceWorker.includes('"/offline"'), "Service worker explicit precache must exclude the marketing root while retaining dashboard and offline shell"],
   [workspaceLayoutSource.includes("index: false") && robotsSource.includes('disallow: ["/dashboard"') && sitemapSource.includes("PUBLIC_INDEX_ROUTES"), "Financial app routes must stay out of search indexing while public trust pages remain discoverable"],
   [landingSectionsSource.includes("بکاپ رمزنگاری‌شده") && landingSectionsSource.includes("انتقال مستقیم دستگاه") && landingSectionsSource.includes("رایگان، متن‌باز"), "Landing page must explain data ownership, recovery and open-source positioning"],
   [appDataSource.includes("bootstrapError") && appDataSource.includes("BOOT_TIMEOUT_MS") && appDataSource.includes("performBootstrap(run)") && !appDataSource.includes("retryBootstrap();") && appRouteLayout.includes("LocalDataUnavailable") && localDataUnavailableSource.includes("Site Data") && !providersSource.includes("ensureSeedData"), "IndexedDB bootstrap failures must stay retryable without synchronous setState inside the mount effect"],
   [db.includes('db.on("blocked"') && db.includes('db.on("versionchange"') && appDataSource.includes("LOCAL_DATA_BLOCKED_EVENT") && appDataSource.includes("const canQuery = bootstrap.status === \"ready\"") && localDataIssuesSource.includes('name === "VersionError"') && localDataUnavailableSource.includes("classifyLocalDataIssue") && marketHook.includes("enabled = true") && backupSafetyHookSource.includes("enabled = true") && communityHookSource.includes("enabled ? db.appMeta") && appRouteLayout.includes("data.marketAlerts, data.ready"), "Multi-tab IndexedDB upgrades must block stale writes and delay financial database consumers until bootstrap succeeds"],
-  [providersSource.includes("PwaUpdateNotice") && pwaUpdateNoticeSource.includes("نسخه جدید پولم‌کو آماده است") && pwaUpdateHookSource.includes("controllerchange") && pwaUpdateHookSource.includes("waiting.postMessage({ type: PWA_UPDATE_MESSAGE })") && pwaUpdateHelperSource.includes('PWA_UPDATE_MESSAGE = "SKIP_WAITING"'), "PWA updates must wait for explicit acceptance and reload only after the new worker controls the page"],
-  [serviceWorker.includes('const CACHE = "poolamco-v39"') && serviceWorker.includes('event.data?.type === "SKIP_WAITING"') && serviceWorker.indexOf('addEventListener("message"') < serviceWorker.indexOf("self.skipWaiting()"), "Service worker updates must not skip waiting unconditionally during install"],
+  [!providersSource.includes("PwaUpdateNotice") && workspaceLayoutSource.includes("PwaUpdateNotice") && pwaUpdateNoticeSource.includes("نسخه جدید پولم‌کو آماده است") && pwaUpdateHookSource.includes("controllerchange") && pwaUpdateHookSource.includes("waiting.postMessage({ type: PWA_UPDATE_MESSAGE })") && pwaUpdateHelperSource.includes('PWA_UPDATE_MESSAGE = "SKIP_WAITING"'), "PWA updates must wait for explicit acceptance and reload only after the new worker controls the page"],
+  [serviceWorker.includes('const CACHE = "poolamkoo-v42"') && serviceWorker.includes('event.data?.type === "SKIP_WAITING"') && serviceWorker.indexOf('addEventListener("message"') < serviceWorker.indexOf("self.skipWaiting()"), "Service worker updates must not skip waiting unconditionally during install"],
   [networkStatusHookSource.includes("useSyncExternalStore") && !networkStatusHookSource.includes("useState") && shell.includes("NetworkStatusBanner") && networkStatusSource.includes("آفلاین هستی") && offlineScreenSource.includes("Local-first"), "Network state must use an external-store subscription without synchronous hydration setState"],
   [obsoleteRouteCleanupSource.includes('"app/(app)"') && obsoleteRouteCleanupSource.includes('".next/types"') && obsoleteRouteCleanupSource.includes('".next/dev/types"'), "Replacement installs must remove the legacy route group and stale Next.js route validators before typecheck/build"],
   [notFoundSource.includes("۴۰۴") && notFoundSource.includes("/data") === false, "Unknown routes must fail safely without offering destructive data actions"],
@@ -206,7 +224,7 @@ const checks = [
   [cryptoSource.includes('version = options.version ?? 2') && cryptoSource.includes('verifyBackupEnvelopeIntegrity') && cryptoSource.includes('sha256Base64(integrityInput(base))'), "New backup files must carry a v2 corruption digest while preserving explicit legacy envelope support"],
   [backupClientSource.includes('inspectDatabaseBackup') && backupClientSource.indexOf('await verifyBackupEnvelopeIntegrity(envelope);') < backupClientSource.indexOf('const compatibility = assertSupportedDataSchema') && backupClientSource.includes('createRecoverySnapshot') && backupRestoreSource.includes('بررسی صحت و پیش‌نمایش') && backupRestoreSource.includes('بازیابی همین نسخه'), "Backup restore must verify file integrity, validate compatibility and show a record preview before replacement"],
   [dataPortabilitySource.includes('schemaVersion > LOCAL_DATABASE_SCHEMA_VERSION') && recoverySource.includes('schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION') && recoverySource.includes('assertSupportedDataSchema(snapshot.schemaVersion)') && recoverySource.indexOf('validatePortableData(parsed);') < recoverySource.indexOf('await createRecoverySnapshot("قبل از بازگردانی نقطه بازیابی")'), "Backup and recovery data must reject future or malformed local data before destructive replacement"],
-  [toastSource.includes('poolamco:toast') && providersSource.includes('<Toaster />') && backupSettingsSource.includes('toast({ tone: "error"'), "Backup success and failure must use the shared toast surface"],
+  [toastSource.includes('poolamkoo:toast') && providersSource.includes('<Toaster />') && backupSettingsSource.includes('toast({ tone: "error"'), "Backup success and failure must use the shared toast surface"],
   [price.includes('locale = "fa-IR"'), "PriceInput must render Persian digits by default"],
   [money.includes('locale="fa-IR"'), "MoneyInput must explicitly use fa-IR formatting"],
   [dialog.includes("sm:place-items-center") && !dialog.includes("sm:left-1/2"), "Dialog desktop layout must use RTL-safe grid centering"],
@@ -234,7 +252,7 @@ const checks = [
   [tooltip.includes('TooltipPrimitive') && tooltip.includes('TooltipContent'), "Shared shadcn-style Tooltip primitive is missing"],
   [button.includes('forwardRef'), "Button must forward refs for Radix/shadcn composition"],
   [themeHook.includes('startViewTransition') && css.includes('data-theme-motion="mobile"') && css.includes('320ms'), "Mobile theme transition optimization is missing"],
-  [productTour.includes('راهنمای سریع') && tourHook.includes('poolamco:start-tour') && types.includes('guideComplete'), "Initial product tour is not wired"],
+  [productTour.includes('راهنمای سریع') && tourHook.includes('poolamkoo:start-tour') && types.includes('guideComplete'), "Initial product tour is not wired"],
   [mobileNavigation.includes('data-tour="mobile-more"') && desktopSidebar.includes('data-tour="new-money"'), "Tour anchors are missing from navigation"],
   [shell.includes('DesktopSidebar') && shell.includes('MobileNavigation') && shell.includes('ProductTour'), "App shell composition is incomplete"],
   [!marketRefreshButton.includes('useAppRuntime') && marketRefreshButton.includes('market?: MarketRefreshControls | null') && marketRefreshButton.includes('market ??'), "Shell market refresh must tolerate a temporarily missing market runtime without crashing"],
@@ -249,7 +267,10 @@ const checks = [
   [desktopSidebar.includes("group-hover:scale-0") && desktopSidebar.includes('BrandLogo className="size-8') && mobileNavigation.includes('BrandLogo className="size-8"'), "Collapsed navigation logo must morph into the sidebar-open control and stay compact"],
   [!desktopSidebar.includes("تصمیم‌یار مالی شخصی") && !desktopSidebar.includes("Local-First") && !mobileNavigation.includes("تصمیم‌یار مالی شخصی"), "Navigation should keep branding clean without marketing subtitles"],
   [types.includes("hideFinancialData: boolean") && privacyToggle.includes("RiEyeLine") && shellCss.includes(".privacy-hidden") && appTopbar.includes("PrivacyToggle") && mobileNavigation.includes("PrivacyToggle"), "Global privacy eye toggle is not wired"],
-  [reportsSection.includes("فاصله از هدف") && reportsSection.includes("بازده از خرید") && reportsSection.includes("این عدد تغییر روزانه بازار نیست") && reportsSection.includes("HelpLabel"), "Reports must explain portfolio metrics and distinguish personal P/L from daily market change"],
+  [reportsSection.includes("فاصله از هدف") && reportsSection.includes("بازده از خرید") && reportsSection.includes("HelpLabel"), "Reports must explain portfolio metrics and distinguish personal P/L from daily market change"],
+  [reportsSection.includes("DecisionInsightsCard") && decisionInsightsSource.includes("جمع‌بندی تصمیمی این بازه") && decisionInsightsSource.includes("هزینه روزمره") && decisionInsightsSource.includes("قانون پول در برابر تخصیص ثبت‌شده"), "Reports must turn real recorded data into factual decision insights without becoming expense accounting"],
+  [reportInsightsSource.includes("allocationReliable") && reportInsightsSource.includes("largestUnderTarget") && reportInsightsSource.includes("planHealth") && reportInsightsSource.includes("fundHealth"), "Report decision calculations must explicitly guard incomplete allocation data and deterministic follow-up priorities"],
+  [reportsSection.includes("decision.allocatedTotal") && !reportsSection.includes("rule?.lifePct ?? 30"), "Reports must not invent allocation shares from the configured rule when the selected period has no allocation data"],
   [monthlyBars.includes("هنوز داده ماهانه‌ای نداریم") && monthlyBars.includes("hasData"), "Monthly report chart must show a real empty state instead of a blank chart"],
   [onboardingSource.includes("فعلاً ردش کن") && onboardingSource.includes("OnboardingHoldingsStep") && onboardingSource.includes("gapRatio={0}"), "Onboarding must support fast skip, opening holdings, and complete progress rings"],
   [onboardingHookSource.includes("openingHoldingTransaction") && onboardingHookSource.includes("onboardingComplete: true") && onboardingHookSource.includes("ONBOARDING_STEPS = 6"), "Onboarding persistence must save historical opening holdings and a six-step flow"],
@@ -270,13 +291,16 @@ const checks = [
   [relatedSelectSource.includes("createLabel") && quickPlan.includes("RelatedEntitySelect") && planEdit.includes("RelatedEntitySelect") && openingHoldingSource.includes("RelatedEntitySelect") && onboardingHoldingsSource.includes("RelatedEntitySelect"), "Entity selectors must offer in-context create shortcuts"],
   [uiArchitectureSource.includes('replaceAll("\\\\", "/")'), "UI architecture paths must be normalized for Windows quality checks"],
 
+  [investmentsSource.includes("PortfolioDecisionCard") && portfolioDecisionSource.includes("مرور ترکیب سبد") && portfolioDecisionSource.includes("اولویت بررسی برای پول جدید") && portfolioDecisionSource.includes("توصیه خرید یا فروش نیست"), "Investments must expose factual target-vs-current portfolio decision guidance without investment advice"],
+  [portfolioAllocationSource.includes("ALLOCATION_NEAR_TARGET_TOLERANCE_PCT = 1") && portfolioAllocationSource.includes("targetsValid") && portfolioAllocationSource.includes("pricingIncomplete") && portfolioAllocationSource.includes("newMoneyPriorities"), "Portfolio allocation guidance must use deterministic target gaps, explicit tolerance and incomplete-pricing safety"],
+  [portfolioTablesSource.includes("سهم فعلی") && portfolioTablesSource.includes("هدف") && portfolioTablesSource.includes("allocationRows"), "Portfolio desktop and mobile rows must expose current share, target and allocation status"],
   [investmentsSource.includes("HistoryImportDialog") && investmentsSource.includes("ورود سوابق CSV") && historyImportDialogSource.includes("HistoryImportPreview"), "Investments must expose the historical CSV import flow"],
   [historicalImportSource.includes("parseHistoricalCsv") && historicalImportSource.includes("validateSellAvailability") && historicalImportSource.includes("transactionFingerprint") && historicalImportSource.includes("persianDateToIso"), "Historical import must validate dates, duplicates and sell availability before persistence"],
   [historyImportDialogSource.includes("downloadTemplate") && historyImportDialogSource.includes("missingAssets") && assetDialogSource.includes("initialName"), "Historical import must offer a template and in-context creation for missing assets"],
   [marketApi.includes("TINDEX_API_TOKEN") && marketApi.includes("tindexIds") && marketSearchSource.includes("new TindexProvider") && marketSearchSource.includes('search(query)'), "Iran exchange market search/quotes must be wired through the server-only Tindex provider"],
   [tindexProviderSource.includes("stocks/by-category/stock-energy") && tindexProviderSource.includes("rialToToman") && tindexProviderSource.includes("stock-market/symbol"), "Tindex integration must search exchange instruments and normalize rial prices to toman"],
   [assetDialogSource.includes("ExchangeInstrumentPicker") && assetDialogSource.includes('marketSource') && assetDialogSource.includes('marketId') && exchangePickerSource.includes("MarketSourceLabel"), "Stock and fund creation must support in-context exchange linking with source attribution"],
-  [portfolioSource.includes("quote?.priceToman ?? asset.manualPriceToman") && marketHook.includes('marketSource === "tindex"') && marketHook.includes('params.append("tindex"'), "Linked exchange assets must use live quotes with safe manual fallback and request only their market IDs"],
+  [portfolioSource.includes("positivePrice(quote?.priceToman)") && portfolioSource.includes("marketPrice ?? manualPrice") && marketHook.includes('marketSource === "tindex"') && marketHook.includes('params.append("tindex"'), "Linked exchange assets must use live quotes with safe manual fallback and request only their market IDs"],
   [marketApi.includes("needsCoreFallback") && marketApi.includes("getFallbackQuotes") && marketPrioritySource.includes("for (const quote of primary)"), "BrsApi must remain primary while Tindex supplies only missing core quotes"],
   [tindexProviderSource.includes("/boards") && tindexProviderSource.includes("USD-EXCHANGE-RATE") && tindexProviderSource.includes("GOLD-18K") && tindexProviderSource.includes("btc"), "Tindex fallback must cover core dollar, gold and bitcoin quotes in one boards request"],
   [marketSourceLabelSource.includes("منبع داده: Tindex") && marketSourceLabelSource.includes("https://tindex.app") && exchangePickerSource.includes("MarketSourceLabel"), "Tindex data must carry visible linked source attribution"],
@@ -323,7 +347,7 @@ const checks = [
   [dataTable.includes("table.store.state.pagination.pageIndex") && !dataTable.includes("table.state.pagination.pageIndex"), "TanStack Table v9 pagination must read the core store in the shared generic Pagination component"],
   [newMoneyHook.includes("newMoneySchema.parse") && newMoneyHook.includes('typeof incomeIdKey !== "number"') && newMoneyHook.includes("watchedLife ?? activeRule.lifePct"), "New-money persistence must validate form values, narrow Dexie IDs, and normalize watched allocation numbers"],
   [dataTable.includes("مرتب‌سازی ستون") && !dataTable.includes("<button\n                            type=\"button\"\n                            className=\"inline-flex w-full"), "Sortable headers must not wrap interactive help controls in a button"],
-  [rootLayout.includes('/favicon.svg') && manifest.includes('/icon-192.png') && serviceWorker.includes('/favicon.svg') && favicon.includes("prefers-color-scheme: dark"), "Theme-aware favicon and PWA icon assets must be wired into metadata and offline precache"],
+  [rootLayout.includes('/favicon.svg') && appManifest.includes('/icon-192.png') && serviceWorker.includes('/favicon.svg') && favicon.includes("prefers-color-scheme: dark"), "Theme-aware favicon and PWA icon assets must be wired into metadata and offline precache"],
 ];
 
 const failures = checks.filter(([ok]) => !ok).map(([, message]) => message);
@@ -331,4 +355,4 @@ if (failures.length) {
   console.error(`Regression checks failed:\n${failures.join("\n")}`);
   process.exit(1);
 }
-console.log("Regression checks passed: landing/app separation, safe PWA/database updates, verified data portability, resilient local data, privacy-first analytics, market cache, and responsive UI are wired.");
+console.log("Regression checks passed: theme-aware landing media, decision-focused reports, workspace-only PWA entry, safe local data, privacy boundaries, market cache, and responsive UI are wired.");

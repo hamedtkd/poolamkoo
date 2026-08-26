@@ -1,4 +1,4 @@
-import { decodeTransferSignal, encodeTransferSignal, type TransferRole } from "@/lib/device-transfer";
+import { DEVICE_TRANSFER_SIGNAL_FORMAT, decodeTransferSignal, encodeTransferSignal, type TransferRole } from "@/lib/device-transfer";
 
 export const TRANSFER_CONNECT_TIMEOUT_MS = 30_000;
 export const TRANSFER_BUFFER_HIGH_WATER = 512_000;
@@ -27,7 +27,7 @@ export function localDescriptionCode(peer: RTCPeerConnection, role: TransferRole
   const description = peer.localDescription;
   if (!description?.sdp || description.type !== role) throw new Error("کد اتصال هنوز آماده نشده است.");
   return encodeTransferSignal({
-    format: "poolamco-device-signal", version: 1, role, createdAt: new Date().toISOString(),
+    format: DEVICE_TRANSFER_SIGNAL_FORMAT, version: 1, role, createdAt: new Date().toISOString(),
     description: { type: role, sdp: description.sdp },
   });
 }

@@ -19,6 +19,8 @@ export function AllocationDonut({
 }) {
   const id = useId();
   const radius = (size - stroke) / 2;
+  const total = segments.reduce((sum, segment) => sum + Math.max(0, segment.value), 0);
+  const hasData = total > 0.01;
   const circumference = 2 * Math.PI * radius;
   const gap = 5;
   const colors = ["var(--chart-3)", "var(--chart-2)", "var(--chart-1)"];
@@ -41,7 +43,7 @@ export function AllocationDonut({
         <defs>
           <filter id={id}><feDropShadow dx="0" dy="3" stdDeviation="5" floodOpacity=".08" /></filter>
         </defs>
-        {renderedSegments.map((segment) => (
+        {hasData && renderedSegments.map((segment) => (
           <circle
             key={segment.label}
             cx={size / 2}
@@ -60,8 +62,8 @@ export function AllocationDonut({
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">
         <div>
-          <div className="type-page-title">۱۰۰٪</div>
-          <div className="mt-1 text-[10px] text-muted-foreground">تقسیم پول</div>
+          <div className="type-page-title">{hasData ? "۱۰۰٪" : "—"}</div>
+          <div className="mt-1 text-[10px] text-muted-foreground">{hasData ? "تقسیم ثبت‌شده" : "بدون داده"}</div>
         </div>
       </div>
     </div>

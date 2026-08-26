@@ -1,4 +1,4 @@
-# Poolamco roadmap
+# Poolamkoo roadmap
 
 This roadmap prioritizes zero-cost, local-first product reliability before optional hosted infrastructure.
 
@@ -93,11 +93,32 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Add `check:performance` as a release regression gate so heavy chart libraries cannot silently move back into high-frequency route entry code.
 - Preserve the existing offline shell, explicit PWA update flow, local-first data model, and analytics privacy boundaries.
 
+## v0.24 — Portfolio decision UX and PWA entry hardening ✅
+
+> v0.24.1 release hardening: canonical Latin identity is `Poolamkoo` / `poolamkoo`, the invalid Remix icon import is fixed and guarded by `check:icons`, and privacy-safe product screenshot capture is available locally and through a manual GitHub Actions artifact workflow. Legacy `poolyar-local` / `poolyar-backup` data identifiers remain unchanged for compatibility.
+
+- Compare each real holding's current portfolio share with the user's existing target percentage, including target value and drift.
+- Classify target status as underweight, near target, overweight, or no target using a documented one-percentage-point tolerance.
+- Show factual new-money review priorities only when targets total 100%; never generate buy/sell advice, forecasts, or synthetic prices.
+- Flag allocation review as incomplete when a held asset has only cost-basis fallback pricing and no usable market/manual price.
+- Keep current/target allocation visible in desktop and mobile portfolio rows without adding a chart dependency.
+- Move installable PWA metadata and Service Worker update runtime out of the public Landing surface and into `(workspace)` routes.
+- Keep `/dashboard` as the manifest id/start URL, exclude `/` from explicit Service Worker precache, and redirect only standalone root launches to `/dashboard`.
+- Keep IndexedDB schema 6, backup formats, analytics boundaries, Background Push default state, and local-first data ownership unchanged.
+
+## v0.25 — Reports decision insights and landing product media ✅
+
+- Turn Reports into a factual review surface for plan execution, money-rule balance, and current fund coverage.
+- Never substitute configured target percentages for missing period data; incomplete allocation stays visibly incomplete.
+- Add deterministic follow-up prompts based only on recorded local data, without expense accounting, forecasting, or buy/sell advice.
+- Add approved Light/Dark landing hero media using optimized local WebP assets.
+- Harden product-media capture on Windows by launching the installed Next.js runtime directly instead of spawning `npm.cmd`.
+- Keep IndexedDB schema 6, privacy boundaries, market-provider behavior, and Background Push backlog unchanged.
+
 ## Likely next phases
 
-- **v0.24 — Portfolio decision UX:** improve investment review and rebalance guidance only where it helps decisions based on real holdings/quotes.
-- **v0.25 — Reports / decision insights:** make reports more actionable without turning Poolamco into accounting software.
-- **Later — E2E release smoke tests:** add browser automation when the maintenance/dependency cost is justified by the release workflow.
+- **v0.26 — E2E release smoke tests:** add a small browser release gate for landing → workspace, onboarding/data bootstrap, reports, and PWA boundaries without creating a large maintenance burden.
+- **Later — Export/share refinements:** consider user-requested report export only if it stays privacy-safe and does not turn Poolamkoo into accounting software.
 
 ## Backlog — Background alerts while PWA is closed
 
@@ -105,7 +126,7 @@ See `docs/backlog/background-push.md`. Reconsider only when a sustainable free/v
 
 ## Reference: Saatyar patterns worth reusing
 
-Saatyar is a useful sibling reference for Poolamco because it is also Persian-first and local-first. Its public repository documents versioned backup/restore, local recovery snapshots, encrypted direct WebRTC transfer with QR pairing, and optional Daramet support that does not unlock paid features. Poolamco should reuse the principles while keeping its own financial UX simpler and stricter around backup safety.
+Saatyar is a useful sibling reference for Poolamkoo because it is also Persian-first and local-first. Its public repository documents versioned backup/restore, local recovery snapshots, encrypted direct WebRTC transfer with QR pairing, and optional Daramet support that does not unlock paid features. Poolamkoo should reuse the principles while keeping its own financial UX simpler and stricter around backup safety.
 
 - https://github.com/hamedtkd/saat-yar
 - https://github.com/hamedtkd/poolamkoo

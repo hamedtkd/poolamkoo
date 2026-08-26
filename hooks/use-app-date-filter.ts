@@ -4,8 +4,8 @@ import * as React from "react";
 import type { ReturnTypeOfAppData } from "@/lib/runtime-types";
 import { dateInRange, emptyDateRange, type AppDateRange } from "@/lib/date-range";
 
-const STORAGE_KEY = "poolamco:date-ranges";
-const CHANGE_EVENT = "poolamco:date-ranges-change";
+const STORAGE_KEY = "poolamkoo:date-ranges";
+const CHANGE_EVENT = "poolamkoo:date-ranges-change";
 export type DateFilterScope = "dashboard" | "income" | "reports" | "investments";
 
 type ScopedRanges = Record<DateFilterScope, AppDateRange>;

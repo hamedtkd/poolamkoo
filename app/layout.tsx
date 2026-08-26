@@ -10,9 +10,8 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }], apple: "/icon-192.png" },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
   category: "finance",
-  creator: "Poolamco open-source contributors",
+  creator: "Poolamkoo open-source contributors",
   openGraph: {
     type: "website",
     locale: "fa_IR",

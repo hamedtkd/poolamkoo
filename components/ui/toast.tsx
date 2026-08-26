@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 type ToastTone = "success" | "error" | "info";
 type ToastDetail = { id?: string; title: string; description?: string; tone?: ToastTone; duration?: number };
 type ToastItem = Required<Pick<ToastDetail, "id" | "title" | "tone">> & Pick<ToastDetail, "description">;
-const EVENT = "poolamco:toast";
+const EVENT = "poolamkoo:toast";
 
 export function toast(detail: ToastDetail) {
   if (typeof window === "undefined") return;

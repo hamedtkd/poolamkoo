@@ -11,6 +11,7 @@ import { MarketWatchlistCard } from "@/components/investments/market-watchlist-c
 import { OpeningHoldingDialog } from "@/components/investments/opening-holding-dialog";
 import { HistoryImportDialog } from "@/components/investments/history-import-dialog";
 import { PendingPlanPurchases } from "@/components/investments/pending-plan-purchases";
+import { PortfolioDecisionCard } from "@/components/investments/portfolio-decision-card";
 import { PortfolioTables } from "@/components/investments/portfolio-tables";
 import { TransactionDialog } from "@/components/investments/transaction-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -39,7 +40,7 @@ const T = {
   cost: "\u0628\u0647\u0627\u06cc \u062e\u0631\u06cc\u062f \u0628\u0627\u0632",
   pnl: "\u0633\u0648\u062f / \u0632\u06cc\u0627\u0646 \u0628\u0627\u0632",
   targetWarning: "\u062c\u0645\u0639 \u0633\u0647\u0645 \u0647\u062f\u0641 \u062f\u0627\u0631\u0627\u06cc\u06cc\u200c\u0647\u0627",
-  targetTail: "\u0627\u0633\u062a. \u0628\u0631\u0627\u06cc \u067e\u06cc\u0634\u0646\u0647\u0627\u062f Rebalance \u0628\u0647\u062a\u0631 \u0627\u0633\u062a \u062c\u0645\u0639 \u0628\u0647 \u06f1\u06f0\u06f0\u066a \u0628\u0631\u0633\u062f.",
+  targetTail: "\u0627\u0633\u062a. \u0628\u0631\u0627\u06cc \u0645\u0642\u0627\u06cc\u0633\u0647 \u062f\u0642\u06cc\u0642 \u062a\u0631\u06a9\u06cc\u0628 \u0633\u0628\u062f\u060c \u062c\u0645\u0639 \u0647\u062f\u0641\u200c\u0647\u0627 \u0631\u0627 \u0628\u0647 \u06f1\u06f0\u06f0\u066a \u0628\u0631\u0633\u0627\u0646.",
   archiveTitle: "\u0622\u0631\u0634\u06cc\u0648 \u062f\u0627\u0631\u0627\u06cc\u06cc\u061f",
   archiveDesc: "\u062f\u0627\u0631\u0627\u06cc\u06cc \u0627\u0632 \u0633\u0628\u062f \u0641\u0639\u0627\u0644 \u067e\u0646\u0647\u0627\u0646 \u0645\u06cc\u200c\u0634\u0648\u062f \u0627\u0645\u0627 \u062a\u0631\u0627\u06a9\u0646\u0634\u200c\u0647\u0627\u06cc \u0642\u0628\u0644\u06cc \u062d\u0630\u0641 \u0646\u0645\u06cc\u200c\u0634\u0648\u0646\u062f.",
   archive: "\u0622\u0631\u0634\u06cc\u0648 \u062f\u0627\u0631\u0627\u06cc\u06cc",
@@ -114,12 +115,13 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   return <div className="space-y-5">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setHistoryImportOpen(true)}><RiFileUploadLine /> ورود سوابق CSV</Button><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div>
     <div className="grid gap-3 sm:grid-cols-3"><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl >= 0 ? "primary" : "danger"} label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></div>
-    {Math.round(portfolio.targetTotal) !== 100 && <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div>}
+    {!portfolio.allocation.targetsValid && <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div>}
     <MarketWatchlistCard watchlist={watchlist} quotes={quotes} snapshots={visibleSnapshots ?? snapshots} assets={assets} settings={settings} onCreateAsset={createAssetFromMarket} onCreateAlert={setAlertTarget} />
     <MarketAlertsCard alerts={marketAlerts} quotes={quotes} settings={settings} backgroundPush={backgroundPush} onCreateAlert={setAlertTarget} />
     <PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} />
     <MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} watchlist={watchlist} />
-    <PortfolioTables positions={portfolio.positions} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
+    <PortfolioDecisionCard review={portfolio.allocation} settings={settings} />
+    <PortfolioTables positions={portfolio.positions} allocationRows={portfolio.allocation.rows} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} />
     <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />

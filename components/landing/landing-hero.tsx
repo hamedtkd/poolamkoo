@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { RiArrowLeftLine, RiGithubFill, RiLock2Line, RiShieldCheckLine } from "react-icons/ri";
-import { LandingDashboardPreview } from "@/components/landing/landing-dashboard-preview";
+import { LandingProductVisual } from "@/components/landing/landing-product-visual";
 import { MotionReveal } from "@/components/motion/reveal";
 import { ButtonLink } from "@/components/landing/landing-link-button";
 import { COMMUNITY_LINKS } from "@/lib/community";
@@ -14,9 +14,9 @@ const trust = [
 
 export function LandingHero() {
   return (
-    <section className="relative pt-3 sm:pt-8">
+    <section className="relative pt-1 sm:pt-4">
       <div className="pointer-events-none absolute inset-x-0 -top-10 -z-10 mx-auto h-[420px] max-w-4xl rounded-full bg-primary/7 blur-3xl" />
-      <div className="grid items-center gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:gap-14">
+      <div className="grid items-center gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:gap-12">
         <MotionReveal className="max-w-xl">
           <div className="inline-flex items-center gap-2 rounded-full border bg-background/75 px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
             <span className="size-1.5 rounded-full bg-primary" />
@@ -56,7 +56,7 @@ export function LandingHero() {
           </p>
         </MotionReveal>
         <MotionReveal delay={0.06}>
-          <LandingDashboardPreview />
+          <LandingProductVisual />
         </MotionReveal>
       </div>
     </section>

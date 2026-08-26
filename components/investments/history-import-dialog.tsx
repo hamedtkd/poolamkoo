@@ -103,5 +103,5 @@ function SuccessState({ count, onDone }: { count: number; onDone: () => void }) 
 function downloadTemplate() {
   const csv = "\uFEFFدارایی,نماد,نوع,مقدار,قیمت واحد تومان,تاریخ,یادداشت\nدلار,USD,خرید,120,85000,1405/03/01,خرید قدیمی";
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  const anchor = document.createElement("a"); anchor.href = url; anchor.download = "poolamco-historical-import.csv"; anchor.click(); URL.revokeObjectURL(url);
+  const anchor = document.createElement("a"); anchor.href = url; anchor.download = "poolamkoo-historical-import.csv"; anchor.click(); URL.revokeObjectURL(url);
 }

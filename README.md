@@ -1,5 +1,7 @@
-# Poolamco — پولم‌کو
-> v0.23 performance note: high-cost chart engines are lazy-loaded on financial routes, while Dashboard sparklines use lightweight SVG rendering; this changes loading cost, not financial calculations or data boundaries.
+# Poolamkoo — پولم‌کو
+> v0.25 note: Reports now surface factual plan/allocation/fund follow-ups from recorded local data, and the public Landing hero uses approved local Light/Dark product visuals. Windows product-media capture also avoids the previous `spawn EINVAL` path.
+> v0.24.1 note: the v0.24 portfolio/PWA work is release-hardened, the canonical Latin project name is **Poolamkoo**, and privacy-safe product screenshot capture is available locally and in GitHub Actions.
+> v0.24 decision UX note: Investments now compares each real holding's current share with the user-defined target and keeps PWA installation/runtime inside workspace routes; normal `/` remains the public landing page.
 
 ### A Persian-first, RTL, local-first PWA for incoming-money planning, goal funds, and personal investment tracking
 
@@ -7,9 +9,9 @@
 
 ---
 
-## What is Poolamco?
+## What is Poolamkoo?
 
-Poolamco is not a daily bookkeeping app. It is designed for the moment new money arrives: decide how much should go to life, safety, and growth, then record what was actually executed and measure the outcome later.
+Poolamkoo is not a daily bookkeeping app. It is designed for the moment new money arrives: decide how much should go to life, safety, and growth, then record what was actually executed and measure the outcome later.
 
 The core product loop is:
 
@@ -81,9 +83,10 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 
 ### Reports
 
-- Total incoming money
-- Plan adherence
-- Goal-fund coverage
+- Total incoming money and plan adherence
+- Decision summary for plan execution, money-rule balance, and current goal-fund coverage
+- Explicit incomplete-allocation state instead of filling missing period data from configured targets
+- Factual follow-up prompts based only on recorded local data
 - Returns from the user's recorded purchases
 - Target versus actual portfolio allocation
 - Charts only when real local data exists
@@ -139,11 +142,11 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 
 ## Open source and support
 
-Poolamco is public at https://github.com/hamedtkd/poolamkoo. The app now includes public guide, About, Privacy/Data policy, and data-safety pages plus a cached GitHub star count. Optional development support is available at https://daramet.com/hamedtkd and never unlocks product features.
+Poolamkoo is public at https://github.com/hamedtkd/poolamkoo. The app now includes public guide, About, Privacy/Data policy, and data-safety pages plus a cached GitHub star count. Optional development support is available at https://daramet.com/hamedtkd and never unlocks product features.
 
 ## Local-first and privacy
 
-Poolamco stores core product data in IndexedDB for the current browser profile and origin. There is no central Poolamco database containing users' personal financial records by default.
+Poolamkoo stores core product data in IndexedDB for the current browser profile and origin. There is no central Poolamkoo database containing users' personal financial records by default.
 
 This model means:
 
@@ -201,15 +204,67 @@ npm run dev
 
 The public landing page normally runs at `http://localhost:3000`, while the local-first application starts at `http://localhost:3000/dashboard`.
 
+
+## Landing product visual
+
+The public hero uses two approved local WebP assets so the presentation follows Light/Dark appearance without reading user financial data. The numbers inside these promotional images are sample values.
+
+<table>
+  <tr>
+    <td width="50%"><img src="./public/landing/poolamkoo-finance-light.webp" alt="Poolamkoo conceptual landing visual in light mode" /></td>
+    <td width="50%"><img src="./public/landing/poolamkoo-finance-dark.webp" alt="Poolamkoo conceptual landing visual in dark mode" /></td>
+  </tr>
+</table>
+
+## Product screenshots
+
+Poolamkoo can regenerate product screenshots from the real production build with an isolated fake-data browser profile. The capture does not read your normal browser profile or real financial records.
+
+```bash
+npm run media:capture
+```
+
+If a fresh production build already exists:
+
+```bash
+npm run media:capture:built
+```
+
+The output is written to `docs/assets/screenshots/`. A manual **Product media** GitHub Actions workflow runs the same capture and uploads `poolamkoo-product-screenshots` as an artifact. See [docs/assets/README.md](./docs/assets/README.md) for the privacy contract, browser-path override, and exact screenshot list.
+
+The README paths are ready for those generated files; after a verified capture is committed, GitHub renders the real product UI here:
+
+<p align="center">
+  <img src="./docs/assets/screenshots/dashboard-light-desktop.png" alt="Poolamkoo dashboard with isolated demo financial data" width="920" />
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="./docs/assets/screenshots/dashboard-dark-desktop.png" alt="Poolamkoo dashboard in dark mode" /></td>
+    <td width="50%"><img src="./docs/assets/screenshots/investments-light-desktop.png" alt="Poolamkoo investments and portfolio decision view" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./docs/assets/screenshots/reports-light-desktop.png" alt="Poolamkoo reports view" /></td>
+    <td width="50%"><img src="./docs/assets/screenshots/landing-light-desktop.png" alt="Poolamkoo public landing page in light mode" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./docs/assets/screenshots/landing-dark-desktop.png" alt="Poolamkoo public landing page in dark mode" /></td>
+    <td width="50%"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="./docs/assets/screenshots/investments-mobile.png" alt="Poolamkoo investments on mobile" width="390" /></td>
+  </tr>
+</table>
+
 ## Market data
 
 Configure both BrsApi and a Tindex developer token. BrsApi remains primary for public market quotes; Tindex supplies missing core USD, 18K gold, and BTC quotes and serves linked Tehran Stock Exchange assets. The exact server-side environment variable names are documented in `.env.example`.
 
-Exchange quotes are returned by Tindex from TSETMC data and converted from rial to toman for Poolamco calculations. Poolamco also uses Tindex candle/history endpoints for 1-month and 3-month USD, 18K gold, and linked exchange charts, with quota-aware server caching. If market access is unavailable, Poolamco must not fabricate historical prices; previously stored real snapshots remain the chart fallback.
+Exchange quotes are returned by Tindex from TSETMC data and converted from rial to toman for Poolamkoo calculations. Poolamkoo also uses Tindex candle/history endpoints for 1-month and 3-month USD, 18K gold, and linked exchange charts, with quota-aware server caching. If market access is unavailable, Poolamkoo must not fabricate historical prices; previously stored real snapshots remain the chart fallback.
 
 ## Privacy-first analytics
 
-Poolamco v0.18 can optionally load Cloudflare Web Analytics in production. Add the site in Cloudflare Web Analytics, copy the token from its browser snippet, and set only the production deployment environment:
+Poolamkoo v0.18 can optionally load Cloudflare Web Analytics in production. Add the site in Cloudflare Web Analytics, copy the token from its browser snippet, and set only the production deployment environment:
 
 ```env
 NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN=your_site_token
@@ -217,7 +272,7 @@ NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN=your_site_token
 
 This is a public Web Analytics site token, not a Cloudflare account API secret. If the variable is empty, the analytics component renders nothing. Development builds also keep the beacon disabled even if a token is present.
 
-The integration is intentionally coarse: Cloudflare can measure visits, page views, page paths, device/browser categories, and real-user performance. Poolamco does not emit custom analytics events from financial data, search text, forms, backups, or device transfers. See [docs/analytics.md](./docs/analytics.md) for setup and privacy boundaries.
+The integration is intentionally coarse: Cloudflare can measure visits, page views, page paths, device/browser categories, and real-user performance. Poolamkoo does not emit custom analytics events from financial data, search text, forms, backups, or device transfers. See [docs/analytics.md](./docs/analytics.md) for setup and privacy boundaries.
 
 ## Market alerts and background push
 
@@ -238,7 +293,7 @@ npm run build
 
 ## PWA
 
-Poolamco includes a web app manifest, service worker, offline route, install icons, and a favicon. Release QA should include real installation tests on desktop and mobile in addition to browser DevTools checks.
+Poolamkoo includes a web app manifest, service worker, offline route, install icons, and a favicon. Release QA should include real installation tests on desktop and mobile in addition to browser DevTools checks.
 
 See [docs/testing/release.md](./docs/testing/release.md) for the release checklist.
 

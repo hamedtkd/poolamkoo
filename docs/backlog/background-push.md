@@ -4,7 +4,7 @@ Background Web Push was implemented in v0.13.0 as an opt-in experiment, then int
 
 ## Why it is paused
 
-- Poolamco is being developed as a free and open-source local-first app.
+- Poolamkoo is being developed as a free and open-source local-first app.
 - Reliable closed-PWA alerts need a scheduler plus durable server storage.
 - Market checks also consume third-party quote quota even when no user has the app open.
 - A permanent paid dependency is not justified at the current stage.

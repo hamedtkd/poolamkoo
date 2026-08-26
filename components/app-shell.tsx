@@ -26,7 +26,7 @@ export function AppShell({ settings, market, onNewMoney, children }: {
   const [searchOpen, setSearchOpen] = useState(false);
   const { resolvedTheme, toggleTheme } = useAppTheme(settings);
   const sidebar = useSidebarState();
-  const startTour = () => window.dispatchEvent(new Event("poolamco:start-tour"));
+  const startTour = () => window.dispatchEvent(new Event("poolamkoo:start-tour"));
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {

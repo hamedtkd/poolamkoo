@@ -12,6 +12,7 @@ npm run build
 
 موارد زیر باید بدون خطا تمام شوند:
 
+- [ ] `check:icons` — همه Named Importهای `react-icons/ri` در نسخه نصب‌شده معتبر باشند
 - [ ] TypeScript
 - [ ] ESLint
 - [ ] unit tests
@@ -78,7 +79,7 @@ npm run build
 
 ```bash
 git status
-git tag -a vX.Y.Z -m "Poolamco vX.Y.Z"
+git tag -a vX.Y.Z -m "Poolamkoo vX.Y.Z"
 git push origin main
 git push origin vX.Y.Z
 ```
@@ -182,3 +183,44 @@ git push origin vX.Y.Z
 ### Performance regression gate
 
 `npm run check:performance` verifies that Dashboard, Reports, and investment market chart engines remain behind the intended lightweight/lazy boundaries. It is a structural guard, not a substitute for checking real Core Web Vitals after deployment.
+
+## 16. Portfolio decision UX and PWA install boundary
+
+- [ ] `/` در مرورگر عادی Landing عمومی را بدون Redirect نمایش دهد
+- [ ] HTML/metadata Landing لینک `app.webmanifest` یا `appleWebApp` capability نداشته باشد
+- [ ] `/dashboard` Manifest `/app.webmanifest` را advertise کند
+- [ ] Manifest دارای `id` و `start_url` برابر `/dashboard` و `display: standalone` باشد
+- [ ] اجرای standalone روی `/` به `/dashboard` منتقل شود، اما public routeهای دیگر redirect نشوند
+- [ ] Service Worker فقط بعد از ورود به Workspace رجیستر شود و Banner Update نسخه‌های قبل همان رفتار explicit acceptance را حفظ کند
+- [ ] explicit precache شامل `/dashboard` و `/offline` باشد اما `/` را نداشته باشد
+- [ ] سبد با target مجموع ۱۰۰٪ سهم فعلی، هدف و فاصله هر دارایی را درست نمایش دهد
+- [ ] دارایی کمتر/بیشتر از هدف فقط به‌عنوان فاصله با هدف کاربر نمایش داده شود، نه توصیه خرید/فروش
+- [ ] وقتی مجموع targetها ۱۰۰٪ نیست، اولویت پول جدید نمایش داده نشود
+- [ ] دارایی موجود بدون Market/Manual price هشدار ناقص‌بودن مرور allocation را فعال کند
+- [ ] Desktop table و Mobile cards سهم فعلی + هدف + status را قابل خواندن نمایش دهند
+- [ ] SensitiveValue همچنان روی gapهای پولی و ارزش‌های مالی اعمال شود
+- [ ] IndexedDB schema روی 6 باقی بماند و Backup/Restore format تغییر نکند
+
+
+## 17. Product media capture
+
+- [ ] `npm run media:capture` روی Production Build واقعی بدون خطای Runtime اجرا شود
+- [ ] خروجی‌های Landing، Dashboard، Investments و Reports در `docs/assets/screenshots/` ساخته شوند
+- [ ] Capture فقط از Browser Profile موقت و Fixture ساختگی استفاده کند و Profile واقعی کاربر را نخواند
+- [ ] Market API، Push و Cloudflare Analytics هنگام Capture مسدود باشند تا Screenshot به Secret یا داده شبکه وابسته نباشد
+- [ ] `npm run media:capture:built` روی Build آماده بدون Build دوباره همان مسیر را اجرا کند
+- [ ] Workflow دستی GitHub Actions با نام `Product media` Artifact `poolamkoo-product-screenshots` را بسازد و Repository را خودکار Commit نکند
+
+
+## 18. Reports decision insights and landing media
+
+- [ ] Landing در Light تصویر `poolamkoo-finance-light.webp` و در Dark تصویر `poolamkoo-finance-dark.webp` را نشان دهد
+- [ ] تصویر Hero روی 390px و 1440px بدون بریدگی یا Overflow افقی نمایش داده شود
+- [ ] Landing همچنان بدون بازکردن/Seed کردن IndexedDB مالی قابل مشاهده باشد
+- [ ] Reports در بازه بدون داده، Donut یا سهم ۱۰۰٪ ساختگی از قانون پول نشان ندهد
+- [ ] Allocation ناقص با پیام صریح مشخص شود و «فاصله معتبر با قانون» از آن استنتاج نشود
+- [ ] قانون معتبر و Allocation کامل، زندگی/امنیت/رشد را با سهم فعلی و هدف مقایسه کند
+- [ ] «برای مرور بعدی» فقط از Plan/Allocation/Fund داده ثبت‌شده استفاده کند و توصیه معامله یا پیش‌بینی بازار ندهد
+- [ ] `npm run media:capture:built` روی Windows بدون `spawn EINVAL` Production Server را بالا بیاورد
+- [ ] Capture هر دو `landing-light-desktop.png` و `landing-dark-desktop.png` را بسازد
+- [ ] IndexedDB schema روی 6 و Backup/Restore contract بدون تغییر باقی بماند

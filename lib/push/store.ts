@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { pushServerConfig } from "@/lib/push/config";
 import type { PushDeviceRecord } from "@/lib/push/types";
 
-const DEVICE_SET = "poolamco:push:devices:v1";
-const DEVICE_PREFIX = "poolamco:push:device:v1:";
+const DEVICE_SET = "poolamkoo:push:devices:v1";
+const DEVICE_PREFIX = "poolamkoo:push:device:v1:";
 const DEVICE_TTL_SECONDS = 60 * 60 * 24 * 120;
 
 function deviceId(token: string) {

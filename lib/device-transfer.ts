@@ -1,8 +1,9 @@
 import { assertSupportedDataSchema, validatePortableData, type PortableDataPreview } from "./data-portability.ts";
 import type { BackupEnvelope } from "@/lib/types";
 
-export const DEVICE_TRANSFER_SIGNAL_FORMAT = "poolamco-device-signal";
+export const DEVICE_TRANSFER_SIGNAL_FORMAT = "poolamkoo-device-signal";
 export const DEVICE_TRANSFER_SIGNAL_VERSION = 1;
+const SUPPORTED_DEVICE_TRANSFER_SIGNAL_FORMAT = /^poolam(?:co|koo)-device-signal$/;
 export const DEVICE_TRANSFER_SIGNAL_MAX_AGE_MS = 20 * 60 * 1000;
 export const DEVICE_TRANSFER_CHUNK_SIZE = 24_000;
 
@@ -49,9 +50,10 @@ export function decodeTransferSignal(value: string, expectedRole?: TransferRole,
   } catch {
     throw new Error("کد اتصال قابل خواندن نیست.");
   }
-  if (packet.format !== DEVICE_TRANSFER_SIGNAL_FORMAT || packet.version !== DEVICE_TRANSFER_SIGNAL_VERSION) {
+  if (!SUPPORTED_DEVICE_TRANSFER_SIGNAL_FORMAT.test(String(packet.format)) || packet.version !== DEVICE_TRANSFER_SIGNAL_VERSION) {
     throw new Error("این کد اتصال مربوط به نسخه پشتیبانی‌شده پولم‌کو نیست.");
   }
+  packet = { ...packet, format: DEVICE_TRANSFER_SIGNAL_FORMAT };
   if (expectedRole && packet.role !== expectedRole) throw new Error("کد اتصال مربوط به مرحله دیگری از انتقال است.");
   if (!packet.description?.sdp || packet.description.type !== packet.role) throw new Error("کد اتصال ناقص است.");
   const createdAt = new Date(packet.createdAt).getTime();

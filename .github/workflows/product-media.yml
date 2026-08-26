@@ -1,0 +1,27 @@
+name: Product media
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run media:capture
+      - uses: actions/upload-artifact@v4
+        with:
+          name: poolamkoo-product-screenshots
+          path: docs/assets/screenshots/*.png
+          if-no-files-found: error

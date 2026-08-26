@@ -2,7 +2,7 @@
 
 ## Data model
 
-PoolamCo is local-first. Personal finance records are stored in the browser's IndexedDB and are not sent to the Next.js server.
+Poolamkoo is local-first. Personal finance records are stored in the browser's IndexedDB and are not sent to the Next.js server.
 
 Public informational routes, including the landing page at `/`, do not seed the financial IndexedDB. Local financial storage is initialized when the application is opened at `/dashboard` or another app route. Financial app routes are marked `noindex` and excluded from the public sitemap.
 
@@ -12,9 +12,9 @@ Public informational routes, including the landing page at `/`, do not seed the 
 
 ## Backups
 
-Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted by PoolamCo. New v2 backup envelopes also include a SHA-256 corruption digest plus application/database-schema metadata. The digest is a corruption detector, not a digital signature; AES-GCM remains the authenticated encryption layer for encrypted files. Successful-backup timestamps and reminder snooze state are device-local metadata and are intentionally excluded from exported financial payloads.
+Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted by Poolamkoo. New v2 backup envelopes also include a SHA-256 corruption digest plus application/database-schema metadata. The digest is a corruption detector, not a digital signature; AES-GCM remains the authenticated encryption layer for encrypted files. Successful-backup timestamps and reminder snooze state are device-local metadata and are intentionally excluded from exported financial payloads.
 
-Before importing a backup, PoolamCo verifies the envelope, decrypts when required, validates required local tables/settings, rejects data from a newer database schema, and shows a record-count preview. Only after explicit confirmation does it create a local recovery snapshot and replace the current database. Legacy v1 backup files remain readable. Up to five recent recovery snapshots are kept in IndexedDB; new snapshots also carry schema/app version metadata. These snapshots are for accidental local changes only and are not a substitute for an external backup because clearing Site Data removes them too.
+Before importing a backup, Poolamkoo verifies the envelope, decrypts when required, validates required local tables/settings, rejects data from a newer database schema, and shows a record-count preview. Only after explicit confirmation does it create a local recovery snapshot and replace the current database. Legacy v1 backup files remain readable. Up to five recent recovery snapshots are kept in IndexedDB; new snapshots also carry schema/app version metadata. These snapshots are for accidental local changes only and are not a substitute for an external backup because clearing Site Data removes them too.
 
 ## Browser storage
 
@@ -30,7 +30,7 @@ If you extend this project for production, review CSP, hosting headers, dependen
 
 ## Device transfer
 
-Direct device transfer uses a browser WebRTC DataChannel and does not require a Poolamco signaling/data server. Pairing descriptions are moved by the user through copy/share. The financial payload is additionally encrypted with AES-GCM using a one-time transfer PIN before it is chunked onto the WebRTC channel. The receiver verifies a SHA-256 digest, previews the decoded payload, and must explicitly confirm replacement. A local recovery snapshot is created before import.
+Direct device transfer uses a browser WebRTC DataChannel and does not require a Poolamkoo signaling/data server. Pairing descriptions are moved by the user through copy/share. The financial payload is additionally encrypted with AES-GCM using a one-time transfer PIN before it is chunked onto the WebRTC channel. The receiver verifies a SHA-256 digest, previews the decoded payload, and must explicitly confirm replacement. A local recovery snapshot is created before import.
 
 For sensitive environments, keep both devices on a trusted local network and do not share pairing codes or the one-time PIN with third parties. Encrypted backup-file transfer remains the fallback when direct WebRTC cannot connect.
 
@@ -38,6 +38,6 @@ For sensitive environments, keep both devices on a trusted local network and do 
 
 Cloudflare Web Analytics is optional and disabled when `NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN` is absent. The configured site token is intentionally public because it is embedded in Cloudflare's browser beacon; it is not a Cloudflare account API credential.
 
-Poolamco does not create custom analytics events from IndexedDB records or financial forms. Income amounts, fund balances, personal asset names, transactions, search text, backups, recovery snapshots, and device-transfer payloads are not intentionally serialized into analytics requests. Keep sensitive values and user-entered names out of route paths because normal web analytics can measure page paths.
+Poolamkoo does not create custom analytics events from IndexedDB records or financial forms. Income amounts, fund balances, personal asset names, transactions, search text, backups, recovery snapshots, and device-transfer payloads are not intentionally serialized into analytics requests. Keep sensitive values and user-entered names out of route paths because normal web analytics can measure page paths.
 
 Local development never renders the analytics beacon, even when the token is present. See `docs/analytics.md` for deployment and privacy details.

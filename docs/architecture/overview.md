@@ -83,3 +83,18 @@ Global Search از v0.22 یک Combobox قابل کنترل با کیبورد ا�
 ## Performance boundaries (v0.23)
 
 Chart libraries are intentionally kept out of high-frequency route entry code where a lighter representation is sufficient. Dashboard market sparklines use a small SVG renderer over real local snapshots; the portfolio area chart, Reports monthly bars, and investment market chart engine load through explicit dynamic boundaries. This is a bundle/hydration optimization only: it does not change IndexedDB, market-provider priority, Offline caching, or the rule that missing history must stay an honest empty state.
+
+## Portfolio decision layer and PWA boundary (v0.24)
+
+مرور ترکیب سبد یک لایه اطلاعاتی روی همان `portfolioPosition` موجود است و منطق بهای تمام‌شده را تغییر نمی‌دهد. `useInvestmentPortfolio` فقط منبع قیمت هر Position را به «market / manual / cost-basis fallback» برچسب می‌زند و `lib/portfolio-allocation.ts` سهم فعلی، سهم هدف، drift و gap ارزشی را به‌صورت Pure محاسبه می‌کند. اولویت پول جدید فقط از target gap خود کاربر می‌آید و وقتی جمع هدف‌ها ۱۰۰٪ نیست یا ارزش کل سبد صفر است، تولید نمی‌شود. هیچ مدل پیش‌بینی یا توصیه معامله‌ای در این لایه وجود ندارد.
+
+از v0.24 Manifest نصب‌شونده دیگر Special Route سراسری Next نیست. فایل `public/app.webmanifest` فقط توسط `(workspace)` advertise می‌شود و `PwaUpdateNotice` نیز فقط همان‌جا Service Worker را رجیستر/بررسی می‌کند. بنابراین بازدید عادی `/` یک سایت عمومی است، در حالی که PWA با `id` و `start_url` روی `/dashboard` تعریف می‌شود. Scope عمداً `/` می‌ماند چون routeهای واقعی app مانند `/income`، `/funds` و `/investments` sibling هستند. برای نصب‌های قدیمی، فقط اجرای standalone روی ریشه با یک guard کوچک به Dashboard منتقل می‌شود؛ مرورگر عادی redirect نمی‌شود.
+
+
+## Decision-focused reports and landing media (v0.25)
+
+لایه `lib/report-insights.ts` فقط از داده‌های محلی موجود یک Snapshot تصمیمی Pure می‌سازد: پوشش تخصیص پول ورودی، فاصله زندگی/امنیت/رشد با قانون فعال، اجرای Plan Itemها و پوشش فعلی صندوق‌ها. اگر Allocationهای بازه مجموع پول ورودی را پوشش ندهند، Snapshot با `allocationReliable = false` علامت می‌خورد و UI اجازه نمی‌دهد یک فاصله ناقص مثل نتیجه قطعی نمایش داده شود. این لایه به Expense ledger، Forecast یا API جدید وابسته نیست.
+
+Landing از v0.25 به‌جای preview کاملاً مصنوعی JSX، دو Asset تصویری تأییدشده Light/Dark را از `public/landing/` نمایش می‌دهد. عددهای این تصویر صریحاً Demo هستند و هیچ داده کاربر برای ساخت Landing خوانده نمی‌شود. Service Worker همچنان فقط در Workspace رجیستر می‌شود، بنابراین اضافه‌شدن این رسانه مرز Public/PWA نسخه v0.24 را تغییر نمی‌دهد.
+
+Capture رسانه برای Windows نیز Production Server را با `process.execPath` و bin نصب‌شده Next.js اجرا می‌کند؛ این کار وابستگی به اجرای مستقیم `npm.cmd` در Child Process را حذف می‌کند و همان Browser Profile موقت/Fixture ساختگی را حفظ می‌کند.

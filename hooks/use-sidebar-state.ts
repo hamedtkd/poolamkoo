@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 
-const STORAGE_KEY = "poolamco:sidebar-collapsed";
-const CHANGE_EVENT = "poolamco:sidebar-change";
+const STORAGE_KEY = "poolamkoo:sidebar-collapsed";
+const CHANGE_EVENT = "poolamkoo:sidebar-change";
 
 function readCollapsed() {
   try {

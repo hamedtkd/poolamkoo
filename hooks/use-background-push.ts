@@ -7,7 +7,7 @@ import { toRemoteAlerts } from "@/lib/push/remote-alerts";
 import type { PushAlertState } from "@/lib/push/types";
 import type { MarketAlert } from "@/lib/types";
 
-const TOKEN_KEY = "poolamco:push-device-token:v1";
+const TOKEN_KEY = "poolamkoo:push-device-token:v1";
 
 export type BackgroundPushStatus = "checking" | "unsupported" | "unconfigured" | "disabled" | "enabled" | "denied" | "error";
 type Inspection = { status: BackgroundPushStatus; message?: string };
@@ -55,7 +55,7 @@ async function syncSubscription(subscription: PushSubscription, alerts: MarketAl
   const token = deviceToken(true);
   const response = await fetch("/api/push/subscription", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Poolamco-Push-Token": token },
+    headers: { "Content-Type": "application/json", "X-Poolamkoo-Push-Token": token },
     body: JSON.stringify({ subscription: subscription.toJSON(), alerts: toRemoteAlerts(alerts) }),
     cache: "no-store",
   });
@@ -129,7 +129,7 @@ export function useBackgroundPush(alerts: MarketAlert[], runtimeReady = true) {
       const token = typeof window !== "undefined" ? deviceToken(false) : "";
       const registration = supportsPush() ? await navigator.serviceWorker.ready : null;
       const subscription = registration ? await registration.pushManager.getSubscription() : null;
-      if (token) await fetch("/api/push/subscription", { method: "DELETE", headers: { "X-Poolamco-Push-Token": token }, cache: "no-store" }).catch(() => undefined);
+      if (token) await fetch("/api/push/subscription", { method: "DELETE", headers: { "X-Poolamkoo-Push-Token": token }, cache: "no-store" }).catch(() => undefined);
       if (subscription) await subscription.unsubscribe();
       localStorage.removeItem(TOKEN_KEY);
       setStatus("disabled");

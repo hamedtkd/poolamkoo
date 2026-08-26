@@ -66,8 +66,8 @@ export function useProductTour(guideComplete: boolean) {
 
   useEffect(() => {
     const manual = () => start();
-    window.addEventListener("poolamco:start-tour", manual);
-    return () => window.removeEventListener("poolamco:start-tour", manual);
+    window.addEventListener("poolamkoo:start-tour", manual);
+    return () => window.removeEventListener("poolamkoo:start-tour", manual);
   }, [start]);
 
   useEffect(() => {

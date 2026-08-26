@@ -79,7 +79,7 @@ export async function downloadDatabaseBackup(options: { encrypted: boolean; pass
   const payload = await exportDatabaseObject();
   const envelope = await createBackupEnvelope(JSON.stringify(payload), options.encrypted ? options.password : undefined);
   const day = new Date().toISOString().slice(0, 10);
-  triggerDownload(JSON.stringify(envelope, null, 2), `poolamco-backup-${day}.json`);
+  triggerDownload(JSON.stringify(envelope, null, 2), `poolamkoo-backup-${day}.json`);
   await setAppMeta(BACKUP_LAST_SUCCESS_KEY, envelope.exportedAt);
   await deleteAppMeta(BACKUP_SNOOZE_UNTIL_KEY);
   return envelope.exportedAt;

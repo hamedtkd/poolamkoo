@@ -7,7 +7,7 @@ import { parseRemoteAlerts, parseSubscription, sameOrigin, validDeviceToken } fr
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function token(request: Request) { return request.headers.get("x-poolamco-push-token"); }
+function token(request: Request) { return request.headers.get("x-poolamkoo-push-token"); }
 function json(body: Record<string, unknown>, status = 200) { return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } }); }
 
 export async function POST(request: Request) {

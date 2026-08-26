@@ -37,6 +37,9 @@
 - [Cloudflare Web Analytics و مرزهای داده](./analytics.md)
 
 ## Release history
+- [v0.25.0](./releases/0.25.0.md)
+- [v0.24.1](./releases/0.24.1.md)
+- [v0.24.0](./releases/0.24.0.md)
 - [v0.23.0](./releases/0.23.0.md)
 - [v0.22.0](./releases/0.22.0.md)
 - [v0.21.0](./releases/0.21.0.md)

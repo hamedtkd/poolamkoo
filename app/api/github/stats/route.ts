@@ -6,7 +6,7 @@ const CACHE_CONTROL = "public, s-maxage=21600, stale-while-revalidate=86400";
 export async function GET() {
   try {
     const response = await fetch("https://api.github.com/repos/hamedtkd/poolamkoo", {
-      headers: { Accept: "application/vnd.github+json", "User-Agent": "poolamco-open-source-surface" },
+      headers: { Accept: "application/vnd.github+json", "User-Agent": "poolamkoo-open-source-surface" },
       next: { revalidate: 21_600 },
     });
     if (!response.ok) throw new Error(`GitHub ${response.status}`);

@@ -1,5 +1,7 @@
 # پولم‌کو
-> نکته v0.23: نمودارهای سنگین در مسیرهای مالی به‌صورت Lazy بارگذاری می‌شوند و Sparklineهای Dashboard با SVG سبک رسم می‌شوند؛ این تغییر فقط هزینه بارگذاری را کم می‌کند و محاسبات یا مرز داده مالی را تغییر نمی‌دهد.
+> نکته v0.25: گزارش‌ها حالا از داده محلی ثبت‌شده جمع‌بندی تصمیمی برای اجرای برنامه، تعادل قانون پول و صندوق‌ها می‌سازند؛ Hero لندینگ هم از دو تصویر تأییدشده روشن/تاریک استفاده می‌کند و مسیر Capture ویندوز برای رفع `spawn EINVAL` سخت‌سازی شده است.
+> نکته v0.24.1: نسخه v0.24 برای انتشار سخت‌سازی شده، نام لاتین استاندارد پروژه در همه سطوح **Poolamkoo** است و Capture امن اسکرین‌شات با دیتای نمایشی به‌صورت محلی و در GitHub Actions اضافه شده است.
+> نکته v0.24: صفحه سرمایه‌گذاری حالا سهم فعلی هر دارایی را با هدفی که خود کاربر تعیین کرده مقایسه می‌کند و نصب/اجرای PWA به مسیرهای Workspace محدود شده؛ `/` همچنان Landing عمومی است.
 
 ### وب‌اپ فارسی، RTL، Local-First و PWA برای تصمیم‌گیری درباره پول‌های ورودی، صندوق‌ها و سرمایه‌گذاری
 
@@ -81,9 +83,10 @@
 
 ### گزارش‌ها
 
-- کل پول‌های ورودی
-- پایبندی به برنامه
-- پوشش صندوق‌ها
+- کل پول‌های ورودی و پایبندی به برنامه
+- جمع‌بندی تصمیمی اجرای برنامه، تعادل قانون پول و پوشش فعلی صندوق‌ها
+- نمایش صریح تخصیص ناقص به‌جای جایگزین‌کردن داده خالی با درصدهای قانون
+- پیگیری‌های بعدی فقط بر اساس داده ثبت‌شده محلی
 - بازده واقعی خریدهای ثبت‌شده
 - سهم فعلی در برابر سهم هدف
 - نمودارهای مبتنی بر داده واقعی محلی
@@ -244,7 +247,59 @@ npm run check
 npm run build
 ```
 
-`npm run check` شامل TypeScript، ESLint، تست‌ها، محدودیت طول فایل‌ها، قوانین UI و Regression Checkها است.
+`npm run check` شامل TypeScript، ESLint، تست‌ها، بررسی معتبر بودن Remix Iconها، محدودیت طول فایل‌ها، قوانین UI و Regression Checkها است.
+
+
+## تصویر محصول در لندینگ
+
+Hero عمومی از دو فایل WebP تأییدشده داخل خود Repository استفاده می‌کند تا Light/Dark با ظاهر صفحه هماهنگ باشد. عددهای داخل این تصاویر صرفاً نمایشی هستند و از داده مالی کاربر خوانده نمی‌شوند.
+
+<table>
+  <tr>
+    <td width="50%"><img src="./public/landing/poolamkoo-finance-light.webp" alt="تصویر مفهومی روشن Poolamkoo" /></td>
+    <td width="50%"><img src="./public/landing/poolamkoo-finance-dark.webp" alt="تصویر مفهومی تاریک Poolamkoo" /></td>
+  </tr>
+</table>
+
+## اسکرین‌شات‌های محصول
+
+برای ساخت تصاویر GitHub از **Build واقعی Poolamkoo** با یک Browser Profile موقت و دیتای کاملاً نمایشی اجرا کن:
+
+```bash
+npm run media:capture
+```
+
+اگر Build تازه از قبل وجود دارد:
+
+```bash
+npm run media:capture:built
+```
+
+خروجی داخل `docs/assets/screenshots/` قرار می‌گیرد. در GitHub هم Workflow دستی **Product media** همین کار را انجام می‌دهد و Artifact با نام `poolamkoo-product-screenshots` می‌سازد. Capture به Profile واقعی مرورگر یا داده مالی واقعی دسترسی نمی‌گیرد. جزئیات کامل در [docs/assets/README.md](./docs/assets/README.md) است.
+
+مسیرهای README برای همین خروجی‌ها آماده‌اند؛ بعد از Capture و Commit تصاویر تأییدشده، GitHub محیط واقعی برنامه با Fixture نمایشی را اینجا نشان می‌دهد:
+
+<p align="center">
+  <img src="./docs/assets/screenshots/dashboard-light-desktop.png" alt="داشبورد Poolamkoo با داده مالی نمایشی" width="920" />
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="./docs/assets/screenshots/dashboard-dark-desktop.png" alt="داشبورد تاریک Poolamkoo" /></td>
+    <td width="50%"><img src="./docs/assets/screenshots/investments-light-desktop.png" alt="صفحه سرمایه‌گذاری و مرور ترکیب سبد Poolamkoo" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./docs/assets/screenshots/reports-light-desktop.png" alt="گزارش‌های Poolamkoo" /></td>
+    <td width="50%"><img src="./docs/assets/screenshots/landing-light-desktop.png" alt="لندینگ روشن Poolamkoo" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./docs/assets/screenshots/landing-dark-desktop.png" alt="لندینگ تاریک Poolamkoo" /></td>
+    <td width="50%"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="./docs/assets/screenshots/investments-mobile.png" alt="صفحه سرمایه‌گذاری Poolamkoo در موبایل" width="390" /></td>
+  </tr>
+</table>
 
 ## PWA
 

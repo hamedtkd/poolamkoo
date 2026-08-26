@@ -1,6 +1,6 @@
 {
-  "name": "poolamco",
-  "version": "0.23.0",
+  "name": "poolamkoo",
+  "version": "0.25.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:lines": "node scripts/check-file-lines.mjs",
-    "check": "npm run clean:obsolete && npm run typecheck && npm run lint && npm test && npm run check:lines && npm run check:ui && npm run check:performance && npm run check:regressions",
+    "check": "npm run clean:obsolete && npm run check:icons && npm run typecheck && npm run lint && npm test && npm run check:lines && npm run check:ui && npm run check:performance && npm run check:regressions",
     "check:ui": "node scripts/check-ui-architecture.mjs",
     "check:regressions": "node scripts/check-regressions.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
@@ -18,7 +18,10 @@
     "predev": "npm run clean:obsolete",
     "prebuild": "npm run clean:obsolete",
     "push:keys": "web-push generate-vapid-keys",
-    "check:performance": "node scripts/check-performance.mjs"
+    "check:performance": "node scripts/check-performance.mjs",
+    "media:capture": "npm run build && node scripts/capture-product-media.mjs",
+    "media:capture:built": "node scripts/capture-product-media.mjs",
+    "check:icons": "node scripts/check-icon-imports.mjs"
   },
   "dependencies": {
     "@tanstack/react-table": "9.1.2",

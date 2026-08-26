@@ -5,10 +5,18 @@ import { LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.ts";
 
 test("device transfer pairing codes round-trip and expire", () => {
   const createdAt = new Date("2026-08-25T12:00:00.000Z").toISOString();
-  const code = encodeTransferSignal({ format: "poolamco-device-signal", version: 1, role: "offer", createdAt, description: { type: "offer", sdp: "v=0\\r\\n" } });
+  const code = encodeTransferSignal({ format: "poolamkoo-device-signal", version: 1, role: "offer", createdAt, description: { type: "offer", sdp: "v=0\\r\\n" } });
   const decoded = decodeTransferSignal(code, "offer", new Date("2026-08-25T12:10:00.000Z").getTime());
   assert.equal(decoded.description.sdp, "v=0\\r\\n");
   assert.throws(() => decodeTransferSignal(code, "offer", new Date("2026-08-25T12:30:01.000Z").getTime()), /منقضی/);
+});
+
+test("device transfer accepts previous pairing codes while normalizing to Poolamkoo", () => {
+  const legacyFormat = ["poolam", "co", "-device-signal"].join("");
+  const createdAt = new Date("2026-08-25T12:00:00.000Z").toISOString();
+  const code = encodeTransferSignal({ format: legacyFormat, version: 1, role: "offer", createdAt, description: { type: "offer", sdp: "v=0\r\n" } } as never);
+  const decoded = decodeTransferSignal(code, "offer", new Date("2026-08-25T12:05:00.000Z").getTime());
+  assert.equal(decoded.format, "poolamkoo-device-signal");
 });
 
 test("device transfer PIN is short, readable and random enough for a one-time session", () => {
@@ -16,7 +24,7 @@ test("device transfer PIN is short, readable and random enough for a one-time se
   assert.match(pin, /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
 });
 
-test("transfer payload preview validates required Poolamco data", () => {
+test("transfer payload preview validates required Poolamkoo data", () => {
   const preview = validateTransferData({
     allocationRules: [{}], incomes: [{}, {}], allocations: [], funds: [{}], assets: [{}, {}], transactions: [{}, {}, {}],
     settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{}], marketAlerts: [{}, {}],

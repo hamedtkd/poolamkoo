@@ -96,7 +96,7 @@ export function useDeviceTransfer() {
     try {
       reset(); setMode("sender"); setStatus("pairing"); const transferPin = createTransferPin(); setPin(transferPin);
       const peer = createLocalTransferPeer(); peerRef.current = peer; watchPeer(peer);
-      bindSenderChannel(peer.createDataChannel("poolamco-transfer", { ordered: true }));
+      bindSenderChannel(peer.createDataChannel("poolamkoo-transfer", { ordered: true }));
       await peer.setLocalDescription(await peer.createOffer()); await waitForIceGathering(peer); setOfferCode(localDescriptionCode(peer, "offer"));
     } catch (reason) { fail(reason); }
   }

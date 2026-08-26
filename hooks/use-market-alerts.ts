@@ -16,7 +16,7 @@ async function showNotification(alert: MarketAlert, quote: MarketQuote, unit: Mo
     body: notificationBody(alert, quote, unit),
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    tag: `poolamco-market-alert-${alert.id ?? alert.marketId}-${alert.kind}`,
+    tag: `poolamkoo-market-alert-${alert.id ?? alert.marketId}-${alert.kind}`,
   };
   if ("serviceWorker" in navigator) {
     try {
