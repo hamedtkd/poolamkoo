@@ -172,6 +172,15 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep real IndexedDB snapshots and manual prices as the honest fallback; do not fabricate current quotes or historical candles.
 - Preserve existing legacy Tindex links without migration, keep IndexedDB schema 6, and leave Background Push disabled by default.
 
+## v0.31 — Market transparency & privacy-safe diagnostics ✅
+
+- Turn v0.30 provider-health metadata into an explicit Settings status surface instead of hiding it only behind the refresh control.
+- Explain BrsApi, direct TSETMC and optional Tindex roles separately, including safe status, requested/received counts and approximate latency.
+- Let users retry the existing market refresh from Settings and copy a support-friendly diagnostic summary without prices, symbols, asset names, market IDs, financial amounts, raw upstream bodies or provider secrets.
+- Keep diagnostics local until the user explicitly copies them; add no telemetry, account requirement or hosted financial backend.
+- Preserve the real-data fallback order: provider → local Snapshot → user manual price → unavailable.
+- Keep IndexedDB schema 6, backup formats, workspace-only PWA initialization and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

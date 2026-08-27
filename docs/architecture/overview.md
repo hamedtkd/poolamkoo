@@ -136,3 +136,9 @@ Provider availability is now treated as structured runtime state rather than fre
 The quote route starts independent BrsApi, direct-TSETMC and legacy-Tindex work together. Tindex's core boards fallback remains dependent on the BrsApi result and is called only when USD/18K gold/BTC are actually missing. This preserves the v0.28 provider priority and protects the optional free-tier quota instead of eagerly querying every source on every refresh.
 
 A `TsetmcProvider` instance owns one deadline for the whole operation as well as a shorter timeout for each HTTP request. Batched quote requests therefore share a bounded time budget; partial successes return as `degraded`, while complete failure returns a classified `unavailable` state. Client code still persists only real quotes to IndexedDB and falls back to existing real snapshots/manual prices when fresh data is absent. IndexedDB schema 6 and all backup/transfer formats remain unchanged.
+
+## Market transparency and diagnostics boundary (v0.31)
+
+The v0.30 health model is now surfaced in Settings through `components/settings/market-status-card.tsx`. The card reads the existing `useMarket` runtime only; it does not create a second polling loop or another provider request path. A manual retry calls the same coalesced market refresh already used by the shell.
+
+`lib/market/status.ts` owns user-facing provider labels and the copyable diagnostic formatter. The diagnostic contract intentionally accepts only market mode, health metadata and the last refresh timestamp. It has no quote/asset/watchlist inputs, so prices, symbols, asset names, market IDs and financial amounts cannot enter the generated text by accident. Provider configuration is reduced to a boolean and failures remain the stable v0.30 categories. Clipboard export happens only after explicit user action and is never uploaded by Poolamkoo.
