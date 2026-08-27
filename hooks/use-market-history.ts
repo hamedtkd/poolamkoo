@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { MarketCandle, MarketHistoryRange, MarketSnapshot, MarketSource } from "@/lib/types";
+import type { ExchangeMarketSource, MarketCandle, MarketHistoryRange, MarketSnapshot, MarketSource } from "@/lib/types";
 
 type RemoteHistoryResponse = {
   mode?: string;
@@ -37,18 +37,26 @@ function remoteSupported(symbol: string, marketId?: string) {
   return Boolean(marketId || symbol === "USD" || symbol === "IR_GOLD_18K");
 }
 
-async function requestHistory(key: string, symbol: string, marketId: string | undefined, range: MarketHistoryRange) {
+async function requestHistory(
+  key: string,
+  symbol: string,
+  marketId: string | undefined,
+  marketSource: ExchangeMarketSource | undefined,
+  range: MarketHistoryRange,
+) {
   const existing = inFlight.get(key);
   if (existing) return existing;
   const params = new URLSearchParams({ symbol, range });
   if (marketId) params.set("marketId", marketId);
+  if (marketId && marketSource) params.set("source", marketSource);
   const promise = fetch(`/api/market/history?${params}`)
     .then(async (response) => {
       const payload = await response.json().catch(() => ({})) as RemoteHistoryResponse;
+      const source: MarketSource = payload.source === "tsetmc" || payload.source === "tindex" ? payload.source : "local";
       const state: HistoryState = {
         key,
         candles: Array.isArray(payload.candles) ? payload.candles : [],
-        source: payload.source === "tindex" ? "tindex" : "local",
+        source,
         warning: payload.warning,
       };
       memoryCache.set(key, state);
@@ -67,9 +75,10 @@ async function requestHistory(key: string, symbol: string, marketId: string | un
   return promise;
 }
 
-export function useMarketHistory({ symbol, marketId, snapshots, range }: {
+export function useMarketHistory({ symbol, marketId, marketSource, snapshots, range }: {
   symbol: string;
   marketId?: string;
+  marketSource?: ExchangeMarketSource;
   snapshots: MarketSnapshot[];
   range: MarketHistoryRange;
 }) {
@@ -78,7 +87,7 @@ export function useMarketHistory({ symbol, marketId, snapshots, range }: {
     [snapshots, symbol],
   );
   const supported = remoteSupported(symbol, marketId);
-  const key = `${symbol}:${marketId ?? "core"}:${range}`;
+  const key = `${symbol}:${marketSource ?? "core"}:${marketId ?? "core"}:${range}`;
   const [remote, setRemote] = useState<HistoryState>({ key: "", candles: [], source: "local" });
 
   useEffect(() => {
@@ -88,16 +97,16 @@ export function useMarketHistory({ symbol, marketId, snapshots, range }: {
     if (cached) {
       void Promise.resolve(cached).then((state) => { if (active) setRemote(state); });
     } else {
-      void requestHistory(key, symbol, marketId, range).then((state) => {
+      void requestHistory(key, symbol, marketId, marketSource, range).then((state) => {
         if (active) setRemote(state);
       });
     }
     return () => { active = false; };
-  }, [key, marketId, range, supported, symbol]);
+  }, [key, marketId, marketSource, range, supported, symbol]);
 
   const activeRemote = remote.key === key ? remote : undefined;
   if (activeRemote?.candles.length && activeRemote.candles.length >= 2) {
-    return { candles: activeRemote.candles, mode: "remote" as const, source: "tindex" as const, loading: false, warning: activeRemote.warning };
+    return { candles: activeRemote.candles, mode: "remote" as const, source: activeRemote.source, loading: false, warning: activeRemote.warning };
   }
 
   const days = range === "1m" ? 30 : 90;

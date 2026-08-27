@@ -10,13 +10,14 @@ export const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 export function AlertDialogContent({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <AlertDialogPrimitive.Portal>
-      <AlertDialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out" />
+      <AlertDialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm data-[state=open]:animate-fade data-[state=open]:animate-duration-200 data-[state=open]:animate-once data-[state=closed]:animate-fade data-[state=closed]:animate-reverse data-[state=closed]:animate-duration-150 data-[state=closed]:animate-once motion-reduce:animate-none" />
       <div className="pointer-events-none fixed inset-0 z-[90] grid items-end sm:place-items-center sm:p-4">
         <AlertDialogPrimitive.Content
           dir="rtl"
           className={cn(
             "mobile-glass-panel pointer-events-auto relative w-full rounded-t-[30px] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl outline-none",
             "sm:w-[min(100%,28rem)] sm:rounded-2xl sm:bg-background sm:p-6",
+            "safe-modal-motion",
             className,
           )}
         >

@@ -6,6 +6,15 @@ export function MarketSourceLabel({ source, className, compact = false }: {
   className?: string;
   compact?: boolean;
 }) {
+  if (source === "tsetmc") {
+    return <a
+      href="https://www.tsetmc.com"
+      target="_blank"
+      rel="noreferrer"
+      className={cn("underline decoration-dotted underline-offset-2 hover:text-foreground", className)}
+      title="داده بازار سرمایه از TSETMC"
+    >{compact ? "TSETMC" : "منبع داده: TSETMC"}</a>;
+  }
   if (source === "tindex") {
     return <a
       href="https://tindex.app"

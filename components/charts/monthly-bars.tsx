@@ -1,10 +1,10 @@
 "use client";
 
 import { RiBarChartBoxLine } from "react-icons/ri";
-import { useReducedMotion } from "motion/react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartLegend } from "@/components/charts/chart-legend";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { formatMoney } from "@/lib/format";
 import type { MoneyUnit } from "@/lib/types";
 
@@ -15,7 +15,7 @@ const items = [
 ];
 
 export function MonthlyBars({ data, unit }: { data: Array<{ month: string; life: number; safety: number; growth: number }>; unit: MoneyUnit }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const hasData = data.some((row) => row.life + row.safety + row.growth > 0);
   if (!hasData) return <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed bg-muted/15 p-6 text-center"><div><RiBarChartBoxLine className="mx-auto size-8 text-primary" /><div className="mt-3 type-strong">هنوز داده ماهانه‌ای نداریم</div><p className="mt-2 max-w-sm type-caption text-muted-foreground">با ثبت پول ورودی و برنامه‌ریزی آن، نمودار ماهانه از داده واقعی خودت ساخته می‌شود.</p></div></div>;
   return (

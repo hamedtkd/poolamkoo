@@ -48,7 +48,7 @@ export class BrsApiProvider implements MarketDataProvider {
 
   async getQuotes(): Promise<MarketQuote[]> {
     const response = await fetch(`https://Api.BrsApi.ir/Market/Gold_Currency.php?key=${encodeURIComponent(this.apiKey)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) throw new Error(`BrsApi ${response.status}`);

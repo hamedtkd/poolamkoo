@@ -73,13 +73,13 @@ function MarketAlertDialogSession({ target, settings, onDone }: { target: Market
   return <>
     <DialogHeader>
       <DialogTitle className="flex items-center gap-2"><RiAlarmWarningLine className="text-primary" /> هشدار برای {target.symbol}</DialogTitle>
-      <DialogDescription>{target.name} · هشدار محلی با دریافت قیمت جدید بررسی می‌شود؛ اگر Push پس‌زمینه فعال باشد در حالت بسته بودن PWA هم می‌تواند برسد.</DialogDescription>
+      <DialogDescription>{target.name} · هشدار محلی با دریافت قیمت جدید بررسی می‌شود. Push پس‌زمینه همچنان یک آزمایش جدا و خاموش به‌صورت پیش‌فرض است.</DialogDescription>
     </DialogHeader>
     <div className="space-y-4">
       <label className="space-y-1.5"><span className="type-label">نوع هشدار</span><Select value={kind} onValueChange={(value) => changeKind(value as MarketAlertKind)} options={marketAlertKindOptions} /></label>
       <label className="space-y-1.5"><span className="type-label">آستانه {percentage ? "(درصد)" : "قیمت"}</span>{percentage ? <Input dir="ltr" inputMode="decimal" value={threshold || ""} onChange={(event) => setThreshold(Number(toLatinDigits(event.target.value).replace(",", ".")) || 0)} placeholder="۲" /> : <MoneyInput value={threshold || null} onValueChange={(value) => setThreshold(value ?? 0)} unit={settings.displayUnit} min={1} />}</label>
       {kind.startsWith("nav_") && !target.navToman && <p className="rounded-xl bg-muted/45 px-3 py-2 text-[10px] leading-5 text-muted-foreground">NAV در نتیجه جست‌وجوی فعلی موجود نیست. بعد از ذخیره، Quote کامل نماد دریافت می‌شود و اگر NAV منتشر شده باشد شرط ارزیابی خواهد شد.</p>}
-      <div className="flex items-center justify-between gap-4 rounded-2xl border p-3"><div><div className="flex items-center gap-2 type-strong"><RiNotification3Line className="text-primary" /> اعلان مرورگر</div><p className="mt-1 text-[10px] leading-5 text-muted-foreground">اختیاری است. با فعال بودن Push پس‌زمینه، همین هشدار برای حالت بسته نیز همگام می‌شود؛ داده مالی سبد ارسال نمی‌شود.</p></div><Switch checked={notifyBrowser} onCheckedChange={(value) => void toggleNotification(value)} /></div>
+      <div className="flex items-center justify-between gap-4 rounded-2xl border p-3"><div><div className="flex items-center gap-2 type-strong"><RiNotification3Line className="text-primary" /> اعلان مرورگر</div><p className="mt-1 text-[10px] leading-5 text-muted-foreground">اختیاری است و بعد از دریافت قیمت جدید می‌تواند Notification سیستم نشان دهد. فعال‌کردن آن داده مالی سبد را به Provider بازار ارسال نمی‌کند.</p></div><Switch checked={notifyBrowser} onCheckedChange={(value) => void toggleNotification(value)} /></div>
       {message && <p className="rounded-xl bg-muted/50 px-3 py-2 text-xs leading-6 text-muted-foreground">{message}</p>}
     </div>
     <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button variant="outline" onClick={onDone}>انصراف</Button><Button onClick={() => void save()} disabled={saving}>{saving ? "در حال ذخیره…" : "فعال‌کردن هشدار"}</Button></div>

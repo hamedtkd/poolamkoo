@@ -13,11 +13,11 @@ export default function AboutPage() {
       <Feature icon={<RiDatabase2Line />} title="Local-first">داده‌های مالی اصلی در IndexedDB همان مرورگر ذخیره می‌شوند و برای استفاده روزمره حساب کاربری لازم نیست.</Feature>
       <Feature icon={<RiGithubFill />} title="متن‌باز">کد پروژه روی GitHub عمومی است و با مجوز MIT منتشر می‌شود.</Feature>
       <Feature icon={<RiShieldCheckLine />} title="مالکیت داده">بکاپ رمزنگاری‌شده، Recovery Snapshot و انتقال مستقیم بین دستگاه‌ها برای کنترل بهتر داده وجود دارد.</Feature>
-      <Feature icon={<RiLineChartLine />} title="داده بازار">قیمت‌های عمومی از BrsApi و در بخش‌های بورسی از Tindex/TSETMC دریافت می‌شوند؛ داده ساختگی تاریخی تولید نمی‌شود.</Feature>
+      <Feature icon={<RiLineChartLine />} title="داده بازار">نرخ‌های عمومی از BrsApi و داده سهام/ETFهای جدید مستقیماً از TSETMC دریافت می‌شوند؛ Tindex فقط fallback اختیاری/اتصال قدیمی است و داده ساختگی تاریخی تولید نمی‌شود.</Feature>
       <Feature icon={<RiGithubFill />} title="مشارکت">گزارش باگ، پیشنهاد UX و Pull Request در GitHub خوش‌آمد است.</Feature>
       <Feature icon={<RiHeart3Line />} title="حمایت اختیاری">حمایت مالی هیچ قابلیت اضافه‌ای باز نمی‌کند و برای استفاده از برنامه لازم نیست.</Feature>
     </div>
-    <Card><CardHeader><CardTitle>منابع و شفافیت</CardTitle></CardHeader><CardContent className="grid gap-3 text-sm sm:grid-cols-2"><External href={COMMUNITY_LINKS.repository}>سورس پروژه در GitHub</External><External href={COMMUNITY_LINKS.issues}>گزارش مشکل یا پیشنهاد</External><Internal href="/security">امنیت و گزارش مسئولانه</Internal><Internal href="/license">مجوز MIT</Internal><External href={COMMUNITY_LINKS.tindex}>منبع داده Tindex</External><External href={COMMUNITY_LINKS.support}>حمایت اختیاری از توسعه</External></CardContent></Card>
+    <Card><CardHeader><CardTitle>منابع و شفافیت</CardTitle></CardHeader><CardContent className="grid gap-3 text-sm sm:grid-cols-2"><External href={COMMUNITY_LINKS.repository}>سورس پروژه در GitHub</External><External href={COMMUNITY_LINKS.issues}>گزارش مشکل یا پیشنهاد</External><Internal href="/security">امنیت و گزارش مسئولانه</Internal><Internal href="/license">مجوز MIT</Internal><External href={COMMUNITY_LINKS.tsetmc}>منبع بورس TSETMC</External><External href={COMMUNITY_LINKS.tindex}>Fallback اختیاری Tindex</External><External href={COMMUNITY_LINKS.support}>حمایت اختیاری از توسعه</External></CardContent></Card>
     <p className="text-xs leading-6 text-muted-foreground">پولم‌کو ابزار برنامه‌ریزی مالی شخصی است و توصیه سرمایه‌گذاری، حسابداری حرفه‌ای یا مشاوره مالی محسوب نمی‌شود. <Link href="/privacy" className="text-primary underline-offset-4 hover:underline">سیاست داده و حریم خصوصی</Link></p>
   </div>;
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { m } from "motion/react";
 import { RiAddLine, RiArrowLeftLine, RiArrowRightLine } from "react-icons/ri";
 import { appNav, isAppNavActive } from "@/components/app/navigation";
 import { BrandLogo } from "@/components/brand-logo";
@@ -10,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMoney }: {
+export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMoney, lockCollapsed = false }: {
   pathname: string;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   onNewMoney: () => void;
+  lockCollapsed?: boolean;
 }) {
   const active = (href: string) => isAppNavActive(pathname, href);
 
@@ -23,7 +23,7 @@ export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMo
       "fixed inset-y-0 right-0 z-30 hidden border-l bg-background/92 backdrop-blur-xl transition-[width] duration-300 ease-out md:flex md:flex-col",
       collapsed ? "w-[64px]" : "w-64",
     )}>
-      <SidebarHeader collapsed={collapsed} onToggle={onToggleCollapsed} />
+      <SidebarHeader collapsed={collapsed} onToggle={onToggleCollapsed} lockCollapsed={lockCollapsed} />
 
       <div className={cn("grid gap-2 border-b p-3", collapsed && "px-2")}>
         <SidebarTip label="پول جدید دارم" enabled={collapsed}>
@@ -38,7 +38,7 @@ export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMo
           const Icon = item.icon;
           const link = (
             <Link href={item.href} data-tour={item.tour} aria-label={item.label} aria-current={active(item.href) ? "page" : undefined} className={cn("relative flex h-11 items-center overflow-hidden rounded-xl type-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", collapsed ? "justify-center px-0" : "gap-3 px-3", active(item.href) ? "text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground")}>
-              {active(item.href) && <m.span layoutId="desktop-nav-active" className="absolute inset-0 rounded-xl bg-primary/10" transition={{ type: "spring", stiffness: 440, damping: 36 }} />}
+              {active(item.href) && <span className="absolute inset-0 animate-fade animate-once animate-duration-200 rounded-xl bg-primary/10 motion-reduce:animate-none" />}
               <Icon className="relative z-[1] size-5 shrink-0" />
               {!collapsed && <span className="relative z-[1] truncate">{item.label}</span>}
             </Link>
@@ -51,7 +51,15 @@ export function DesktopSidebar({ pathname, collapsed, onToggleCollapsed, onNewMo
   );
 }
 
-function SidebarHeader({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+function SidebarHeader({ collapsed, onToggle, lockCollapsed }: { collapsed: boolean; onToggle: () => void; lockCollapsed: boolean }) {
+  if (collapsed && lockCollapsed) {
+    return (
+      <div className="flex h-16 shrink-0 items-center justify-center border-b px-2">
+        <SidebarTip label="خانه"><Link href="/dashboard" aria-label="خانه" className="grid size-11 place-items-center rounded-2xl border bg-background/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><BrandLogo className="size-8" /></Link></SidebarTip>
+      </div>
+    );
+  }
+
   if (collapsed) {
     return (
       <div className="flex h-16 shrink-0 items-center justify-center border-b px-2">

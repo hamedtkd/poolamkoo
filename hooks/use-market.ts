@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
-import type { Asset, MarketAlert, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
+import type { Asset, ExchangeMarketSource, MarketAlert, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 
 type MarketResponse = {
   mode?: string;
@@ -11,26 +11,57 @@ type MarketResponse = {
   fetchedAt?: string;
 };
 
+type MarketTarget = {
+  source: ExchangeMarketSource;
+  id: string;
+  symbol: string;
+  name: string;
+};
+
 let inFlight: { key: string; promise: Promise<MarketResponse> } | null = null;
 
-function targetIds(assets: Asset[], watchlist: MarketWatchItem[], alerts: MarketAlert[]) {
-  const assetIds = assets.filter((asset) => asset.marketSource === "tindex" && asset.marketId).map((asset) => asset.marketId as string);
-  const watchIds = watchlist.filter((item) => item.source === "tindex" && item.marketId).map((item) => item.marketId);
-  const alertIds = alerts.filter((item) => item.enabled && item.source === "tindex" && item.marketId).map((item) => item.marketId);
-  return [...new Set([...assetIds, ...watchIds, ...alertIds])].sort();
+function targetDescriptors(assets: Asset[], watchlist: MarketWatchItem[], alerts: MarketAlert[]) {
+  const targets: MarketTarget[] = [];
+  for (const asset of assets) {
+    if (asset.marketSource && asset.marketId && asset.symbol) {
+      targets.push({ source: asset.marketSource, id: asset.marketId, symbol: asset.symbol, name: asset.name });
+    }
+  }
+  for (const item of watchlist) {
+    if (item.marketId) targets.push({ source: item.source, id: item.marketId, symbol: item.symbol, name: item.name });
+  }
+  for (const item of alerts) {
+    if (item.enabled && item.marketId) targets.push({ source: item.source, id: item.marketId, symbol: item.symbol, name: item.name });
+  }
+  const unique = new Map<string, MarketTarget>();
+  for (const target of targets) {
+    const key = `${target.source}:${target.id}`;
+    if (!unique.has(key)) unique.set(key, target);
+  }
+  return [...unique.values()].sort((a, b) => `${a.source}:${a.id}`.localeCompare(`${b.source}:${b.id}`));
 }
 
-async function requestMarket(ids: readonly string[]) {
-  const key = ids.join(",");
+function normalizeExchangeQuotes(quotes: MarketQuote[], targets: readonly MarketTarget[]) {
+  const lookup = new Map(targets.map((target) => [`${target.source}:${target.id}`, target]));
+  return quotes.map((quote) => {
+    if (!quote.marketId || (quote.source !== "tsetmc" && quote.source !== "tindex")) return quote;
+    const target = lookup.get(`${quote.source}:${quote.marketId}`);
+    return target ? { ...quote, symbol: target.symbol, name: target.name } : quote;
+  });
+}
+
+async function requestMarket(targets: readonly MarketTarget[]) {
+  const key = targets.map((target) => `${target.source}:${target.id}`).join(",");
   if (!inFlight || inFlight.key !== key) {
     const params = new URLSearchParams();
-    for (const id of ids) params.append("tindex", id);
+    for (const target of targets) params.append(target.source, target.id);
     const url = params.size ? `/api/market?${params}` : "/api/market";
     const promise = fetch(url, { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok && !Array.isArray(data.quotes)) throw new Error(data.warning || "market request failed");
-        return data as MarketResponse;
+        const result = data as MarketResponse;
+        return { ...result, quotes: normalizeExchangeQuotes(Array.isArray(result.quotes) ? result.quotes : [], targets) };
       })
       .finally(() => { if (inFlight?.promise === promise) inFlight = null; });
     inFlight = { key, promise };
@@ -41,13 +72,18 @@ async function requestMarket(ids: readonly string[]) {
 async function latestCachedQuotes() {
   const rows = await db.marketSnapshots.orderBy("capturedAt").reverse().toArray();
   const latest = new Map<string, MarketSnapshot>();
-  for (const row of rows) if (!latest.has(row.symbol)) latest.set(row.symbol, row);
+  for (const row of rows) {
+    const key = row.marketId && (row.source === "tsetmc" || row.source === "tindex")
+      ? `${row.source}:${row.marketId}`
+      : row.symbol;
+    if (!latest.has(key)) latest.set(key, row);
+  }
   return [...latest.values()];
 }
 
 export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [], alerts: MarketAlert[] = [], enabled = true) {
-  const idsKey = useMemo(() => JSON.stringify(targetIds(assets, watchlist, alerts)), [alerts, assets, watchlist]);
-  const ids = useMemo(() => JSON.parse(idsKey) as string[], [idsKey]);
+  const targetsKey = useMemo(() => JSON.stringify(targetDescriptors(assets, watchlist, alerts)), [alerts, assets, watchlist]);
+  const targets = useMemo(() => JSON.parse(targetsKey) as MarketTarget[], [targetsKey]);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState("loading");
@@ -81,7 +117,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
     if (!enabled) return;
     setLoading(true);
     try {
-      await applyResponse(await requestMarket(ids));
+      await applyResponse(await requestMarket(targets));
     } catch {
       const cached = await latestCachedQuotes();
       setQuotes(cached);
@@ -91,7 +127,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
     } finally {
       setLoading(false);
     }
-  }, [applyResponse, enabled, ids]);
+  }, [applyResponse, enabled, targets]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -104,7 +140,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
         setLastUpdated(cached[0]?.capturedAt ?? null);
       }
       try {
-        const data = await requestMarket(ids);
+        const data = await requestMarket(targets);
         if (active) await applyResponse(data);
       } catch {
         if (active) setWarning("دریافت قیمت جدید ناموفق بود.");
@@ -113,7 +149,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
       }
     });
     return () => { active = false; };
-  }, [applyResponse, enabled, ids, idsKey]);
+  }, [applyResponse, enabled, targets, targetsKey]);
 
   return { quotes, loading, mode, lastUpdated, warning, refresh };
 }

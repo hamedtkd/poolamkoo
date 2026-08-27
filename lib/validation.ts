@@ -24,7 +24,7 @@ export const assetSchema = z.object({
   kind: z.enum(["gold", "currency", "crypto", "stock", "fund", "custom"], { error: "نوع دارایی را انتخاب کن." }),
   symbol: z.string({ error: "نماد بازار معتبر نیست." }).trim().max(40, "نماد بازار نباید بیشتر از ۴۰ حرف باشد.").optional(),
   marketId: z.string({ error: "شناسه بازار معتبر نیست." }).trim().max(80, "شناسه بازار معتبر نیست.").optional(),
-  marketSource: z.enum(["tindex"], { error: "منبع بازار معتبر نیست." }).optional(),
+  marketSource: z.enum(["tsetmc", "tindex"], { error: "منبع بازار معتبر نیست." }).optional(),
   targetPct: requiredNumber("سهم هدف را انتخاب کن.")
     .min(0, "درصد نمی‌تواند منفی باشد.")
     .max(100, "درصد نمی‌تواند بیشتر از ۱۰۰ باشد."),

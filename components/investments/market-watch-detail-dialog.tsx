@@ -24,7 +24,7 @@ export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onC
   onCreateAlert: (target: MarketAlertTarget) => void;
 }) {
   const [range, setRange] = useState<MarketHistoryRange>("3m");
-  const history = useMarketHistory({ symbol: row?.item.symbol ?? "", marketId: row?.item.marketId, snapshots, range });
+  const history = useMarketHistory({ symbol: row?.item.symbol ?? "", marketId: row?.item.marketId, marketSource: row?.item.source, snapshots, range });
   const signal = navSignal(row?.premium ?? null);
   const quote = row?.quote;
 

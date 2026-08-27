@@ -167,21 +167,22 @@ export class TindexProvider {
 
   async search(query: string): Promise<MarketInstrument[]> {
     const params = new URLSearchParams({ q: query, per_page: "12", sort: "ticker", dir: "asc" });
-    return parseTindexSearchPayload(await this.request<TindexSearchPayload>(`/stocks/by-category/stock-energy?${params}`));
+    return parseTindexSearchPayload(await this.request<TindexSearchPayload>(`/stocks/by-category/stock-energy?${params}`, 300));
   }
 
   async getFallbackQuotes(): Promise<MarketQuote[]> {
-    return parseTindexBoardsPayload(await this.request<TindexBoardsPayload>("/boards"));
+    return parseTindexBoardsPayload(await this.request<TindexBoardsPayload>("/boards", 1800));
   }
 
   async getQuote(marketId: string): Promise<MarketQuote | null> {
-    const payload = await this.request<TindexOverviewPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/overview`);
-    return parseTindexOverviewPayload(payload);
+    const payload = await this.request<TindexOverviewPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/overview`, 3600);
+    const quote = parseTindexOverviewPayload(payload);
+    return quote ? { ...quote, marketId } : null;
   }
 
   async getQuotes(marketIds: readonly string[]): Promise<MarketQuote[]> {
     const quotes: MarketQuote[] = [];
-    for (const marketId of [...new Set(marketIds)].slice(0, 20)) {
+    for (const marketId of [...new Set(marketIds)].slice(0, 1)) {
       try {
         const quote = await this.getQuote(marketId);
         if (quote) quotes.push(quote);
@@ -192,20 +193,20 @@ export class TindexProvider {
 
   async getIndicatorCandles(slug: string, range: MarketHistoryRange): Promise<MarketCandle[]> {
     const params = new URLSearchParams({ range, interval: "daily" });
-    const payload = await this.request<TindexCandlesPayload>(`/indicators/${encodeURIComponent(slug)}/candles?${params}`);
+    const payload = await this.request<TindexCandlesPayload>(`/indicators/${encodeURIComponent(slug)}/candles?${params}`, 3600);
     return parseTindexCandlesPayload(payload);
   }
 
   async getExchangeCandles(marketId: string, range: MarketHistoryRange): Promise<MarketCandle[]> {
     const params = new URLSearchParams({ range, interval: "daily" });
-    const payload = await this.request<TindexCandlesPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/candles?${params}`);
+    const payload = await this.request<TindexCandlesPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/candles?${params}`, 3600);
     return parseTindexCandlesPayload(payload);
   }
 
-  private async request<T>(path: string): Promise<T> {
+  private async request<T>(path: string, revalidate: number): Promise<T> {
     const response = await fetch(`${BASE_URL}${path}`, {
       headers: { Authorization: `Bearer ${this.token}`, Accept: "application/json" },
-      cache: "no-store", signal: AbortSignal.timeout(10_000),
+      next: { revalidate }, signal: AbortSignal.timeout(10_000),
     });
     const payload = await response.json().catch(() => null) as (T & { message?: string; message_en?: string }) | null;
     if (!response.ok || !payload) {

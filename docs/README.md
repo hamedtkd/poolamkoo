@@ -38,6 +38,14 @@
 
 ## Release history
 
+- [v0.29.0 — Privacy-safe report export & mobile UX refinement](./releases/0.29.0.md)
+- [v0.28.2 — Turbopack animation resolver & modal safety](./releases/0.28.2.md)
+- [v0.28.1 — Hybrid motion restoration](./releases/0.28.1.md)
+
+- [v0.28.0](./releases/0.28.0.md)
+- [v0.27.4](./releases/0.27.4.md)
+- [v0.27.3](./releases/0.27.3.md)
+- [v0.27.2](./releases/0.27.2.md)
 - [v0.27.1](./releases/0.27.1.md)
 - [v0.27.0](./releases/0.27.0.md)
 - [v0.26.1](./releases/0.26.1.md)

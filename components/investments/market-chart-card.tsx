@@ -13,11 +13,11 @@ import { cn } from "@/lib/utils";
 
 const T = {
   title: "نمودار بازار",
-  desc: "دلار، طلا و نمادهای بورسی متصل، تاریخچه واقعی بازار را از Tindex می‌گیرند؛ در قطعی سرویس Snapshotهای واقعی دستگاه fallback می‌شوند.",
+  desc: "نمادهای بورسی جدید تاریخچه واقعی را مستقیم از TSETMC می‌گیرند؛ دلار/طلا و اتصال‌های قدیمی می‌توانند از Tindex اختیاری استفاده کنند و Snapshotهای واقعی دستگاه fallback هستند.",
   remote: "تاریخچه واقعی بازار",
   local: "Fallback از Snapshotهای واقعی این دستگاه",
   emptyTitle: "داده تاریخی کافی نداریم",
-  emptyDesc: "برای دلار، طلای ۱۸ عیار و نماد بورسی متصل، Tindex تاریخچه آنلاین می‌دهد. بیت‌کوین و تتر فعلاً فقط از Snapshotهای واقعی خود دستگاه نمودار می‌گیرند.",
+  emptyDesc: "برای نمادهای بورسی متصل به TSETMC تاریخچه مستقیم بازار در دسترس است. دلار/طلا فقط در صورت تنظیم Tindex تاریخچه آنلاین دارند و بیت‌کوین/تتر فعلاً از Snapshotهای واقعی دستگاه استفاده می‌کنند.",
   current: "قیمت فعلی",
   loading: "در حال دریافت تاریخچه بازار…",
 };
@@ -33,8 +33,8 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
   const [range, setRange] = useState<MarketHistoryRange>("3m");
   const exchangeAssets = assets.filter((asset) => asset.symbol && (asset.kind === "stock" || asset.kind === "fund"));
   const exchangeItems = dedupeMarketItems([
-    ...exchangeAssets.map((asset) => ({ symbol: asset.symbol as string, name: asset.name, marketId: asset.marketId })),
-    ...watchlist.map((item) => ({ symbol: item.symbol, name: item.name, marketId: item.marketId })),
+    ...exchangeAssets.map((asset) => ({ symbol: asset.symbol as string, name: asset.name, marketId: asset.marketId, marketSource: asset.marketSource })),
+    ...watchlist.map((item) => ({ symbol: item.symbol, name: item.name, marketId: item.marketId, marketSource: item.source })),
   ]);
   const options = dedupeOptions([
     { value: "USD", label: "دلار" },
@@ -44,7 +44,7 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
     ...exchangeItems.map((item) => ({ value: item.symbol, label: item.name })),
   ]);
   const selectedMarketItem = exchangeItems.find((item) => item.symbol === symbol);
-  const history = useMarketHistory({ symbol, marketId: selectedMarketItem?.marketId, snapshots, range });
+  const history = useMarketHistory({ symbol, marketId: selectedMarketItem?.marketId, marketSource: selectedMarketItem?.marketSource, snapshots, range });
   const candles = history.candles;
   const first = candles[0];
   const last = candles.at(-1);
@@ -124,6 +124,6 @@ function dedupeOptions(options: Array<{ value: string; label: string }>) {
   return [...new Map(options.map((option) => [option.value, option])).values()];
 }
 
-function dedupeMarketItems(items: Array<{ symbol: string; name: string; marketId?: string }>) {
+function dedupeMarketItems(items: Array<{ symbol: string; name: string; marketId?: string; marketSource?: Asset["marketSource"] }>) {
   return [...new Map(items.map((item) => [item.symbol, item])).values()];
 }

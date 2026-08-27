@@ -31,7 +31,7 @@ const features = [
   { icon: RiLockPasswordLine, title: "بکاپ رمزنگاری‌شده", text: "فایل بکاپ با AES-GCM رمز می‌شود. Recovery Snapshot هم قبل از تغییرات حساس یک راه برگشت محلی می‌دهد." },
   { icon: RiSmartphoneLine, title: "انتقال مستقیم دستگاه", text: "برای جابه‌جایی بین موبایل و دسکتاپ، انتقال WebRTC رمزنگاری‌شده داری و فایل بکاپ همیشه fallback باقی می‌ماند." },
   { icon: RiFundsLine, title: "سبد سرمایه‌گذاری واقعی", text: "خرید و فروش، Cost Basis، موجودی قدیمی، قیمت دستی و اتصال به داده بازار در یک مدل واحد قرار می‌گیرند." },
-  { icon: RiExchangeLine, title: "داده بازار بدون جعل", text: "BrsApi و Tindex برای داده عمومی استفاده می‌شوند و وقتی داده واقعی در دسترس نیست، برنامه تاریخچه ساختگی تولید نمی‌کند." },
+  { icon: RiExchangeLine, title: "داده بازار بدون جعل", text: "BrsApi برای نرخ‌های عمومی و TSETMC مستقیم برای بورس استفاده می‌شوند؛ Tindex فقط fallback اختیاری است و وقتی داده واقعی در دسترس نیست، برنامه تاریخچه ساختگی تولید نمی‌کند." },
   { icon: RiArchiveLine, title: "واردکردن تاریخچه", text: "CSV فارسی یا انگلیسی، تاریخ شمسی یا میلادی و اعتبارسنجی فروش و رکورد تکراری برای انتقال داده‌های گذشته پشتیبانی می‌شود." },
 ] as const;
 
@@ -49,7 +49,7 @@ export function LandingSections() {
         <SectionHeading eyebrow="گردش کار" title="از «پول وارد شد» تا «می‌دانم کجا رفت»" text="به‌جای اینکه فقط هزینه‌های گذشته را دسته‌بندی کنی، قبل از مصرف پول برایش مسیر تعریف می‌کنی و بعد اجرای واقعی را می‌سنجی." />
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {workflow.map(({ icon: Icon, title, text }, index) => (
-            <MotionReveal key={title} delay={index * 0.035} className="h-full">
+            <MotionReveal key={title} delay={index * 0.055} className="h-full">
               <div className="h-full rounded-2xl border bg-card p-5 shadow-[0_8px_35px_rgba(0,0,0,.035)]">
                 <div className="mb-5 flex items-center justify-between"><div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-5" /></div><span className="text-xs font-[650] tabular-nums text-muted-foreground">۰{index + 1}</span></div>
                 <h3 className="type-card-title">{title}</h3>
@@ -62,7 +62,7 @@ export function LandingSections() {
 
       <section className="rounded-[30px] border bg-card/65 p-5 sm:p-8 lg:p-10">
         <div className="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-center">
-          <div>
+          <MotionReveal direction="right">
             <div className="type-caption font-[650] text-primary">مالکیت داده</div>
             <h2 className="mt-2 type-page-title">داده مالی باید اول متعلق به خودت باشد.</h2>
             <p className="mt-4 text-sm leading-8 text-muted-foreground">پولم‌کو برای استفاده بدون Backend اجباری طراحی شده. داده اصلی روی دستگاه می‌ماند و ابزارهای بازیابی طوری ساخته شده‌اند که خودت درباره نگهداری و انتقالش تصمیم بگیری.</p>
@@ -72,9 +72,13 @@ export function LandingSections() {
               <TrustChip icon={<RiLockPasswordLine />} text="Backup رمزنگاری‌شده" />
             </div>
             <Link href="/data-safety" className="mt-5 inline-flex items-center gap-1.5 text-sm font-[590] text-primary hover:underline">مدل ماندگاری داده را بخوان <RiArrowLeftLine /></Link>
-          </div>
+          </MotionReveal>
           <div className="grid gap-3 sm:grid-cols-2">
-            {features.slice(0, 4).map(({ icon: Icon, title, text }) => <Feature key={title} icon={<Icon />} title={title} text={text} />)}
+            {features.slice(0, 4).map(({ icon: Icon, title, text }, index) => (
+              <MotionReveal key={title} direction={index % 2 === 0 ? "left" : "up"} delay={index * 0.055} className="h-full">
+                <Feature icon={<Icon />} title={title} text={text} />
+              </MotionReveal>
+            ))}
           </div>
         </div>
       </section>
@@ -82,39 +86,50 @@ export function LandingSections() {
       <section id="features" className="scroll-mt-24">
         <SectionHeading eyebrow="امکانات" title="برای تصمیم مالی واقعی، نه فقط یک داشبورد زیبا" text="از ورود داده قدیمی تا بازار و گزارش، هر بخش باید یک تصمیم یا بازیابی واقعی را ساده‌تر کند." />
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ icon: Icon, title, text }) => <Feature key={title} icon={<Icon />} title={title} text={text} />)}
+          {features.map(({ icon: Icon, title, text }, index) => (
+            <MotionReveal key={title} direction={index % 3 === 0 ? "right" : index % 3 === 2 ? "left" : "up"} delay={(index % 3) * 0.055} className="h-full">
+              <Feature icon={<Icon />} title={title} text={text} />
+            </MotionReveal>
+          ))}
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[28px] border bg-primary p-6 text-primary-foreground sm:p-8">
+        <MotionReveal direction="right" className="h-full">
+        <div className="h-full rounded-[28px] border bg-primary p-6 text-primary-foreground sm:p-8">
           <RiGithubFill className="size-8" />
           <h2 className="mt-5 type-page-title">رایگان، متن‌باز و قابل بررسی</h2>
           <p className="mt-3 max-w-xl text-sm leading-8 opacity-85">کد، مدل داده و تصمیم‌های امنیتی پروژه عمومی‌اند. می‌توانی سورس را ببینی، Issue باز کنی یا برای بهترشدن تجربه Pull Request بفرستی.</p>
           <a href={COMMUNITY_LINKS.repository} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-primary-foreground px-4 text-sm font-[620] text-primary transition hover:brightness-95">GitHub پروژه <RiArrowLeftLine /></a>
         </div>
-        <div className="rounded-[28px] border bg-card p-6 sm:p-8">
+        </MotionReveal>
+        <MotionReveal direction="left" delay={0.06} className="h-full">
+        <div className="h-full rounded-[28px] border bg-card p-6 sm:p-8">
           <div className="type-caption font-[650] text-primary">شفافیت</div>
           <h2 className="mt-2 type-page-title">Analytics بدون نگاه‌کردن به زندگی مالی تو</h2>
           <p className="mt-3 text-sm leading-8 text-muted-foreground">Cloudflare Web Analytics فقط در deploymentهایی که مالک پروژه فعالش کند برای بازدید و کارایی عمومی استفاده می‌شود. مبلغ، تراکنش، نام دارایی، جست‌وجو، فرم و Backup به Analytics وصل نیست.</p>
           <Link href="/analytics" className="mt-5 inline-flex items-center gap-1.5 text-sm font-[590] text-primary hover:underline">جزئیات Analytics <RiArrowLeftLine /></Link>
         </div>
+        </MotionReveal>
       </section>
 
       <section id="faq" className="scroll-mt-24">
         <SectionHeading eyebrow="پرسش‌های رایج" title="قبل از واردکردن داده مالی، این‌ها را بدان" />
         <div className="mt-7 grid gap-3 md:grid-cols-2">
-          {faq.map((item) => (
-            <details key={item.q} className="group rounded-2xl border bg-card p-5 open:bg-accent/35">
-              <summary className="cursor-pointer list-none type-card-title marker:hidden">{item.q}</summary>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.a}</p>
-            </details>
+          {faq.map((item, index) => (
+            <MotionReveal key={item.q} direction={index % 2 === 0 ? "right" : "left"} delay={(index % 2) * 0.055}>
+              <details className="group rounded-2xl border bg-card p-5 open:bg-accent/35">
+                <summary className="cursor-pointer list-none type-card-title marker:hidden">{item.q}</summary>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.a}</p>
+              </details>
+            </MotionReveal>
           ))}
         </div>
       </section>
 
       <section className="overflow-hidden rounded-[30px] border bg-card p-6 text-center sm:p-10">
-        <div className="mx-auto max-w-2xl">
+        <MotionReveal direction="up" className="mx-auto max-w-2xl">
+        <div>
           <div className="type-caption font-[650] text-primary">شروع بدون حساب کاربری</div>
           <h2 className="mt-2 type-page-title">برای پول بعدی، قبل از خرج شدن یک برنامه بساز.</h2>
           <p className="mt-3 text-sm leading-8 text-muted-foreground">همه چیز را لازم نیست روز اول کامل کنی. با یک ورودی شروع کن و مدل مالی خودت را قدم‌به‌قدم بساز.</p>
@@ -123,13 +138,22 @@ export function LandingSections() {
             <Link href="/guide" className="inline-flex h-12 items-center justify-center rounded-lg border px-5 text-sm font-[590] transition hover:bg-accent">راهنمای شروع</Link>
           </div>
         </div>
+        </MotionReveal>
       </section>
     </>
   );
 }
 
 function SectionHeading({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
-  return <header className="max-w-3xl"><div className="type-caption font-[650] text-primary">{eyebrow}</div><h2 className="mt-2 type-page-title">{title}</h2>{text && <p className="mt-3 text-sm leading-8 text-muted-foreground">{text}</p>}</header>;
+  return (
+    <MotionReveal direction="down">
+      <header className="max-w-3xl">
+        <div className="type-caption font-[650] text-primary">{eyebrow}</div>
+        <h2 className="mt-2 type-page-title">{title}</h2>
+        {text && <p className="mt-3 text-sm leading-8 text-muted-foreground">{text}</p>}
+      </header>
+    </MotionReveal>
+  );
 }
 
 function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {

@@ -33,6 +33,7 @@ npm run check:release
 - [ ] ثبت خرید و فروش مستقل
 - [ ] ساخت و ویرایش صندوق
 - [ ] گزارش پایبندی و Portfolio P/L
+- [ ] خلاصه Share گزارش بدون مبلغ/نام دارایی و CSV کامل فقط با اقدام صریح کاربر
 - [ ] Privacy eye اعداد مالی را در تمام بخش‌های حساس مخفی کند
 
 ## 3. Navigation
@@ -43,6 +44,7 @@ npm run check:release
 - [ ] `/` خارج از input جست‌وجوی کلی را باز کند
 - [ ] جست‌وجو routeها، پول‌های ورودی، صندوق‌ها و دارایی‌ها را پیدا کند
 - [ ] ناوبری موبایل و Drawer میانبرها درست کار کنند
+- [ ] More sheet مقصدهای Bottom Navigation را تکرار نکند و Search قبل از تایپ فقط میانبرهای محدود نشان دهد
 
 ## 4. PWA
 
@@ -94,7 +96,7 @@ git push origin vX.Y.Z
 - [ ] تاریخ امروز به‌صورت شمسی در Header نمایش داده شود
 - [ ] بازه زمانی روی ورودی‌ها، Dashboard و Reports اعمال شود
 - [ ] پاک کردن بازه، حالت «همه زمان» را برگرداند
-- [ ] Drawer موبایل با کشیدن دستگیره به پایین بسته شود
+- [ ] Drawer موبایل با کشیدن دستگیره به پایین بسته شود و حرکت دست با انیمیشن بازشدن تداخل نداشته باشد
 - [ ] Bottom Navigation روی محتوای روشن و تاریک خوانا بماند
 
 ## 9. Market providers
@@ -238,9 +240,25 @@ git push origin vX.Y.Z
 - [ ] CTA «شروع رایگان» واقعاً به `/dashboard` برسد و Fresh Onboarding دیده شود
 - [ ] Fresh IndexedDB مقدار `onboardingComplete: false` داشته باشد و «فعلاً ردش کن» آن را Persist کند
 - [ ] Fixture نمایشی محلی روی Dashboard رندر شود و به Profile واقعی مرورگر دسترسی نداشته باشد
+- [ ] Browser Smoke با `prefers-reduced-motion: no-preference` اجرا شود و عنوان/کارت‌های Dashboard در حالت Motion عادی واقعاً visible بمانند
+- [ ] Modal «پول جدید دارم» از Dashboard باز شود و عنوان، مبلغ و فرم داخل بدنه Dialog قابل مشاهده باشند؛ قاب خالی قابل قبول نیست
 - [ ] Reports با Fixture نمایشی `جمع‌بندی تصمیمی این بازه` و مقایسه تخصیص ثبت‌شده را نمایش دهد
 - [ ] Workspace Manifest `/app.webmanifest` را advertise کند و `id/start_url=/dashboard`, `scope=/`, `display=standalone` باشد
 - [ ] Service Worker در Workspace ثبت شود اما بازگشت مرورگر عادی به `/` همچنان Landing را نشان دهد
 - [ ] Market/Push/Cloudflare requests در Browser Smoke مسدود باشند تا سهمیه بیرونی مصرف نشود
 - [ ] Workflow دستی GitHub Actions با نام `Release smoke` همان `npm run check:release` را اجرا کند
 - [ ] نصب واقعی PWA روی Desktop/Android همچنان Manual QA باقی بماند؛ Browser Smoke جای تست نصب واقعی را نمی‌گیرد
+
+## 20. Runtime fetch cleanup and CSS stagger motion
+
+- [ ] باز/بسته‌شدن component آمار GitHub در Development هیچ `AbortError` در Runtime overlay یا `unhandledRejection` ایجاد نکند
+- [ ] `useGithubStats` از `fetch`، `AbortController` و `AbortSignal` استفاده نکند؛ cleanup فقط `active` guard را خاموش کند
+- [ ] جست‌وجوی نماد بازار برای جلوگیری از پاسخ stale از request id استفاده کند و به AbortController متکی نباشد
+- [ ] `tailwindcss-animated` در `globals.css` از مسیر صریح `tailwindcss-animated/src/index.css` import شود و `npm run check:animations` هم CSS entry و `motion/react` را resolve کند
+- [ ] Navigation داخلی Workspace بدون Full Reload انجام شود و container کل Route هیچ entrance/exit animation نداشته باشد
+- [ ] Header و آیتم‌های اصلی صفحه جداگانه با `animate-fade-up/down/left/right` و delayهای صعودی کوتاه وارد شوند
+- [ ] ترتیب stagger در Dashboard/Reports/Settings/Investments/Funds/Income محسوس باشد ولی interaction را معطل نکند
+- [ ] Dialog/AlertDialog/Drawer با transform-only CSS motion باز شوند تا بدنه هیچ‌وقت از opacity صفر شروع نشود؛ Overlay/Toast می‌توانند از utilityهای `tailwindcss-animated` استفاده کنند
+- [ ] Browser Release Smoke وجود animation واقعی کامپایل‌شده و حداقل سه delay متفاوت را از Computed Style تأیید کند
+- [ ] Browser Release Smoke دیگر `AbortError` را ignore نکند
+- [ ] `prefers-reduced-motion: reduce` تمام حرکت‌های ورود Workspace را غیرفعال کند

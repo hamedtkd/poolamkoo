@@ -129,6 +129,9 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 
 ## v0.27 — Public landing experience and theme continuity ✅
 
+> v0.27.4 CSS-motion/runtime hotfix: replace workspace Motion runtime entrances with `tailwindcss-animated` per-item fade directions and ~55ms stagger, keep the whole route static, and move decorative GitHub stats off Promise fetch/AbortSignal cleanup to prevent the persistent Runtime `AbortError`.
+> v0.27.3 runtime/motion hotfix: GitHub star stats uses an active-effect guard instead of aborting fetches during React cleanup, and workspace pages gain a visible-at-every-frame route entrance plus top-to-bottom stagger motion without reintroducing blank-route opacity failures.
+> v0.27.2 visibility hotfix: Dashboard card reveals and shared Dialog bodies no longer start transparent, so delayed/failed Motion hydration cannot leave the home page or modals blank. The browser release gate now runs with normal motion preference and opens a real new-money modal before route-continuity checks.
 > v0.27.1 navigation hotfix: route-level exit/opacity animation was removed after it could leave the persistent workspace shell with blank content during Next.js client navigation. The production browser gate now clicks Reports → Settings → Reports without a document reload and asserts that route content stays visible.
 
 - Redesign the public Hero around the approved local Light/Dark product artwork so the product is visually present above the fold.
@@ -137,9 +140,32 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Extend the production browser release gate to verify landing media loads and public theme switching works before entering the workspace.
 - Preserve workspace-only PWA initialization, local-first privacy boundaries, and IndexedDB schema 6.
 
+## v0.28 — Market provider resilience ✅
+
+> v0.28.2 animation/tooling hotfix: import `tailwindcss-animated` through its explicit CSS entry for Next/Turbopack Windows compatibility, keep modal bodies transform-only so they never start transparent, and add an animation dependency resolver gate.
+> v0.28.1 motion hotfix: restore the `motion` package for code-split viewport/scroll reveals on public Landing sections while keeping Workspace route content static and per-item entrances on `tailwindcss-animated`.
+
+- Make direct server-side `cdn.tsetmc.com` access the default source for new Tehran Stock Exchange stock/ETF search, current quotes, and daily history.
+- Keep BrsApi primary for core currency/gold/crypto and share a short server cache instead of multiplying upstream requests per browser.
+- Demote Tindex to optional legacy/emergency use with long quota-aware cache windows; new exchange links require no Tindex token.
+- Preserve existing `source: "tindex"` records without a destructive migration and let users re-link them to TSETMC when convenient.
+- Keep real local market snapshots plus manual prices as the honest fallback; never fabricate quotes/history.
+- Keep IndexedDB schema 6 and Background Push disabled by default.
+
+## v0.29 — Export/share refinements and mobile UX continuity ✅
+
+- Add an explicit Reports export/share surface without introducing hosted report links or a central financial backend.
+- Keep the default share summary privacy-minimized: percentages and decision status only, with no amounts or asset names.
+- Provide an explicit local CSV for users who need detailed report data, while excluding raw transaction/backup payloads and neutralizing spreadsheet-formula prefixes.
+- Redesign the mobile More sheet so it does not duplicate Home/Incoming/Investments/Funds already present in bottom navigation.
+- Make the shared Drawer truly drag-to-dismiss using an independent CSS translate channel, and reuse it for compact mobile search.
+- Keep workspace entrance motion consistent: title from above, content cards from below with short stagger; remove alternating left/right KPI motion.
+- Tighten compact-desktop/sidebar behavior, mobile safe-bottom spacing and route Skeleton fidelity.
+- Keep IndexedDB schema 6, local-first data ownership, workspace-only PWA initialization and Background Push backlog unchanged.
+
 ## Likely next phases
 
-- **v0.28 — Export/share refinements:** add privacy-safe report sharing/export only where it improves real decisions without becoming accounting software.
+- **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 
 ## Backlog — Background alerts while PWA is closed

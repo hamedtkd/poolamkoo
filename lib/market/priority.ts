@@ -17,8 +17,9 @@ export function mergeMarketQuotes({
   exchange?: readonly MarketQuote[];
 }) {
   const result = new Map<string, MarketQuote>();
-  for (const quote of fallback) result.set(quote.symbol, quote);
-  for (const quote of primary) result.set(quote.symbol, quote);
-  for (const quote of exchange) result.set(quote.symbol, quote);
+  const key = (quote: MarketQuote) => quote.marketId ? `exchange:${quote.marketId}` : quote.symbol;
+  for (const quote of fallback) result.set(key(quote), quote);
+  for (const quote of primary) result.set(key(quote), quote);
+  for (const quote of exchange) result.set(key(quote), quote);
   return [...result.values()];
 }

@@ -1,5 +1,5 @@
 import { premiumToNavPercent } from "./nav.ts";
-import type { MarketAlert, MarketAlertKind, MarketQuote } from "../types.ts";
+import type { ExchangeMarketSource, MarketAlert, MarketAlertKind, MarketQuote } from "../types.ts";
 
 export type MarketAlertTransition = "trigger" | "rearm" | "none" | "unavailable";
 
@@ -7,7 +7,7 @@ export interface MarketAlertTarget {
   marketId: string;
   symbol: string;
   name: string;
-  source: "tindex";
+  source: ExchangeMarketSource;
   priceToman?: number;
   navToman?: number;
   changePercent?: number;

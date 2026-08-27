@@ -27,11 +27,16 @@ test("release smoke uses an isolated profile and blocks remote financial integra
   assert.doesNotMatch(smoke, /user-data-dir=.*(?:Default|Profile)/);
 });
 
-test("release smoke covers landing, onboarding bootstrap, reports and PWA boundaries", () => {
+test("release smoke covers landing, dashboard/dialog visibility, reports and PWA boundaries", () => {
   for (const contract of [
     "landing-to-workspace navigation",
     "fresh onboarding",
     "persisted onboarding completion",
+    "dashboard critical content must be visible with normal motion preference",
+    "workspace must compile tailwindcss-animated stagger utilities with distinct delays",
+    "shared dialog content must never render blank under normal motion preference",
+    "reports must expose privacy-safe export controls",
+    "drag-to-dismiss mobile drawer",
     "جمع‌بندی تصمیمی این بازه",
     "workspace service worker registration",
     "manifest start_url must be /dashboard",

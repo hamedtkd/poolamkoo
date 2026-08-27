@@ -10,7 +10,7 @@ export default function SecurityPage() {
     <header className="max-w-3xl"><div className="type-caption type-body-strong text-primary">امنیت</div><h1 className="mt-2 type-display">امنیت از کم‌کردن داده مرکزی شروع می‌شود</h1><p className="mt-4 text-sm leading-8 text-muted-foreground">پولم‌کو Local-first طراحی شده تا سوابق مالی روزمره برای کارکرد عادی به یک حساب یا دیتابیس مرکزی وابسته نباشند. با این حال امنیت دستگاه، مرورگر و بکاپ همچنان مهم است.</p></header>
     <div className="grid gap-4 md:grid-cols-2">
       <Point icon={<RiLock2Line />} title="داده مالی محلی">رکوردهای مالی اصلی در IndexedDB مرورگر می‌مانند. APIهای بازار برای Quote عمومی هستند و نباید مبلغ‌ها یا تاریخچه مالی شخصی را دریافت کنند.</Point>
-      <Point icon={<RiKey2Line />} title="Secretهای سرور">کلید BrsApi و توکن Tindex فقط Server-side هستند و نباید با نام NEXT_PUBLIC یا داخل مخزن Commit شوند.</Point>
+      <Point icon={<RiKey2Line />} title="Secretهای سرور">کلید BrsApi و توکن اختیاری Tindex فقط Server-side هستند و نباید با نام NEXT_PUBLIC یا داخل مخزن Commit شوند. TSETMC برای مسیر مستقیم بورس API Key ندارد.</Point>
       <Point icon={<RiArchiveLine />} title="بکاپ رمزنگاری‌شده">بکاپ رمزدار از PBKDF2-SHA256 و AES-GCM استفاده می‌کند؛ فایل‌های جدید قبل از Restore از نظر SHA-256 و سازگاری Schema هم بررسی می‌شوند. رمز بکاپ ذخیره نمی‌شود.</Point>
       <Point icon={<RiExchangeLine />} title="انتقال مستقیم">Device Transfer از WebRTC DataChannel استفاده می‌کند و Payload پیش از ارسال با رمز یک‌بارمصرف AES-GCM رمز می‌شود. Pairing code و PIN را فقط بین دو دستگاه خودت جابه‌جا کن.</Point>
     </div>

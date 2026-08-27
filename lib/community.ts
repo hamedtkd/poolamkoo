@@ -5,6 +5,7 @@ export const COMMUNITY_LINKS = {
   license: "https://github.com/hamedtkd/poolamkoo/blob/main/LICENSE",
   support: "https://daramet.com/hamedtkd",
   maintainer: "https://github.com/hamedtkd",
+  tsetmc: "https://www.tsetmc.com",
   tindex: "https://tindex.app",
 } as const;
 

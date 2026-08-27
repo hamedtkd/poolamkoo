@@ -1,6 +1,6 @@
 {
   "name": "poolamkoo",
-  "version": "0.27.1",
+  "version": "0.29.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:lines": "node scripts/check-file-lines.mjs",
-    "check": "npm run clean:obsolete && npm run check:icons && npm run typecheck && npm run lint && npm test && npm run check:lines && npm run check:ui && npm run check:performance && npm run check:regressions",
+    "check": "npm run clean:obsolete && npm run check:icons && npm run check:animations && npm run typecheck && npm run lint && npm test && npm run check:lines && npm run check:ui && npm run check:performance && npm run check:regressions",
     "check:ui": "node scripts/check-ui-architecture.mjs",
     "check:regressions": "node scripts/check-regressions.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
@@ -24,7 +24,8 @@
     "check:icons": "node scripts/check-icon-imports.mjs",
     "test:browser:release": "npm run build && node scripts/release-browser-smoke.mjs",
     "test:browser:release:built": "node scripts/release-browser-smoke.mjs",
-    "check:release": "npm run check && npm run build && npm run test:browser:release:built"
+    "check:release": "npm run check && npm run build && npm run test:browser:release:built",
+    "check:animations": "node scripts/check-animation-dependencies.mjs"
   },
   "dependencies": {
     "@tanstack/react-table": "9.1.2",
@@ -52,6 +53,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "16.3.2",
     "tailwindcss": "4.3.3",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "tailwindcss-animated": "2.1.0"
   }
 }

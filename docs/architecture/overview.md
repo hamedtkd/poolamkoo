@@ -10,7 +10,13 @@ Next.js App Router، React، TypeScript و shadcn/ui New York.
 
 ## Market
 
-Market Store بین همه Routeها مشترک است. BrsApi منبع اصلی نرخ طلا/ارز/رمزارز است؛ اگر Quoteهای اصلی ناقص باشند Tindex با یک درخواست Boards به‌عنوان fallback نرخ دلار، طلای ۱۸ عیار و BTC را می‌دهد. Tindex همچنین نمادهای بورسی متصل به سبد را از داده TSETMC دریافت می‌کند. Snapshot واقعی روی دستگاه cache می‌شود و قیمت مصنوعی تولید نمی‌شود. Quoteهای Tindex در UI با لینک منبع داده مشخص می‌شوند.
+Market Store بین همه Routeها مشترک است. از v0.28 Providerها بر اساس بازار جدا شده‌اند:
+
+- **BrsApi** منبع اصلی دلار، طلای ۱۸ عیار، BTC و USDT است و پاسخ upstream آن ۶۰ ثانیه در Next Data Cache مشترک می‌شود.
+- **TSETMC direct (`cdn.tsetmc.com`)** منبع پیش‌فرض جست‌وجو، Quote روز و تاریخچه سهام/ETFهای جدید است. درخواست فقط از Routeهای Server-side انجام می‌شود، قیمت ریالی قبل از ورود به مدل داخلی به تومان تبدیل می‌شود و API Key لازم ندارد.
+- **Tindex** دیگر Provider پیش‌فرض بورس نیست؛ فقط برای رکوردهای Legacy، fallback آهسته نرخ‌های پایه و تاریخچه اختیاری دلار/طلا نگه داشته شده و با cache طولانی از سهمیه محدود آن محافظت می‌شود.
+
+Endpointهای CDNِ TSETMC عمومی اما غیررسمی و بدون SLA هستند، بنابراین failure یک حالت عادی طراحی است: آخرین Snapshot واقعی IndexedDB و سپس قیمت دستی دارایی fallback می‌شوند و هیچ Quote/History مصنوعی ساخته نمی‌شود. `webgw.tse.ir` به‌دلیل محدودیت دسترسی از IPهای خارج ایران جزو مسیر الزامی Deployment نیست.
 
 ## Background Push (Backlog)
 
@@ -110,3 +116,15 @@ Capture رسانه برای Windows نیز Production Server را با `process.
 ## Public landing rendering boundary (v0.27)
 
 The public Hero must remain useful before client hydration. Critical copy and approved Light/Dark product media therefore render as normal server-visible markup; decorative entrance/float motion is CSS-only and disabled by `prefers-reduced-motion`. The public theme toggle uses `next-themes` directly and does not read or write the financial IndexedDB settings record. Workspace appearance persistence remains owned by the application theme layer after entering `/dashboard`.
+
+از v0.27.4 خود Route در Workspace کاملاً پایدار و بدون entrance/exit animation است. حرکت فقط در سطح آیتم‌های صفحه و با utilityهای CSS پکیج `tailwindcss-animated` انجام می‌شود: Header و کارت‌ها با `animate-fade-*` و delayهای کوتاه تقریباً 55ms به‌ترتیب وارد می‌شوند. از v0.28.2 واردکردن این پکیج در Tailwind v4 از مسیر صریح `tailwindcss-animated/src/index.css` انجام می‌شود تا Turbopack روی Windows به package `style` field وابسته نباشد. Dialog/AlertDialog/Drawer برای جلوگیری از فریم کاملاً شفاف از transform-only keyframeهای محلی استفاده می‌کنند؛ Overlay/Toast و آیتم‌های غیرحیاتی همچنان از utilityهای `tailwindcss-animated` استفاده می‌کنند. کتابخانه `motion` فقط برای revealهای viewport/scroll در Landing نگه داشته شده و در Providers/Workspace runtime سراسری وارد نمی‌شود. `prefers-reduced-motion` هر دو مسیر CSS و Motion را خاموش می‌کند.
+
+## Report export and mobile interaction boundary (v0.29)
+
+Reports can now create two deliberately different client-side outputs. `lib/report-export.ts` builds a share-safe Persian text summary from the already-derived decision snapshot; this text contains percentages/status only and intentionally excludes financial amounts and asset names. The detailed CSV path is explicit user action and may contain report amounts plus asset names/current values, but it does not serialize raw transactions, IndexedDB tables, backup envelopes, or recovery metadata. CSV string cells neutralize spreadsheet formula prefixes before quoting.
+
+No report is uploaded or hosted by Poolamkoo. `navigator.share` is called only after the user presses Share; otherwise the text stays local. CSV is created with `Blob`/object URL in the browser and downloaded locally.
+
+Mobile navigation keeps the four daily destinations in the bottom bar. The More drawer no longer repeats those destinations; it exposes only New Money, Reports, Settings, compact utilities and public help links. The same shared Drawer now implements real drag-to-dismiss: opening/closing animation uses `transform`, while the user's drag is applied through the independent CSS `translate` property, preventing the animation from overriding finger/pointer movement.
+
+Workspace entrance motion is intentionally directional but not alternating: page headings use `fade-down`, while KPI/card/table content uses `fade-up` with short stagger. Horizontal left/right entrances remain available as utilities for isolated future use but are not mixed through the financial workspace. On compact desktop widths the sidebar becomes a locked icon rail so tables and report grids retain usable width.

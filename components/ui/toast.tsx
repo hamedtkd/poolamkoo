@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { RiCheckboxCircleLine, RiErrorWarningLine, RiInformationLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -31,14 +30,18 @@ export function Toaster() {
   }, []);
 
   return <div className="pointer-events-none fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[120] flex flex-col items-end gap-2 md:bottom-5 md:left-5 md:right-auto md:w-[380px]" aria-live="polite">
-    <AnimatePresence initial={false} mode="popLayout">{items.map((item) => <ToastView key={item.id} item={item} />)}</AnimatePresence>
+    {items.map((item, index) => <ToastView key={item.id} item={item} step={index} />)}
   </div>;
 }
 
-function ToastView({ item }: { item: ToastItem }) {
-  const reduced = useReducedMotion();
+function ToastView({ item, step }: { item: ToastItem; step: number }) {
   const Icon = item.tone === "success" ? RiCheckboxCircleLine : item.tone === "error" ? RiErrorWarningLine : RiInformationLine;
-  return <m.div layout initial={reduced ? false : { opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={reduced ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }} transition={{ duration: reduced ? 0 : 0.2 }} className={cn("pointer-events-auto w-full rounded-2xl border bg-background/95 p-3 shadow-xl backdrop-blur", item.tone === "error" && "border-destructive/25")}>
+  const delay = step === 0 ? "animate-delay-none" : step === 1 ? "animate-delay-[55ms]" : "animate-delay-[110ms]";
+  return <div className={cn(
+    "pointer-events-auto w-full animate-fade-up animate-once animate-duration-250 animate-ease-out animate-fill-both rounded-2xl border bg-background/95 p-3 shadow-xl backdrop-blur motion-reduce:animate-none",
+    delay,
+    item.tone === "error" && "border-destructive/25",
+  )}>
     <div className="flex gap-3"><Icon className={cn("mt-0.5 size-5 shrink-0 text-primary", item.tone === "error" && "text-destructive")} /><div className="min-w-0"><div className="type-strong">{item.title}</div>{item.description && <div className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</div>}</div></div>
-  </m.div>;
+  </div>;
 }

@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const hero = readFileSync("components/landing/landing-hero.tsx", "utf8");
+const sections = readFileSync("components/landing/landing-sections.tsx", "utf8");
+const motionReveal = readFileSync("components/motion/reveal.tsx", "utf8");
 const visual = readFileSync("components/landing/landing-product-visual.tsx", "utf8");
 const shell = readFileSync("components/public/public-shell.tsx", "utf8");
 const themeToggle = readFileSync("components/public/public-theme-toggle.tsx", "utf8");
@@ -24,9 +26,13 @@ test("public header exposes a standalone theme control without touching IndexedD
   assert.match(themeToggle, /prefers-reduced-motion: reduce/);
 });
 
-test("landing motion is CSS-driven and reduced-motion safe", () => {
+test("landing keeps load-safe CSS hero motion and uses Motion for scroll reveals", () => {
   assert.match(css, /@keyframes landing-enter/);
   assert.match(css, /@keyframes landing-float/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /\.landing-visual-float/);
+  assert.match(sections, /MotionReveal/);
+  assert.match(motionReveal, /whileInView/);
+  assert.match(motionReveal, /useReducedMotion/);
+  assert.doesNotMatch(motionReveal, /opacity:\s*0[},]/);
 });

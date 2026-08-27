@@ -154,6 +154,22 @@ async function clientNavigate(client, href, readyText) {
   })()`), `workspace content must remain visible after client navigation to ${href}`);
 }
 
+async function dragElementDown(client, selector, distance = 180) {
+  const point = await evaluate(client, `(() => {
+    const node = document.querySelector(${JSON.stringify(selector)});
+    if (!(node instanceof HTMLElement)) return null;
+    const rect = node.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  })()`);
+  assert(point, `drag handle ${selector} must exist`);
+  await client.call("Input.dispatchMouseEvent", { type: "mousePressed", x: point.x, y: point.y, button: "left", buttons: 1, clickCount: 1 });
+  for (const offset of [45, 90, 135, distance]) {
+    await client.call("Input.dispatchMouseEvent", { type: "mouseMoved", x: point.x, y: point.y + offset, button: "left", buttons: 1 });
+    await new Promise((resolveWait) => setTimeout(resolveWait, 35));
+  }
+  await client.call("Input.dispatchMouseEvent", { type: "mouseReleased", x: point.x, y: point.y + distance, button: "left", buttons: 0, clickCount: 1 });
+}
+
 async function seedDemoData(client) {
   const data = createPoolamkooMediaDemoData();
   await evaluate(client, `(async () => {
@@ -248,7 +264,7 @@ async function main() {
     await client.call("Runtime.enable");
     await client.call("Network.enable");
     await client.call("Network.setBlockedURLs", { urls: ["*/api/market*", "*/api/push/*", "*static.cloudflareinsights.com*"] });
-    await client.call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+    await client.call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
     await client.call("Page.addScriptToEvaluateOnNewDocument", { source: `(() => { const RealDate=Date; const fixed=${JSON.stringify(POOLAMKOO_MEDIA_ANCHOR)}; class FixedDate extends RealDate { constructor(...args){ super(...(args.length?args:[fixed])); } static now(){ return new RealDate(fixed).getTime(); } } FixedDate.parse=RealDate.parse; FixedDate.UTC=RealDate.UTC; window.Date=FixedDate; })();` });
     await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
 
@@ -288,21 +304,79 @@ async function main() {
     await seedDemoData(client);
     await navigate(client, `${origin}/dashboard`, "قانون پول فعلی");
     assert(await evaluate(client, "document.body?.innerText.includes('صندوق اضطراری')"), "seeded local data must render on the dashboard");
+    assert(await evaluate(client, `(() => {
+      const heading = [...document.querySelectorAll('h1')].find((node) => node.textContent?.includes('سلام، امروز پولت کجاست؟'));
+      if (!(heading instanceof HTMLElement)) return false;
+      const style = getComputedStyle(heading);
+      const rect = heading.getBoundingClientRect();
+      return style.visibility !== 'hidden' && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0;
+    })()`), "dashboard critical content must be visible with normal motion preference");
+    assert(await evaluate(client, `(() => {
+      const nodes = [...document.querySelectorAll('[class*="animate-fade"]')].filter((node) => node instanceof HTMLElement);
+      const running = nodes.filter((node) => getComputedStyle(node).animationName !== 'none');
+      const delays = new Set(running.map((node) => getComputedStyle(node).animationDelay));
+      return running.length >= 4 && delays.size >= 3;
+    })()`), "workspace must compile tailwindcss-animated stagger utilities with distinct delays");
+
+    const openedNewMoney = await evaluate(client, `(() => {
+      const button = [...document.querySelectorAll('button')].find((node) => node.textContent?.includes('پول جدید دارم'));
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`);
+    assert(openedNewMoney, "dashboard must expose the new-money dialog trigger");
+    await waitFor(client, "document.querySelector('[role=dialog]')?.textContent?.includes('مبلغ')", "visible new-money dialog content");
+    assert(await evaluate(client, `(() => {
+      const dialog = document.querySelector('[role=dialog]');
+      if (!(dialog instanceof HTMLElement)) return false;
+      const content = dialog.matches('[data-dialog-content]') ? dialog : dialog.querySelector('[data-dialog-content]');
+      if (!(content instanceof HTMLElement)) return false;
+      const style = getComputedStyle(content);
+      const rect = content.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0 && (content.innerText || '').includes('پول جدید دارم');
+    })()`), "shared dialog content must never render blank under normal motion preference");
+    await evaluate(client, "document.querySelector('[role=dialog] button[aria-label=\"بستن پنجره\"]')?.click(); true");
+    await waitFor(client, "document.querySelector('[role=dialog]') === null", "new-money dialog close");
 
     await clientNavigate(client, "/reports", "گزارش‌ها و بینش‌ها");
     assert(await evaluate(client, "document.body?.innerText.includes('جمع‌بندی تصمیمی این بازه')"), "reports must render decision insights from local demo data");
     assert(await evaluate(client, "document.body?.innerText.includes('قانون پول در برابر تخصیص ثبت‌شده')"), "reports must render recorded allocation comparison");
+    const exportOpened = await evaluate(client, `(() => {
+      const button = [...document.querySelectorAll('button')].find((node) => node.textContent?.includes('خروجی و اشتراک'));
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`);
+    assert(exportOpened, "reports must expose privacy-safe export controls");
+    await waitFor(client, "document.querySelector('[data-report-export-dialog=true]')?.textContent?.includes('خلاصه مناسب اشتراک')", "report export dialog");
+    assert(await evaluate(client, "document.querySelector('[data-report-export-dialog=true]')?.textContent?.includes('بدون مبلغ و بدون نام دارایی')"), "shared report summary must advertise its privacy-safe scope");
+    assert(await evaluate(client, "document.querySelector('[data-report-export-dialog=true]')?.textContent?.includes('دانلود CSV')"), "reports must expose explicit local CSV export");
+    await evaluate(client, "document.querySelector('[data-report-export-dialog=true]')?.closest('[data-dialog-content]')?.querySelector('button[aria-label=\"بستن پنجره\"]')?.click(); true");
+    await waitFor(client, "document.querySelector('[data-report-export-dialog=true]') === null", "report export dialog close");
+
     await clientNavigate(client, "/settings", "پولم‌کو را برای خودت تنظیم کن");
     await clientNavigate(client, "/reports", "گزارش‌ها و بینش‌ها");
     assert(await evaluate(client, "document.body?.innerText.includes('جمع‌بندی تصمیمی این بازه')"), "reports must remain visible after returning through client-side workspace navigation");
+
+    await client.call("Emulation.setDeviceMetricsOverride", { width: 425, height: 800, deviceScaleFactor: 1, mobile: true });
+    await waitFor(client, "document.querySelector('[data-tour=mobile-more]') !== null", "mobile navigation");
+    await evaluate(client, "document.querySelector('[data-tour=mobile-more]')?.click(); true");
+    await waitFor(client, "document.querySelector('[data-drawer-content=true]')?.textContent?.includes('دسترسی سریع')", "mobile more drawer");
+    assert(await evaluate(client, `(() => {
+      const text = document.querySelector('[data-drawer-content=true]')?.textContent ?? '';
+      return text.includes('گزارش‌ها') && text.includes('تنظیمات') && !text.includes('پول‌های ورودی') && !text.includes('سرمایه‌گذاری');
+    })()`), "mobile more drawer must stay focused instead of duplicating the primary bottom navigation");
+    await dragElementDown(client, "[data-drawer-drag-handle=true]", 190);
+    await waitFor(client, "document.querySelector('[data-drawer-content=true]') === null", "drag-to-dismiss mobile drawer");
+    await client.call("Emulation.clearDeviceMetricsOverride");
 
     await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal browser root must remain landing even after workspace PWA registration");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "returning to the public landing must remove workspace manifest metadata");
 
-    const actionableRuntimeErrors = runtimeErrors.filter((message) => !/AbortError|ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
+    const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: landing media/theme → workspace, onboarding/bootstrap, client-side route continuity, reports, and PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

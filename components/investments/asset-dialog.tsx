@@ -83,7 +83,7 @@ export function AssetDialog({ open, onOpenChange, asset, settings, onSaved, init
 
   const save = form.handleSubmit(async (values) => {
     const now = new Date().toISOString();
-    const linked = assetSupportsExchangeLink(values.kind) && values.marketSource === "tindex" && Boolean(values.marketId);
+    const linked = assetSupportsExchangeLink(values.kind) && Boolean(values.marketSource) && Boolean(values.marketId);
     const payload = {
       name: values.name.trim(),
       kind: values.kind,
@@ -120,7 +120,7 @@ export function AssetDialog({ open, onOpenChange, asset, settings, onSaved, init
         </div>
         {symbolOptions && <Controller name="symbol" control={form.control} render={({ field, fieldState }) => <Field label="نماد بازار" error={fieldState.error?.message}><Select value={field.value ?? ""} onValueChange={field.onChange} placeholder="انتخاب نماد" options={symbolOptions} /></Field>} />}
         {exchangeKind && <Field label="اتصال به بورس" error={form.formState.errors.marketId?.message}>
-          <ExchangeInstrumentPicker selected={marketId && marketSource === "tindex" ? { id: marketId, symbol, name } : undefined} settings={settings} onSelect={selectInstrument} onClear={clearInstrument} />
+          <ExchangeInstrumentPicker selected={marketId && marketSource ? { id: marketId, symbol, name, source: marketSource } : undefined} settings={settings} onSelect={selectInstrument} onClear={clearInstrument} />
         </Field>}
         {exchangeKind && !marketId && <Controller name="symbol" control={form.control} render={({ field, fieldState }) => <Field label="نماد دستی (اختیاری)" error={fieldState.error?.message}><Input value={field.value ?? ""} onChange={field.onChange} placeholder="مثلاً عیار" /></Field>} />}
         {assetUsesManualPrice(kind) && <Controller name="manualPriceToman" control={form.control} render={({ field, fieldState }) => <Field label={assetRequiresManualPrice(kind, marketId) ? "قیمت فعلی" : "قیمت پشتیبان"} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /><p className="mt-1 text-[10px] leading-5 text-muted-foreground">{marketId ? "اگر سرویس بازار موقتاً قطع شود، آخرین Snapshot واقعی اولویت دارد و بعد از این قیمت پشتیبان استفاده می‌شود." : "تا وقتی دارایی را به بازار وصل نکرده‌ای، این قیمت برای ارزش‌گذاری سبد لازم است."}</p></Field>} />}

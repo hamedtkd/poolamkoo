@@ -16,6 +16,10 @@ Encrypted backups use PBKDF2-SHA256 and AES-GCM. The password is not persisted b
 
 Before importing a backup, Poolamkoo verifies the envelope, decrypts when required, validates required local tables/settings, rejects data from a newer database schema, and shows a record-count preview. Only after explicit confirmation does it create a local recovery snapshot and replace the current database. Legacy v1 backup files remain readable. Up to five recent recovery snapshots are kept in IndexedDB; new snapshots also carry schema/app version metadata. These snapshots are for accidental local changes only and are not a substitute for an external backup because clearing Site Data removes them too.
 
+## Report export
+
+Report sharing is user-initiated. The default share text omits financial amounts and personal asset names; `navigator.share` is called only after an explicit button press. Detailed CSV export is generated locally in the browser and can include amounts and asset names, so users should treat that file as sensitive. User-controlled CSV text is neutralized when it begins with spreadsheet formula prefixes (`=`, `+`, `-`, `@`) before quoting. No hosted report link or automatic report upload is part of the default app.
+
 ## Browser storage
 
 Browser storage is not a substitute for backup. Users should export backups before clearing browser/site data or moving devices. Market alerts are stored locally alongside the rest of the app data.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Reveal } from "@/components/animation/reveal";
 import { PageDateFilterBar } from "@/components/app/page-date-filter-bar";
 import { DashboardSection } from "@/components/sections/dashboard";
 import { useAppRuntime } from "@/components/app/app-runtime";
@@ -13,12 +14,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5">
+      <Reveal direction="down" step={0}>
       <PageDateFilterBar
         title="فیلتر داشبورد"
         description="کارت‌ها و نمودارهای همین صفحه بر اساس این بازه به‌روزرسانی می‌شوند."
         value={dateFilter.getRange(scope)}
         onValueChange={(value) => dateFilter.setRange(scope, value)}
       />
+      </Reveal>
       <DashboardSection
         settings={data.settings}
         rule={data.rule}

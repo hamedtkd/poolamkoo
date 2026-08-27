@@ -4,9 +4,9 @@ export type LifestylePreset = "growth" | "balanced" | "comfort" | "safety" | "cu
 export type BucketKey = "life" | "safety" | "growth";
 export type AssetKind = "gold" | "currency" | "crypto" | "stock" | "fund" | "custom";
 export type MarketSymbol = "USD" | "IR_GOLD_18K" | "BTC" | "USDT";
-export type MarketSource = "brsapi" | "tindex" | "local";
+export type MarketSource = "brsapi" | "tindex" | "tsetmc" | "local";
 export type MarketHistoryRange = "1m" | "3m";
-export type ExchangeMarketSource = "tindex";
+export type ExchangeMarketSource = "tsetmc" | "tindex";
 export type MarketAlertKind = "price_above" | "price_below" | "change_above" | "change_below" | "nav_discount" | "nav_premium";
 export type PlanTargetType = "life" | "fund" | "asset" | "bucket";
 
@@ -94,6 +94,7 @@ export interface InvestmentTransaction {
 }
 
 export interface MarketQuote {
+  marketId?: string;
   symbol: string;
   name: string;
   priceToman: number;

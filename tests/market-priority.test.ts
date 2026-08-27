@@ -21,3 +21,11 @@ test("Tindex core fallback is requested only when BrsApi misses a supported core
   assert.equal(needsCoreFallback([quote("USD", 1, "brsapi"), quote("IR_GOLD_18K", 1, "brsapi"), quote("BTC", 1, "brsapi")]), false);
   assert.equal(needsCoreFallback([quote("USD", 1, "brsapi")]), true);
 });
+
+test("exchange quotes keep their market identity while core precedence stays symbol based", () => {
+  const exchangeA = { ...quote("فولاد", 2_381, "tsetmc"), marketId: "46348559193224090" };
+  const exchangeB = { ...quote("فولاد", 2_400, "tindex"), marketId: "legacy-foolad" };
+  const merged = mergeMarketQuotes({ exchange: [exchangeA, exchangeB] });
+  assert.equal(merged.length, 2);
+  assert.deepEqual(new Set(merged.map((item) => item.marketId)), new Set(["46348559193224090", "legacy-foolad"]));
+});

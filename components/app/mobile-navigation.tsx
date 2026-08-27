@@ -1,21 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { m } from "motion/react";
 import {
   RiAddLine,
   RiBarChartBoxLine,
   RiBookOpenLine,
   RiDashboardLine,
   RiInformationLine,
-  RiLineChartLine,
   RiMenu3Line,
   RiQuestionLine,
-  RiSafe2Line,
   RiSearch2Line,
-  RiShieldCheckLine,
   RiSettings3Line,
-  RiWallet3Line,
+  RiShieldCheckLine,
 } from "react-icons/ri";
 import { isAppNavActive, mobilePrimaryNav } from "@/components/app/navigation";
 import { BrandLogo } from "@/components/brand-logo";
@@ -64,7 +60,7 @@ export function MobileNavigation({ pathname, market, menuOpen, setMenuOpen, onOp
       <nav aria-label="ناوبری اصلی موبایل" className="mobile-bottom-nav fixed inset-x-3 z-30 grid min-h-[72px] grid-cols-5 rounded-[24px] p-1 md:hidden">
         {mobilePrimaryNav.map((item) => {
           const Icon = item.icon;
-          return <Link key={item.href} href={item.href} data-tour={item.tour} aria-current={active(item.href) ? "page" : undefined} className={cn("relative grid min-h-14 place-items-center content-center gap-0.5 overflow-hidden rounded-[18px] px-1 type-caption text-[10px] transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", active(item.href) ? "text-primary" : "text-muted-foreground")}>{active(item.href) && <m.span layoutId="mobile-nav-active" className="absolute inset-0 rounded-[18px] bg-primary/12" transition={{ type: "spring", stiffness: 440, damping: 36 }} />}<Icon className="relative z-[1] size-5" /><span className="relative z-[1]">{item.shortLabel}</span></Link>;
+          return <Link key={item.href} href={item.href} data-tour={item.tour} aria-current={active(item.href) ? "page" : undefined} className={cn("relative grid min-h-14 place-items-center content-center gap-0.5 overflow-hidden rounded-[18px] px-1 type-caption text-[10px] transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", active(item.href) ? "text-primary" : "text-muted-foreground")}>{active(item.href) && <span className="absolute inset-0 animate-fade animate-once animate-duration-200 rounded-[18px] bg-primary/12 motion-reduce:animate-none" />}<Icon className="relative z-[1] size-5" /><span className="relative z-[1]">{item.shortLabel}</span></Link>;
         })}
         <button type="button" data-tour="mobile-more" onClick={() => setMenuOpen(true)} aria-expanded={menuOpen} aria-controls="mobile-navigation-sheet" aria-haspopup="dialog" className={cn("grid min-h-14 place-items-center content-center gap-0.5 rounded-[18px] type-caption text-[10px] transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", menuOpen ? "bg-primary/12 text-primary" : "text-muted-foreground")}><RiDashboardLine className="size-5" /><span>بیشتر</span></button>
       </nav>
@@ -85,46 +81,50 @@ function MobileMenu({ open, onOpenChange, market, onNewMoney, onStartTour, resol
   const close = () => onOpenChange(false);
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent id="mobile-navigation-sheet" className="px-4 pt-1 md:hidden">
-        <DrawerTitle className="mb-0 text-start type-card-title">دسترسی سریع</DrawerTitle>
-        <DrawerDescription className="mb-4">برای بستن، دستگیره بالا را به پایین بکش.</DrawerDescription>
-        <div className="grid grid-cols-2 gap-2.5">
-          <MenuTile primary icon={<RiAddLine />} label="پول جدید دارم" onClick={() => { onNewMoney(); close(); }} />
-          <MenuLink href="/investments" icon={<RiLineChartLine />} label="سرمایه‌گذاری" onClick={close} />
+      <DrawerContent id="mobile-navigation-sheet" className="px-4 pt-0 md:hidden">
+        <div className="mb-4">
+          <DrawerTitle className="mb-1 text-start type-card-title">دسترسی سریع</DrawerTitle>
+          <DrawerDescription>بخش‌های اصلی پایین صفحه هستند؛ اینجا فقط کارهای تکمیلی را نگه داشته‌ایم. برای بستن، دستگیره را به پایین بکش.</DrawerDescription>
         </div>
-        <div className="mt-2.5 grid grid-cols-3 gap-2">
-          <MenuLink href="/income" compact icon={<RiWallet3Line />} label="ورودی‌ها" onClick={close} />
-          <MenuLink href="/funds" compact icon={<RiSafe2Line />} label="صندوق‌ها" onClick={close} />
-          <MenuLink href="/reports" compact icon={<RiBarChartBoxLine />} label="گزارش‌ها" onClick={close} />
+
+        <button type="button" onClick={() => { onNewMoney(); close(); }} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 type-button text-primary-foreground shadow-lg shadow-primary/15 transition active:scale-[.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <RiAddLine className="size-5" />
+          <span>پول جدید دارم</span>
+        </button>
+
+        <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <SecondaryLink href="/reports" icon={<RiBarChartBoxLine />} label="گزارش‌ها" description="مرور تصمیم‌ها" onClick={close} />
+          <SecondaryLink href="/settings" icon={<RiSettings3Line />} label="تنظیمات" description="ظاهر، قانون و داده" onClick={close} />
         </div>
-        <div className="my-3 h-px bg-border/80" />
-        <div className="grid grid-cols-4 gap-2">
-          <CompactUtility label="بازار"><MarketRefreshButton market={market} className="size-11 border-0 bg-transparent" /></CompactUtility>
-          <CompactUtility label={hideFinancialData ? "نمایش" : "مخفی"}><PrivacyToggle hidden={hideFinancialData} showLabel={false} className="size-11 border-0 bg-transparent px-0" /></CompactUtility>
-          <CompactUtility label="تم"><ThemeToggle resolvedTheme={resolvedTheme} onToggle={onToggleTheme} className="size-11 border-0 bg-transparent" /></CompactUtility>
-          <CompactUtility label="راهنما"><button type="button" onClick={() => { close(); window.setTimeout(onStartTour, 120); }} className="grid size-11 place-items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="راهنمای سریع"><RiQuestionLine className="size-5" /></button></CompactUtility>
+
+        <div className="mt-4 overflow-hidden rounded-2xl border bg-muted/30">
+          <div className="grid grid-cols-4 divide-x divide-x-reverse divide-border/80" dir="rtl">
+            <Utility label="بازار"><MarketRefreshButton market={market} className="size-10 border-0 bg-transparent" /></Utility>
+            <Utility label={hideFinancialData ? "نمایش" : "مخفی"}><PrivacyToggle hidden={hideFinancialData} showLabel={false} className="size-10 border-0 bg-transparent px-0" /></Utility>
+            <Utility label="تم"><ThemeToggle resolvedTheme={resolvedTheme} onToggle={onToggleTheme} className="size-10 border-0 bg-transparent" /></Utility>
+            <Utility label="راهنمای سریع"><button type="button" onClick={() => { close(); window.setTimeout(onStartTour, 120); }} className="grid size-10 place-items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="راهنمای سریع"><RiQuestionLine className="size-5" /></button></Utility>
+          </div>
         </div>
-        <div className="mt-3"><MenuLink href="/settings" utility icon={<RiSettings3Line />} label="تنظیمات" onClick={close} /></div>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          <MenuLink href="/guide" compact icon={<RiBookOpenLine />} label="راهنما" onClick={close} />
-          <MenuLink href="/about" compact icon={<RiInformationLine />} label="درباره" onClick={close} />
-          <MenuLink href="/privacy" compact icon={<RiShieldCheckLine />} label="داده‌ها" onClick={close} />
+
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t pt-4 type-caption text-muted-foreground">
+          <ResourceLink href="/guide" icon={<RiBookOpenLine />} label="راهنما" onClick={close} />
+          <ResourceLink href="/privacy" icon={<RiShieldCheckLine />} label="داده‌ها و حریم خصوصی" onClick={close} />
+          <ResourceLink href="/about" icon={<RiInformationLine />} label="درباره" onClick={close} />
         </div>
-        <GithubLink className="mt-2 w-full" />
+        <GithubLink className="mt-3 w-full" />
       </DrawerContent>
     </Drawer>
   );
 }
 
-function CompactUtility({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="grid min-h-16 place-items-center content-center rounded-2xl border bg-muted/48 text-foreground"><div>{children}</div><span className="type-caption text-[10px] text-muted-foreground">{label}</span></div>;
+function SecondaryLink({ href, icon, label, description, onClick }: { href: string; icon: React.ReactNode; label: string; description: string; onClick: () => void }) {
+  return <Link href={href} onClick={onClick} className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card/72 p-3 text-start shadow-sm transition active:scale-[.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5">{icon}</span><span className="min-w-0"><span className="block type-label text-foreground">{label}</span><span className="mt-0.5 block type-caption text-muted-foreground">{description}</span></span></Link>;
 }
-function MenuLink({ href, icon, label, onClick, compact, utility }: { href: string; icon: React.ReactNode; label: string; onClick: () => void; compact?: boolean; utility?: boolean }) {
-  return <Link href={href} onClick={onClick} className={tileClass({ compact, utility })}>{icon}<span>{label}</span></Link>;
+
+function Utility({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="grid min-h-16 place-items-center content-center py-1"><div>{children}</div><span className="type-caption text-[10px] text-muted-foreground">{label}</span></div>;
 }
-function MenuTile({ icon, label, onClick, primary }: { icon: React.ReactNode; label: string; onClick: () => void; primary?: boolean }) {
-  return <button type="button" onClick={onClick} className={tileClass({ primary })}>{icon}<span>{label}</span></button>;
-}
-function tileClass({ primary, compact, utility }: { primary?: boolean; compact?: boolean; utility?: boolean }) {
-  return cn("flex items-center justify-center rounded-2xl border type-label transition active:scale-[.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:shrink-0", primary ? "min-h-20 gap-2 bg-primary px-4 text-primary-foreground shadow-lg shadow-primary/15 [&_svg]:size-6" : utility ? "min-h-12 gap-2 bg-background/70 px-3 text-foreground [&_svg]:size-5" : compact ? "min-h-16 flex-col gap-1.5 bg-muted/52 p-2 text-xs text-foreground [&_svg]:size-5" : "min-h-20 gap-2 bg-card/92 px-4 text-foreground shadow-sm [&_svg]:size-6");
+
+function ResourceLink({ href, icon, label, onClick }: { href: string; icon: React.ReactNode; label: string; onClick: () => void }) {
+  return <Link href={href} onClick={onClick} className="inline-flex items-center gap-1.5 transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4">{icon}<span>{label}</span></Link>;
 }

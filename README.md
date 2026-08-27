@@ -1,4 +1,11 @@
 # Poolamkoo — پولم‌کو
+> v0.29 note: Reports now has local CSV export plus a share-safe summary with no amounts/asset names; the mobile More/search surfaces are calmer, the drawer truly dismisses by dragging its handle down, and workspace card motion now follows one top-to-bottom direction.
+> v0.28.2 animation/tooling hotfix: Tailwind CSS v4 now imports `tailwindcss-animated` through its explicit `src/index.css` entry for Turbopack/Windows compatibility, shared modal bodies use transform-only CSS motion so they are never blank, and the market route lint regression is fixed.
+> v0.28.1 motion hotfix: `motion` is restored for code-split viewport/scroll reveals on the public Landing, while Workspace entrances remain per-item `tailwindcss-animated` staggers with no whole-route animation.
+> v0.28 note: new Tehran exchange links now use direct server-side TSETMC search/quotes/history without an API key; Tindex is optional legacy/emergency fallback with quota-protecting cache windows.
+> v0.27.4 runtime/motion hotfix: workspace entrance motion now uses `tailwindcss-animated` per item with ~55ms stagger instead of a Motion runtime/whole-route transition, while GitHub stats no longer has any Promise fetch/AbortSignal cleanup path.
+> v0.27.3 motion/runtime hotfix: GitHub stats no longer aborts a fetch during React cleanup, and workspace navigation now uses visible-at-every-frame route motion plus top-to-bottom item staggering with reduced-motion fallbacks.
+> v0.27.2 hotfix: Dashboard content and shared dialog bodies never start at `opacity: 0`; motion is now visibility-safe, and the production browser gate verifies normal-motion Dashboard and modal content.
 > v0.27.1 hotfix: workspace client-side navigation no longer wraps entire routes in exit/opacity animation, and the production browser gate now verifies Reports → Settings → Reports without a reload or blank content.
 > v0.27 note: the public Landing hero is redesigned around the approved Light/Dark product artwork, critical hero content no longer depends on Motion hydration, and the public header now has a local theme toggle with reduced-motion-safe transition.
 > v0.26.1 hotfix: full-source replacement now removes the obsolete root `app/manifest.ts` route so the public Landing cannot accidentally advertise the installable PWA; the production browser gate guards this exact regression.
@@ -54,7 +61,7 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 - Gold, currency, crypto, stocks/exchange, investment funds, and custom assets
 - Record real buy and sell transactions
 - Bulk historical investment import from CSV with preview and validation
-- Search and link Tehran Stock Exchange stocks/ETFs to live Tindex/TSETMC quotes
+- Search and link Tehran Stock Exchange stocks/ETFs directly to TSETMC quotes without an API key
 - Manual fallback prices for linked exchange assets and manual pricing for custom assets
 - Link purchases back to an incoming-money plan
 - Average purchase price and cost basis
@@ -71,17 +78,17 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 
 ### Market data
 
-- BrsApi-first pricing for gold, currency, and crypto with Tindex fallback for core quotes
-- Tindex pricing and search for Tehran Stock Exchange stocks and ETFs
-- Linked Tindex source attribution wherever Tindex quotes are displayed
+- BrsApi-first pricing for gold, currency, and crypto with short shared server caching; Tindex is only an optional core fallback
+- Direct server-side TSETMC search, quotes, and history for new Tehran Stock Exchange stocks and ETFs
+- Explicit TSETMC/Tindex/BrsApi source attribution wherever external quotes are displayed
 - One shared market store across the application
 - One initial fetch plus explicit manual refresh
 - Real snapshots stored locally
-- Real 1-month and 3-month Tindex history for USD, 18K gold, and linked TSE stocks/ETFs
+- Real 1-month and 3-month TSETMC history for linked exchange assets; optional Tindex history for USD/18K gold
 - Line history for public indicators and real exchange candlesticks, with local snapshots as fallback
 - No fake historical market series
 - Market watchlist for tracking TSE stocks/ETFs before adding them to the portfolio
-- NAV and market-price premium/discount for exchange funds whenever Tindex/TSETMC publishes NAV
+- NAV and market-price premium/discount only when the active provider actually supplies NAV; the direct TSETMC price adapter does not invent missing NAV
 - Local price, daily-move, and NAV alerts with duplicate-notification suppression
 - Local market alerts; the Background Push experiment remains paused in the backlog by default
 
@@ -173,7 +180,8 @@ See [SECURITY.md](./SECURITY.md) for the security and data-safety model.
 - TanStack Table
 - Recharts and Lightweight Charts where appropriate
 - next-themes
-- Motion (`motion/react`) for restrained micro-interactions
+- `tailwindcss-animated` for lightweight CSS micro-interactions and per-item staggered Workspace entrances
+- `motion` for code-split viewport/scroll reveals where interaction timing matters
 - Optional Cloudflare Web Analytics through the official hosted beacon, with no analytics SDK
 - Remix Icons through react-icons
 
@@ -262,9 +270,9 @@ The README paths are ready for those generated files; after a verified capture i
 
 ## Market data
 
-Configure both BrsApi and a Tindex developer token. BrsApi remains primary for public market quotes; Tindex supplies missing core USD, 18K gold, and BTC quotes and serves linked Tehran Stock Exchange assets. The exact server-side environment variable names are documented in `.env.example`.
+For core gold/currency/crypto quotes, configure `BRS_API_KEY`. **New Tehran exchange links need no API key:** Poolamkoo searches and reads `cdn.tsetmc.com` through its own server routes. `TINDEX_API_TOKEN` is optional in v0.28 and is retained only for legacy links, a slow emergency core fallback, and optional USD/gold online history.
 
-Exchange quotes are returned by Tindex from TSETMC data and converted from rial to toman for Poolamkoo calculations. Poolamkoo also uses Tindex candle/history endpoints for 1-month and 3-month USD, 18K gold, and linked exchange charts, with quota-aware server caching. If market access is unavailable, Poolamkoo must not fabricate historical prices; previously stored real snapshots remain the chart fallback.
+TSETMC exchange prices are returned in rial and normalized to toman on the server. TSETMC current quotes use a short shared cache and daily history uses an hourly cache; BrsApi also uses a short server cache so multiple browsers do not multiply provider requests. If an external provider is unavailable, Poolamkoo never fabricates prices/history: real IndexedDB snapshots and then the user's manual fallback price remain available. Existing `source: tindex` records are preserved and can be re-linked to TSETMC at the user's convenience.
 
 ## Privacy-first analytics
 

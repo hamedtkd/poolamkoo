@@ -1,18 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { RiArrowDownLine, RiArrowUpLine, RiFileList3Line, RiMoneyDollarCircleLine, RiSafe2Line } from "react-icons/ri";
+import { RiArrowDownLine, RiArrowUpLine, RiFileList3Line, RiMoneyDollarCircleLine, RiSafe2Line, RiShareForwardLine } from "react-icons/ri";
 import { DataTable, type DataTableFeatures } from "@/components/data-table";
+import { Reveal, RevealGrid } from "@/components/animation/reveal";
 import { AllocationDonut } from "@/components/charts/allocation-donut";
 import { LazyMonthlyBars } from "@/components/charts/lazy-monthly-bars";
 import { DecisionInsightsCard } from "@/components/reports/decision-insights-card";
+import { ReportExportDialog } from "@/components/reports/report-export-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HelpLabel } from "@/components/ui/help-label";
 import { KpiIcon } from "@/components/ui/kpi-icon";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { useReportsData, type PerformanceRow, type PlanAdherenceRow } from "@/hooks/use-reports-data";
 import { formatMoney, formatPercent } from "@/lib/format";
+import type { AppDateRange } from "@/lib/date-range";
 import type { AllocationEntry, AllocationRule, AppSettings, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +33,11 @@ const HELP = {
   monthly: "تقسیم پول‌های ورودی در شش ماه اخیر. اگر ماهی ورودی نداشته باشد چیزی برای رسم وجود ندارد.",
 };
 
-export function ReportsSection({ settings, rule, incomes, allocations, funds, assets, transactions, quotes, planItems }: {
+export function ReportsSection({ settings, rule, incomes, allocations, funds, assets, transactions, quotes, planItems, range }: {
   settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; allocations: AllocationEntry[]; funds: GoalFund[];
-  assets: Asset[]; transactions: InvestmentTransaction[]; quotes: MarketQuote[]; planItems: PlanItem[];
+  assets: Asset[]; transactions: InvestmentTransaction[]; quotes: MarketQuote[]; planItems: PlanItem[]; range: AppDateRange;
 }) {
+  const [exportOpen, setExportOpen] = useState(false);
   const report = useReportsData({ incomes, allocations, funds, assets, transactions, quotes, planItems, rule });
   const { performance: perf, totalIncome, totals, funded, target, best, worst, monthly, overallPlan, planRows, decision } = report;
   const planColumns: ColumnDef<DataTableFeatures, PlanAdherenceRow, unknown>[] = [
@@ -50,25 +56,31 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
   ];
 
   return <div className="space-y-5">
-    <div><div className="type-caption type-body-strong text-primary">تحلیل</div><h1 className="mt-1 type-page-title">گزارش‌ها و بینش‌ها</h1><p className="mt-1 type-body text-muted-foreground">این صفحه برای مرور تصمیم‌های ثبت‌شده است؛ نه حسابداری هزینه‌ها و نه پیش‌بینی بازار.</p></div>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    <Reveal direction="down" step={1}><div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">تحلیل</div><h1 className="mt-1 type-page-title">گزارش‌ها و بینش‌ها</h1><p className="mt-1 type-body text-muted-foreground">این صفحه برای مرور تصمیم‌های ثبت‌شده است؛ نه حسابداری هزینه‌ها و نه پیش‌بینی بازار.</p></div><Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setExportOpen(true)}><RiShareForwardLine /> خروجی و اشتراک</Button></div></Reveal>
+    <RevealGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" startStep={2}>
       <InsightCard icon={<RiMoneyDollarCircleLine />} label="کل پول ورودی" value={formatMoney(totalIncome, settings.displayUnit)} detail={`${new Intl.NumberFormat("fa-IR").format(incomes.length)} ورودی ثبت‌شده`} />
       <InsightCard icon={<RiFileList3Line />} iconTone={overallPlan.pct >= 80 ? "primary" : "neutral"} label="پایبندی به برنامه" help={HELP.adherence} value={formatPercent(overallPlan.pct, 0)} detail={`${formatMoney(overallPlan.executed, settings.displayUnit, true)} از ${formatMoney(overallPlan.planned, settings.displayUnit, true)}`} />
       <InsightCard icon={<RiSafe2Line />} label="پوشش صندوق‌ها" help={HELP.funds} value={formatPercent(target ? funded / target * 100 : 0, 0)} detail={`${formatMoney(funded, settings.displayUnit, true)} ذخیره شده`} />
       <InsightCard icon={<RiArrowUpLine />} label="بیشترین بازده سبد" help={HELP.return} value={best ? `${best.name} ${signedPercent(best.pnlPct)}` : "—"} detail={best ? `سود/زیان باز شما: ${formatMoney(best.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive />
       <InsightCard icon={<RiArrowDownLine />} iconTone={worst?.pnlPct !== undefined && worst.pnlPct < 0 ? "danger" : "neutral"} label="کمترین بازده سبد" help={HELP.return} value={worst ? `${worst.name} ${signedPercent(worst.pnlPct)}` : "—"} detail={worst ? `سود/زیان باز شما: ${formatMoney(worst.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive={worst?.pnlPct !== undefined ? worst.pnlPct >= 0 : undefined} />
-    </div>
+    </RevealGrid>
 
-    <DecisionInsightsCard snapshot={decision} unit={settings.displayUnit} />
+    <Reveal step={7}><DecisionInsightsCard snapshot={decision} unit={settings.displayUnit} /></Reveal>
 
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card><CardHeader><CardTitle><HelpLabel label="تقسیم واقعی پول ثبت‌شده" help={HELP.allocation} /></CardTitle></CardHeader><CardContent className="grid gap-5 sm:grid-cols-[220px_1fr] sm:items-center"><div className="grid place-items-center"><AllocationDonut segments={allocationSegments(decision.allocatedTotal, totals)} /></div><div className="grid gap-2"><Legend color="var(--chart-3)" label="زندگی" value={allocationValue(decision.allocatedTotal, totals.life)} /><Legend color="var(--chart-2)" label="امنیت" value={allocationValue(decision.allocatedTotal, totals.safety)} /><Legend color="var(--chart-1)" label="رشد" value={allocationValue(decision.allocatedTotal, totals.growth)} /></div></CardContent></Card>
-      <Card><CardHeader><CardTitle><HelpLabel label="تقسیم ماهانه" help={HELP.monthly} /></CardTitle></CardHeader><CardContent><LazyMonthlyBars data={monthly} unit={settings.displayUnit} /></CardContent></Card>
+      <Reveal step={7} className="h-full"><Card><CardHeader><CardTitle><HelpLabel label="تقسیم واقعی پول ثبت‌شده" help={HELP.allocation} /></CardTitle></CardHeader><CardContent className="grid gap-5 sm:grid-cols-[220px_1fr] sm:items-center"><div className="grid place-items-center"><AllocationDonut segments={allocationSegments(decision.allocatedTotal, totals)} /></div><div className="grid gap-2"><Legend color="var(--chart-3)" label="زندگی" value={allocationValue(decision.allocatedTotal, totals.life)} /><Legend color="var(--chart-2)" label="امنیت" value={allocationValue(decision.allocatedTotal, totals.safety)} /><Legend color="var(--chart-1)" label="رشد" value={allocationValue(decision.allocatedTotal, totals.growth)} /></div></CardContent></Card></Reveal>
+      <Reveal step={8} className="h-full"><Card><CardHeader><CardTitle><HelpLabel label="تقسیم ماهانه" help={HELP.monthly} /></CardTitle></CardHeader><CardContent><LazyMonthlyBars data={monthly} unit={settings.displayUnit} /></CardContent></Card></Reveal>
     </div>
 
-    <Card><CardHeader><CardTitle><HelpLabel label="پایبندی به برنامه‌های پول ورودی" help={HELP.adherence} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">پیشنهاد پولم‌کو با آنچه واقعاً اجرا کرده‌ای مقایسه می‌شود.</p></CardHeader><CardContent><DataTable<PlanAdherenceRow> data={planRows} columns={planColumns} searchPlaceholder="جست‌وجوی برنامه..." mobileCard={(row) => <div className="p-4"><div className="flex items-start justify-between"><strong>{row.title}</strong><SensitiveValue className="type-strong text-primary">{formatPercent(row.pct, 0)}</SensitiveValue></div><div className="mt-3 grid grid-cols-2 gap-2 text-xs"><Small label="برنامه" value={formatMoney(row.planned, settings.displayUnit, true)} /><Small label="اجراشده" value={formatMoney(row.executed, settings.displayUnit, true)} /></div></div>} /></CardContent></Card>
+    <Reveal step={8}><Card><CardHeader><CardTitle><HelpLabel label="پایبندی به برنامه‌های پول ورودی" help={HELP.adherence} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">پیشنهاد پولم‌کو با آنچه واقعاً اجرا کرده‌ای مقایسه می‌شود.</p></CardHeader><CardContent><DataTable<PlanAdherenceRow> data={planRows} columns={planColumns} searchPlaceholder="جست‌وجوی برنامه..." mobileCard={(row) => <div className="p-4"><div className="flex items-start justify-between"><strong>{row.title}</strong><SensitiveValue className="type-strong text-primary">{formatPercent(row.pct, 0)}</SensitiveValue></div><div className="mt-3 grid grid-cols-2 gap-2 text-xs"><Small label="برنامه" value={formatMoney(row.planned, settings.displayUnit, true)} /><Small label="اجراشده" value={formatMoney(row.executed, settings.displayUnit, true)} /></div></div>} /></CardContent></Card></Reveal>
 
-    <Card><CardHeader className="flex flex-row items-center justify-between gap-3"><div><CardTitle><HelpLabel label="تخصیص هدف در برابر واقعیت" help={HELP.drift} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">فاصله سبد از هدف بر اساس دارایی و قیمت واقعی موجود محاسبه می‌شود.</p></div><Badge>مرور سبد</Badge></CardHeader><CardContent><DataTable<PerformanceRow> data={perf} columns={columns} searchPlaceholder="جست‌وجوی دارایی..." mobileCard={(row) => <PerformanceMobile row={row} settings={settings} />} /></CardContent></Card>
+    <Reveal step={8}><Card><CardHeader className="flex flex-row items-center justify-between gap-3"><div><CardTitle><HelpLabel label="تخصیص هدف در برابر واقعیت" help={HELP.drift} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">فاصله سبد از هدف بر اساس دارایی و قیمت واقعی موجود محاسبه می‌شود.</p></div><Badge>مرور سبد</Badge></CardHeader><CardContent><DataTable<PerformanceRow> data={perf} columns={columns} searchPlaceholder="جست‌وجوی دارایی..." mobileCard={(row) => <PerformanceMobile row={row} settings={settings} />} /></CardContent></Card></Reveal>
+
+    <ReportExportDialog
+      open={exportOpen}
+      onOpenChange={setExportOpen}
+      report={{ range, unit: settings.displayUnit, decision, performance: perf }}
+    />
   </div>;
 }
 

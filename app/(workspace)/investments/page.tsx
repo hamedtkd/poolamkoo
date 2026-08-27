@@ -1,5 +1,6 @@
 "use client";
 
+import { Reveal } from "@/components/animation/reveal";
 import { PageDateFilterBar } from "@/components/app/page-date-filter-bar";
 import { InvestmentsSection } from "@/components/sections/investments";
 import { useAppRuntime } from "@/components/app/app-runtime";
@@ -11,12 +12,14 @@ export default function InvestmentsPage() {
 
   return (
     <div className="space-y-5">
+      <Reveal direction="down" step={0}>
       <PageDateFilterBar
         title="فیلتر سرمایه‌گذاری"
         description="تراکنش‌ها، اسنپ‌شات‌ها و روندهای سرمایه‌گذاری در همین صفحه با این بازه کنترل می‌شوند."
         value={dateFilter.getRange(scope)}
         onValueChange={(value) => dateFilter.setRange(scope, value)}
       />
+      </Reveal>
       <InvestmentsSection
         settings={data.settings}
         assets={data.assets}
