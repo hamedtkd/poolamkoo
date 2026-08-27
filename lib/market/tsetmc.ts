@@ -1,4 +1,5 @@
 import type { MarketCandle, MarketHistoryRange, MarketInstrument, MarketQuote } from "@/lib/types";
+import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
 
 type TsetmcSearchRow = {
   insCode?: string | number;
@@ -27,9 +28,11 @@ type TsetmcQuotePayload = { closingPriceInfo?: TsetmcClosingRow };
 type TsetmcHistoryPayload = { closingPriceDaily?: TsetmcClosingRow[] };
 
 const BASE_URL = "https://cdn.tsetmc.com/api";
+const DEFAULT_REQUEST_TIMEOUT_MS = 3_500;
+const DEFAULT_REQUEST_BUDGET_MS = 8_000;
 const REQUEST_HEADERS = {
   Accept: "application/json, text/plain, */*",
-  "User-Agent": "Mozilla/5.0 (compatible; Poolamkoo/0.28; +https://github.com/hamedtkd/poolamkoo)",
+  "User-Agent": "Mozilla/5.0 (compatible; Poolamkoo/0.30; +https://github.com/hamedtkd/poolamkoo)",
   Referer: "https://www.tsetmc.com/",
   Origin: "https://www.tsetmc.com",
 };
@@ -133,6 +136,13 @@ function blockedBody(text: string) {
 
 export class TsetmcProvider {
   readonly id = "tsetmc";
+  private readonly requestTimeoutMs: number;
+  private readonly deadlineAt: number;
+
+  constructor(options: { requestTimeoutMs?: number; budgetMs?: number } = {}) {
+    this.requestTimeoutMs = Math.max(250, options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS);
+    this.deadlineAt = Date.now() + Math.max(this.requestTimeoutMs, options.budgetMs ?? DEFAULT_REQUEST_BUDGET_MS);
+  }
 
   async search(query: string): Promise<MarketInstrument[]> {
     const payload = await this.request<TsetmcSearchPayload>(
@@ -153,14 +163,19 @@ export class TsetmcProvider {
   async getQuotes(marketIds: readonly string[]): Promise<MarketQuote[]> {
     const ids = [...new Set(marketIds.filter((id) => /^\d+$/.test(id)))].slice(0, 20);
     const quotes: MarketQuote[] = [];
+    const failures: MarketProviderError[] = [];
     for (let index = 0; index < ids.length; index += 4) {
       const chunk = ids.slice(index, index + 4);
       const rows = await Promise.all(chunk.map(async (marketId) => {
         try { return await this.getQuote(marketId); }
-        catch { return null; }
+        catch (error) {
+          failures.push(classifyMarketProviderError("tsetmc", error));
+          return null;
+        }
       }));
       quotes.push(...rows.filter((quote): quote is MarketQuote => Boolean(quote)));
     }
+    if (!quotes.length && failures.length) throw failures[0];
     return quotes;
   }
 
@@ -174,15 +189,23 @@ export class TsetmcProvider {
   }
 
   private async request<T>(path: string, revalidate: number): Promise<T> {
-    const response = await fetch(`${BASE_URL}${path}`, {
-      headers: REQUEST_HEADERS,
-      next: { revalidate },
-      signal: AbortSignal.timeout(10_000),
-    });
+    const remainingBudget = this.deadlineAt - Date.now();
+    if (remainingBudget <= 0) throw new MarketProviderError("tsetmc", "timeout");
+    let response: Response;
+    try {
+      response = await fetch(`${BASE_URL}${path}`, {
+        headers: REQUEST_HEADERS,
+        next: { revalidate },
+        signal: AbortSignal.timeout(Math.max(1, Math.min(this.requestTimeoutMs, remainingBudget))),
+      });
+    } catch (error) {
+      throw classifyMarketProviderError("tsetmc", error);
+    }
     const text = await response.text();
-    if (!response.ok) throw new Error(`TSETMC ${response.status}`);
-    if (!text || blockedBody(text)) throw new Error("TSETMC دسترسی این سرور را موقتاً نپذیرفت.");
+    if (!response.ok) throw providerErrorFromStatus("tsetmc", response.status);
+    if (!text) throw new MarketProviderError("tsetmc", "invalid_response");
+    if (blockedBody(text)) throw new MarketProviderError("tsetmc", "blocked");
     try { return JSON.parse(text) as T; }
-    catch { throw new Error("پاسخ TSETMC قابل پردازش نبود."); }
+    catch { throw new MarketProviderError("tsetmc", "invalid_response"); }
   }
 }

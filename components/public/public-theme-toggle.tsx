@@ -58,6 +58,7 @@ export function PublicThemeToggle({ className }: { className?: string }) {
     <button
       type="button"
       data-public-theme-toggle="true"
+      data-hydrated={hydrated ? "true" : "false"}
       onClick={toggle}
       aria-label={label}
       title={label}

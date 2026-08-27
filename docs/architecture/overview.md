@@ -128,3 +128,11 @@ No report is uploaded or hosted by Poolamkoo. `navigator.share` is called only a
 Mobile navigation keeps the four daily destinations in the bottom bar. The More drawer no longer repeats those destinations; it exposes only New Money, Reports, Settings, compact utilities and public help links. The same shared Drawer now implements real drag-to-dismiss: opening/closing animation uses `transform`, while the user's drag is applied through the independent CSS `translate` property, preventing the animation from overriding finger/pointer movement.
 
 Workspace entrance motion is intentionally directional but not alternating: page headings use `fade-down`, while KPI/card/table content uses `fade-up` with short stagger. Horizontal left/right entrances remain available as utilities for isolated future use but are not mixed through the financial workspace. On compact desktop widths the sidebar becomes a locked icon rail so tables and report grids retain usable width.
+
+## Market provider reliability boundary (v0.30)
+
+Provider availability is now treated as structured runtime state rather than free-form exception text. `lib/market/reliability.ts` defines stable provider IDs, health states and failure categories; server routes expose only those safe categories plus human-readable Poolamkoo messages. Raw BrsApi/TSETMC/Tindex response bodies are never sent to the browser as error text.
+
+The quote route starts independent BrsApi, direct-TSETMC and legacy-Tindex work together. Tindex's core boards fallback remains dependent on the BrsApi result and is called only when USD/18K gold/BTC are actually missing. This preserves the v0.28 provider priority and protects the optional free-tier quota instead of eagerly querying every source on every refresh.
+
+A `TsetmcProvider` instance owns one deadline for the whole operation as well as a shorter timeout for each HTTP request. Batched quote requests therefore share a bounded time budget; partial successes return as `degraded`, while complete failure returns a classified `unavailable` state. Client code still persists only real quotes to IndexedDB and falls back to existing real snapshots/manual prices when fresh data is absent. IndexedDB schema 6 and all backup/transfer formats remain unchanged.

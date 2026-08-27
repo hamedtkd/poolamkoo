@@ -24,6 +24,7 @@ test("public header exposes a standalone theme control without touching IndexedD
   assert.match(themeToggle, /setTheme/);
   assert.doesNotMatch(themeToggle, /@\/lib\/db|useAppTheme/);
   assert.match(themeToggle, /prefers-reduced-motion: reduce/);
+  assert.match(themeToggle, /data-hydrated=\{hydrated \? "true" : "false"\}/);
 });
 
 test("landing keeps load-safe CSS hero motion and uses Motion for scroll reveals", () => {

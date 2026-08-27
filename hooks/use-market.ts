@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
+import type { MarketHealthSummary } from "@/lib/market/reliability";
 import type { Asset, ExchangeMarketSource, MarketAlert, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 
 type MarketResponse = {
   mode?: string;
   quotes?: MarketQuote[];
+  health?: MarketHealthSummary;
   warning?: string;
   fetchedAt?: string;
 };
@@ -89,10 +91,12 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
   const [mode, setMode] = useState("loading");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | undefined>();
+  const [health, setHealth] = useState<MarketHealthSummary | undefined>();
 
   const applyResponse = useCallback(async (data: MarketResponse) => {
     const rows = Array.isArray(data.quotes) ? data.quotes : [];
     setWarning(data.warning);
+    setHealth(data.health);
     if (!rows.length) {
       const cached = await latestCachedQuotes();
       setQuotes(cached);
@@ -123,6 +127,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
       setQuotes(cached);
       setMode(cached.length ? "offline" : "unavailable");
       setLastUpdated(cached[0]?.capturedAt ?? null);
+      setHealth(undefined);
       setWarning("دریافت قیمت جدید ناموفق بود.");
     } finally {
       setLoading(false);
@@ -151,5 +156,5 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
     return () => { active = false; };
   }, [applyResponse, enabled, targets, targetsKey]);
 
-  return { quotes, loading, mode, lastUpdated, warning, refresh };
+  return { quotes, loading, mode, lastUpdated, warning, health, refresh };
 }

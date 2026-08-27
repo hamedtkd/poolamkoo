@@ -275,8 +275,15 @@ async function main() {
     assert(await evaluate(client, "Boolean([...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان')))"), "landing must expose a dashboard CTA");
     await waitFor(client, "[...document.querySelectorAll('img[data-landing-visual]')].some((node) => node.complete && node.naturalWidth > 0)", "landing product visual");
     assert(await evaluate(client, "[...document.querySelectorAll('img[data-landing-visual]')].some((node) => getComputedStyle(node).display !== 'none')"), "one landing theme visual must be visible");
+    await waitFor(client, "document.querySelector('[data-public-theme-toggle=\"true\"][data-hydrated=\"true\"]') !== null", "public theme toggle hydration");
     const beforeTheme = await evaluate(client, "document.documentElement.classList.contains('dark') ? 'dark' : 'light'");
-    await evaluate(client, "document.querySelector('[data-public-theme-toggle=\"true\"]')?.click(); true");
+    const clickedPublicTheme = await evaluate(client, `(() => {
+      const button = document.querySelector('[data-public-theme-toggle="true"][data-hydrated="true"]');
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`);
+    assert(clickedPublicTheme, "hydrated public theme toggle must be clickable");
     await waitFor(client, `document.documentElement.classList.contains(${JSON.stringify(beforeTheme === "dark" ? "light" : "dark")})`, "public theme switch");
     await evaluate(client, "[...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان'))?.click(); true");
     await waitFor(client, "location.pathname === '/dashboard'", "landing-to-workspace navigation");

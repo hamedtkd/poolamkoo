@@ -29,6 +29,8 @@ test("release smoke uses an isolated profile and blocks remote financial integra
 
 test("release smoke covers landing, dashboard/dialog visibility, reports and PWA boundaries", () => {
   for (const contract of [
+    "public theme toggle hydration",
+    "hydrated public theme toggle must be clickable",
     "landing-to-workspace navigation",
     "fresh onboarding",
     "persisted onboarding completion",

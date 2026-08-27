@@ -1,5 +1,6 @@
 import type { MarketQuote } from "@/lib/types";
 import type { MarketDataProvider } from "@/lib/market/provider";
+import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
 
 type BrsMarketRow = {
   symbol?: string;
@@ -47,12 +48,22 @@ export class BrsApiProvider implements MarketDataProvider {
   constructor(private readonly apiKey: string) {}
 
   async getQuotes(): Promise<MarketQuote[]> {
-    const response = await fetch(`https://Api.BrsApi.ir/Market/Gold_Currency.php?key=${encodeURIComponent(this.apiKey)}`, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) throw new Error(`BrsApi ${response.status}`);
-    const payload = await response.json() as BrsPayload;
+    let response: Response;
+    try {
+      response = await fetch(`https://Api.BrsApi.ir/Market/Gold_Currency.php?key=${encodeURIComponent(this.apiKey)}`, {
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(6_000),
+      });
+    } catch (error) {
+      throw classifyMarketProviderError("brsapi", error);
+    }
+    if (!response.ok) throw providerErrorFromStatus("brsapi", response.status);
+    let payload: BrsPayload;
+    try {
+      payload = await response.json() as BrsPayload;
+    } catch {
+      throw new MarketProviderError("brsapi", "invalid_response");
+    }
     const gold = Array.isArray(payload.gold) ? payload.gold : [];
     const currency = Array.isArray(payload.currency) ? payload.currency : [];
     const crypto = Array.isArray(payload.cryptocurrency) ? payload.cryptocurrency : [];

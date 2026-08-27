@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { marketProviderWarning, runMarketProvider, summarizeMarketHealth } from "@/lib/market/reliability";
 import { TsetmcProvider } from "@/lib/market/tsetmc";
 
 export const dynamic = "force-dynamic";
@@ -7,20 +8,26 @@ export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
   if (query.length < 2) return NextResponse.json({ results: [] });
 
-  try {
-    const results = await new TsetmcProvider().search(query.slice(0, 80));
-    return NextResponse.json({
-      mode: "live",
-      results,
-      warning: results.length ? undefined : "نمادی در TSETMC پیدا نشد؛ می‌توانی نماد و قیمت را دستی ثبت کنی.",
-    });
-  } catch (error) {
+  const run = await runMarketProvider({
+    provider: "tsetmc",
+    operation: () => new TsetmcProvider().search(query.slice(0, 80)),
+    itemCount: (results) => results.length,
+  });
+  const results = run.value ?? [];
+  const health = summarizeMarketHealth([run.health]);
+  if (run.health.status === "unavailable") {
     return NextResponse.json({
       mode: "unavailable",
       results: [],
-      warning: error instanceof Error
-        ? `${error.message} قیمت دستی و Snapshotهای قبلی همچنان قابل استفاده‌اند.`
-        : "جست‌وجوی TSETMC در دسترس نیست؛ قیمت دستی همچنان قابل استفاده است.",
+      health,
+      warning: `${marketProviderWarning(run.health) ?? "جست‌وجوی TSETMC در دسترس نیست."} قیمت دستی و Snapshotهای قبلی همچنان قابل استفاده‌اند.`,
     }, { status: 502 });
   }
+
+  return NextResponse.json({
+    mode: "live",
+    results,
+    health,
+    warning: results.length ? undefined : "نمادی در TSETMC پیدا نشد؛ می‌توانی نماد و قیمت را دستی ثبت کنی.",
+  });
 }

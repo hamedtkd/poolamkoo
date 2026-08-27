@@ -32,6 +32,7 @@ export default function DashboardPage() {
         quotes={market.quotes}
         snapshots={filtered.snapshots}
         marketMode={market.mode}
+        marketDegraded={market.health?.degraded}
         marketLoading={market.loading}
         marketLastUpdated={market.lastUpdated}
         marketWarning={market.warning}

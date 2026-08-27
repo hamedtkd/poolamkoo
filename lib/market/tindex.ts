@@ -1,4 +1,5 @@
 import type { MarketCandle, MarketHistoryRange, MarketInstrument, MarketQuote } from "../types";
+import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
 
 type TindexStockRow = {
   slug?: string; ticker?: string; name?: string; last_price?: number | string | null;
@@ -182,12 +183,16 @@ export class TindexProvider {
 
   async getQuotes(marketIds: readonly string[]): Promise<MarketQuote[]> {
     const quotes: MarketQuote[] = [];
+    const failures: MarketProviderError[] = [];
     for (const marketId of [...new Set(marketIds)].slice(0, 1)) {
       try {
         const quote = await this.getQuote(marketId);
         if (quote) quotes.push(quote);
-      } catch { /* Keep the rest of the portfolio refresh usable. */ }
+      } catch (error) {
+        failures.push(classifyMarketProviderError("tindex", error));
+      }
     }
+    if (!quotes.length && failures.length) throw failures[0];
     return quotes;
   }
 
@@ -204,15 +209,24 @@ export class TindexProvider {
   }
 
   private async request<T>(path: string, revalidate: number): Promise<T> {
-    const response = await fetch(`${BASE_URL}${path}`, {
-      headers: { Authorization: `Bearer ${this.token}`, Accept: "application/json" },
-      next: { revalidate }, signal: AbortSignal.timeout(10_000),
-    });
-    const payload = await response.json().catch(() => null) as (T & { message?: string; message_en?: string }) | null;
-    if (!response.ok || !payload) {
-      const message = payload?.message || payload?.message_en || `Tindex ${response.status}`;
-      throw new Error(message);
+    let response: Response;
+    try {
+      response = await fetch(`${BASE_URL}${path}`, {
+        headers: { Authorization: `Bearer ${this.token}`, Accept: "application/json" },
+        next: { revalidate }, signal: AbortSignal.timeout(6_000),
+      });
+    } catch (error) {
+      throw classifyMarketProviderError("tindex", error);
     }
-    return payload;
+    if (!response.ok) throw providerErrorFromStatus("tindex", response.status);
+    try {
+      const payload = await response.json() as T | null;
+      if (!payload) throw new MarketProviderError("tindex", "invalid_response");
+      if ((payload as { success?: boolean }).success === false) throw new MarketProviderError("tindex", "upstream");
+      return payload;
+    } catch (error) {
+      if (error instanceof MarketProviderError) throw error;
+      throw new MarketProviderError("tindex", "invalid_response");
+    }
   }
 }

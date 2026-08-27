@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  marketProviderWarning,
+  providerIdle,
+  runMarketProvider,
+  summarizeMarketHealth,
+} from "@/lib/market/reliability";
 import { TindexProvider } from "@/lib/market/tindex";
 import { TsetmcProvider } from "@/lib/market/tsetmc";
 import type { ExchangeMarketSource, MarketHistoryRange } from "@/lib/types";
@@ -33,37 +39,69 @@ export async function GET(request: NextRequest) {
   const range = historyRange(request.nextUrl.searchParams.get("range"));
   const source = exchangeSource(request.nextUrl.searchParams.get("source"), marketId);
 
-  try {
-    if (marketId && source === "tsetmc") {
-      const candles = await new TsetmcProvider().getCandles(marketId, range);
-      return candles.length
-        ? response({ mode: "live", candles, source: "tsetmc", range, fetchedAt: new Date().toISOString() })
-        : response({ mode: "unavailable", candles: [], range, warning: "TSETMC برای این بازه تاریخچه قابل استفاده‌ای برنگرداند." });
-    }
-
-    if (marketId && source === "tindex") {
-      if (!token) return response({ mode: "unconfigured", candles: [], range, warning: "این اتصال قدیمی Tindex است؛ برای تاریخچه پایدارتر نماد را به TSETMC دوباره متصل کن." });
-      const candles = await new TindexProvider(token).getExchangeCandles(marketId, range);
-      return candles.length
-        ? response({ mode: "live", candles, source: "tindex", range, fetchedAt: new Date().toISOString() })
-        : response({ mode: "unavailable", candles: [], range, warning: "Tindex برای این بازه تاریخچه قابل استفاده‌ای برنگرداند." });
-    }
-
-    const coreSlug = CORE_HISTORY_SLUGS[symbol];
-    if (!coreSlug) return response({ mode: "unavailable", candles: [], range, warning: "تاریخچه آنلاین این نماد فعلاً پشتیبانی نمی‌شود." });
-    if (!token) return response({ mode: "unconfigured", candles: [], range, warning: "تاریخچه آنلاین دلار/طلا به Tindex اختیاری نیاز دارد؛ Snapshotهای واقعی دستگاه fallback هستند." });
-
-    const candles = await new TindexProvider(token).getIndicatorCandles(coreSlug, range);
-    return candles.length
-      ? response({ mode: "live", candles, source: "tindex", range, fetchedAt: new Date().toISOString() })
-      : response({ mode: "unavailable", candles: [], range, warning: "برای این بازه تاریخچه قابل استفاده‌ای دریافت نشد." });
-  } catch (error) {
-    const provider = marketId ? (source === "tsetmc" ? "TSETMC" : "Tindex") : "Tindex";
+  if (marketId && source === "tsetmc") {
+    const run = await runMarketProvider({
+      provider: "tsetmc",
+      requestedCount: 1,
+      operation: () => new TsetmcProvider().getCandles(marketId, range),
+      itemCount: (candles) => candles.length ? 1 : 0,
+    });
+    const candles = run.value ?? [];
+    const health = summarizeMarketHealth([run.health]);
+    if (candles.length) return response({ mode: "live", candles, source: "tsetmc", range, health, fetchedAt: new Date().toISOString() });
     return response({
       mode: "unavailable",
       candles: [],
       range,
-      warning: error instanceof Error ? `${provider}: ${error.message}` : "تاریخچه بازار در دسترس نیست.",
-    }, 502);
+      health,
+      warning: marketProviderWarning(run.health, "TSETMC برای این بازه تاریخچه قابل استفاده‌ای برنگرداند."),
+    }, run.health.status === "unavailable" ? 502 : 200);
   }
+
+  if (marketId && source === "tindex") {
+    if (!token) {
+      const health = summarizeMarketHealth([providerIdle("tindex", false)]);
+      return response({ mode: "unconfigured", candles: [], range, health, warning: "این اتصال قدیمی Tindex است؛ برای تاریخچه پایدارتر نماد را به TSETMC دوباره متصل کن." });
+    }
+    const run = await runMarketProvider({
+      provider: "tindex",
+      requestedCount: 1,
+      operation: () => new TindexProvider(token).getExchangeCandles(marketId, range),
+      itemCount: (candles) => candles.length ? 1 : 0,
+    });
+    const candles = run.value ?? [];
+    const health = summarizeMarketHealth([run.health]);
+    if (candles.length) return response({ mode: "live", candles, source: "tindex", range, health, fetchedAt: new Date().toISOString() });
+    return response({
+      mode: "unavailable",
+      candles: [],
+      range,
+      health,
+      warning: marketProviderWarning(run.health, "Tindex برای این بازه تاریخچه قابل استفاده‌ای برنگرداند."),
+    }, run.health.status === "unavailable" ? 502 : 200);
+  }
+
+  const coreSlug = CORE_HISTORY_SLUGS[symbol];
+  if (!coreSlug) return response({ mode: "unavailable", candles: [], range, health: summarizeMarketHealth([]), warning: "تاریخچه آنلاین این نماد فعلاً پشتیبانی نمی‌شود." });
+  if (!token) {
+    const health = summarizeMarketHealth([providerIdle("tindex", false)]);
+    return response({ mode: "unconfigured", candles: [], range, health, warning: "تاریخچه آنلاین دلار/طلا به Tindex اختیاری نیاز دارد؛ Snapshotهای واقعی دستگاه fallback هستند." });
+  }
+
+  const run = await runMarketProvider({
+    provider: "tindex",
+    requestedCount: 1,
+    operation: () => new TindexProvider(token).getIndicatorCandles(coreSlug, range),
+    itemCount: (candles) => candles.length ? 1 : 0,
+  });
+  const candles = run.value ?? [];
+  const health = summarizeMarketHealth([run.health]);
+  if (candles.length) return response({ mode: "live", candles, source: "tindex", range, health, fetchedAt: new Date().toISOString() });
+  return response({
+    mode: "unavailable",
+    candles: [],
+    range,
+    health,
+    warning: marketProviderWarning(run.health, "برای این بازه تاریخچه قابل استفاده‌ای دریافت نشد."),
+  }, run.health.status === "unavailable" ? 502 : 200);
 }

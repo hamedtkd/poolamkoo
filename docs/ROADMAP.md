@@ -163,6 +163,15 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Tighten compact-desktop/sidebar behavior, mobile safe-bottom spacing and route Skeleton fidelity.
 - Keep IndexedDB schema 6, local-first data ownership, workspace-only PWA initialization and Background Push backlog unchanged.
 
+## v0.30 — Market provider production reliability ✅
+
+- Introduce one shared provider-health model for BrsApi, TSETMC and optional Tindex with stable failure categories instead of leaking arbitrary upstream error text.
+- Bound direct TSETMC access with a per-request timeout plus a shared refresh budget so large portfolios cannot stretch one market refresh indefinitely.
+- Run independent BrsApi, TSETMC and legacy-Tindex quote work in parallel; keep Tindex core fallback conditional so the free quota is not consumed when BrsApi is complete.
+- Return provider health metadata from quote/search/history routes and preserve an explicit `live + degraded` state in the client when only part of the market refresh succeeds.
+- Keep real IndexedDB snapshots and manual prices as the honest fallback; do not fabricate current quotes or historical candles.
+- Preserve existing legacy Tindex links without migration, keep IndexedDB schema 6, and leave Background Push disabled by default.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
