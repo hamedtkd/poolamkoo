@@ -30,6 +30,11 @@ test("release smoke uses an isolated profile and blocks remote financial integra
 test("release smoke covers landing, dashboard/dialog visibility, reports and PWA boundaries", () => {
   for (const contract of [
     "public theme toggle hydration",
+    "legacy schema 6 fixture must use native IndexedDB version 60",
+    "schema 6 profile must upgrade in place to schema 7",
+    "legacy linked assets must normalize to Tindex during schema 7 migration",
+    "Tindex and TSETMC rows with the same raw marketId must coexist after migration",
+    "migration fixture cleanup must restore a fresh public origin",
     "hydrated public theme toggle must be clickable",
     "landing-to-workspace navigation",
     "fresh onboarding",

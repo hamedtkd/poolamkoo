@@ -170,3 +170,10 @@ Runtime quote selection became provider-scoped in v0.33, but the older IndexedDB
 The Dexie chain keeps schema 6 explicitly and upgrades to 7 in place. During migration, an exchange-linked asset with `marketId` but no valid `marketSource`, or a Watchlist/Alert row without a valid `source`, is treated as legacy Tindex. That default is historically safe because those rows predate direct TSETMC linking. Explicit `tsetmc` rows are preserved. Backup/Recovery/Device Transfer payloads are normalized with the same rule before writing into schema 7; Watchlist duplicates within one provider are rejected during preview validation, while the same raw market id from different providers is valid.
 
 No backup envelope format, database name, table primary key, market-provider priority or financial-data boundary changes in this release. The schema bump exists only because persisted market identity now requires a real compound index.
+
+
+## Verified schema migration release boundary (v0.35)
+
+The schema-7 model introduced in v0.34 is unchanged. v0.35 instead verifies the upgrade path in the same production-browser gate used for routing, dialogs, Reports and PWA boundaries. `scripts/fixtures/schema6-idb.mjs` mirrors the exact `storesV6` contract and builds a raw IndexedDB database at native version 60; Dexie maps declared version 6 to that native version. The current application must then open the same `poolyar-local` database and reach native version 70/schema 7 before the smoke proceeds.
+
+The browser assertion reads the migrated stores directly: legacy exchange rows must gain `tindex`, explicit `tsetmc` rows must remain unchanged, the provider-scoped compound indexes must exist, and raw `marketId` may no longer be globally unique in Watchlist. A second TSETMC row with the same raw market id as a migrated Tindex row is inserted as a collision proof. The temporary fixture is then cleared before the existing fresh-profile smoke continues, so migration verification cannot contaminate onboarding, product-media data or the user's real browser storage.

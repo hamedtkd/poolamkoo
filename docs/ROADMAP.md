@@ -211,6 +211,15 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep the database name, primary keys, backup envelope versions and direct-transfer protocol compatible; no server-side financial storage or telemetry is introduced.
 - Keep BrsApi core priority, direct TSETMC exchange behavior, Tindex legacy/emergency role, decision-safe Snapshot rules and Background Push backlog unchanged.
 
+## v0.35 — Verified schema migration release gate ✅
+
+- Turn the v0.34 schema 6 → 7 upgrade from manual-only QA into a production-browser release contract.
+- Seed the exact legacy schema-6 store layout in the isolated browser profile, then require the current app to upgrade that same IndexedDB database in place.
+- Verify legacy linked assets/watchlist/alerts normalize to Tindex, explicit TSETMC rows remain TSETMC, and provider-scoped compound indexes exist after upgrade.
+- Prove Tindex and TSETMC Watchlist rows with the same raw `marketId` can coexist after migration.
+- Clear the migration fixture before the normal fresh-onboarding/dashboard/reports/mobile/PWA smoke so release tests remain independent and deterministic.
+- Keep IndexedDB schema 7, backup/transfer formats, provider priority, zero-cost deployment boundaries and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

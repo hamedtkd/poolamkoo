@@ -1,4 +1,5 @@
 # پولم‌کو
+> نکته v0.35: Release Gate مرورگر حالا یک IndexedDB واقعی schema 6 می‌سازد و migration درجا 6→7، نرمال‌سازی Provider، indexهای compound و هم‌زیستی TSETMC/Tindex با market id یکسان را قبل از Smoke معمول Workspace/PWA بررسی می‌کند. خود schema همچنان 7 است.
 > نکته v0.34: هویت ماندگار بازار هم حالا Provider + market id است. IndexedDB به schema 7 ارتقا می‌یابد، لینک‌های legacy Tindex در دارایی/دیده‌بان/هشدار امن نرمال می‌شوند، uniqueness دیده‌بان provider-scoped است و بکاپ‌های قدیمی بدون تغییر format قبل از Restore نرمال می‌شوند.
 > نکته v0.33: هویت Quote برای دارایی‌های متصل تا انتهای Portfolio/Watchlist/Alerts/Planning/Reports با Provider + market id حفظ می‌شود. Snapshot برای تداوم نمایش باقی می‌ماند اما دیگر مبنای هشدار، اولویت پول جدید، تقسیم خودکار رشد، قیمت پیشنهادی تراکنش یا رتبه‌بندی بهترین/بدترین نیست؛ CSV جزئی هم منبع ارزش‌گذاری را ثبت می‌کند.
 > نکته v0.32: Refresh ناقص بازار حالا Quoteهای تازه را نگه می‌دارد و فقط برای Quoteهای اصلی/نمادهای واقعاً درخواست‌شده از آخرین Snapshot واقعی همان مسیر استفاده می‌کند؛ منبع Snapshot در UI مشخص است، پوشش تازه/محلی در Settings دیده می‌شود و هشدار محلی هیچ‌وقت با Quote فقط-Snapshot اجرا نمی‌شود.

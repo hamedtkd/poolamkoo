@@ -5,6 +5,13 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createPoolamkooMediaDemoData, POOLAMKOO_MEDIA_ANCHOR } from "./media/demo-data.mjs";
+import {
+  CURRENT_SCHEMA7_NATIVE_VERSION,
+  LEGACY_SCHEMA6_NATIVE_VERSION,
+  legacySchema6SeedExpression,
+  migratedSchema7InspectionExpression,
+  providerCollisionInsertExpression,
+} from "./fixtures/schema6-idb.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -170,6 +177,30 @@ async function dragElementDown(client, selector, distance = 180) {
   await client.call("Input.dispatchMouseEvent", { type: "mouseReleased", x: point.x, y: point.y + distance, button: "left", buttons: 0, clickCount: 1 });
 }
 
+async function verifyLegacySchemaMigration(client, origin) {
+  const seededVersion = await evaluate(client, legacySchema6SeedExpression(POOLAMKOO_MEDIA_ANCHOR));
+  assert(seededVersion === LEGACY_SCHEMA6_NATIVE_VERSION, "legacy schema 6 fixture must use native IndexedDB version 60");
+
+  await navigate(client, `${origin}/dashboard`, "قانون پول فعلی");
+  const migrated = await evaluate(client, migratedSchema7InspectionExpression());
+  assert(migrated?.nativeVersion === CURRENT_SCHEMA7_NATIVE_VERSION, "schema 6 profile must upgrade in place to schema 7");
+  assert(migrated?.assets?.some((row) => row.marketId === "shared-market-id" && row.marketSource === "tindex"), "legacy linked assets must normalize to Tindex during schema 7 migration");
+  assert(migrated?.watchlist?.some((row) => row.marketId === "shared-market-id" && row.source === "tindex"), "legacy watchlist rows must survive migration with Tindex identity");
+  assert(migrated?.alerts?.some((row) => row.marketId === "legacy-alert-id" && row.source === "tindex"), "legacy market alerts must survive migration with Tindex identity");
+  assert(migrated?.alerts?.some((row) => row.marketId === "explicit-tsetmc-id" && row.source === "tsetmc"), "explicit TSETMC identity must survive schema 7 migration");
+  assert(migrated?.watchIndexes?.includes("[source+marketId]") && migrated?.alertIndexes?.includes("[source+marketId]"), "schema 7 must expose provider-scoped market indexes after migration");
+  assert(migrated?.watchMarketIdUnique === false, "raw marketId must stop being globally unique after schema 7 migration");
+
+  const collisions = await evaluate(client, providerCollisionInsertExpression(POOLAMKOO_MEDIA_ANCHOR));
+  assert(JSON.stringify(collisions) === JSON.stringify([
+    { marketId: "shared-market-id", source: "tindex" },
+    { marketId: "shared-market-id", source: "tsetmc" },
+  ]), "Tindex and TSETMC rows with the same raw marketId must coexist after migration");
+
+  await navigate(client, "about:blank");
+  await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
+}
+
 async function seedDemoData(client) {
   const data = createPoolamkooMediaDemoData();
   await evaluate(client, `(async () => {
@@ -285,6 +316,10 @@ async function main() {
     })()`);
     assert(clickedPublicTheme, "hydrated public theme toggle must be clickable");
     await waitFor(client, `document.documentElement.classList.contains(${JSON.stringify(beforeTheme === "dark" ? "light" : "dark")})`, "public theme switch");
+
+    await verifyLegacySchemaMigration(client, origin);
+    await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
+    assert(await evaluate(client, "navigator.serviceWorker.getRegistrations().then((rows) => rows.length === 0)"), "migration fixture cleanup must restore a fresh public origin");
     await evaluate(client, "[...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان'))?.click(); true");
     await waitFor(client, "location.pathname === '/dashboard'", "landing-to-workspace navigation");
     await waitFor(client, "document.body?.innerText.includes('پولت را از همان چیزی که واقعاً داری شروع کن')", "fresh onboarding");
@@ -383,7 +418,7 @@ async function main() {
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: schema 6→7 migration, landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

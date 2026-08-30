@@ -264,8 +264,10 @@ git push origin vX.Y.Z
 - [ ] `prefers-reduced-motion: reduce` تمام حرکت‌های ورود Workspace را غیرفعال کند
 
 
-## v0.34 market identity migration
+## v0.34/v0.35 market identity migration
 
-- [ ] Upgrade an existing schema 6 profile and verify legacy `marketId` assets/watchlist/alerts remain available after the in-place schema 7 migration.
-- [ ] Verify a TSETMC and a Tindex row with the same raw `marketId` can coexist in Watchlist and are selected independently in chart/alert flows.
-- [ ] Restore a schema 6 backup and verify missing legacy provider fields normalize to Tindex before persistence; duplicate Watchlist identity within one provider must be rejected before destructive replacement.
+The first two migration checks below are now automated inside `npm run check:release` using a temporary raw schema-6 IndexedDB fixture. Backup compatibility remains covered by the unit/portability suite and can still be spot-checked manually before a high-risk release.
+
+- [x] Upgrade an existing schema 6 profile and verify legacy `marketId` assets/watchlist/alerts remain available after the in-place schema 7 migration.
+- [x] Verify a TSETMC and a Tindex row with the same raw `marketId` can coexist after migration; provider-scoped runtime selection remains covered by market identity unit tests.
+- [ ] Optional manual spot-check: restore a real schema 6 backup and verify missing legacy provider fields normalize to Tindex before persistence; duplicate Watchlist identity within one provider must be rejected before destructive replacement.
