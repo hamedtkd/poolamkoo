@@ -207,3 +207,10 @@ The production browser release fixture starts from raw schema 6/native version 6
 For a valid amount correction, only each plan item's still-unexecuted remainder participates in proportional rescaling. Executed amounts remain fixed floors. If every plan card is already complete and the income amount increases, the difference stays unplanned instead of silently extending completed cards. Allocation rows are then synchronized to the corrected plan totals using exact integer-Toman distribution.
 
 The editor creates a Recovery Snapshot before mutation, then re-reads and revalidates live income/plan/allocation/transaction state inside one Dexie transaction before writing. New and edited income dates also reject future dates. This release does not change IndexedDB schema 8 or any backup/transfer format.
+
+
+## Local data health boundary (v0.40)
+
+`lib/data-health.ts` is a pure cross-ledger audit layer. It does not mutate IndexedDB and does not depend on network state. The audit checks referential integrity between Income/Allocation/Plan/Transaction rows, chronological Fund and Investment ledger invariants, archived open holdings, plan execution bounds, provider-scoped Watchlist identity, and exact duplicate alert conditions. Ambiguous historical problems are reported rather than guessed.
+
+`lib/data-health-store.ts` is the narrow mutation boundary for deterministic repair. It may resynchronize only denormalized values that have a single authoritative source: `fund.currentToman` from a valid Fund Movement replay and asset-plan `executedToman` from linked buy transactions. A Recovery Snapshot is created before repair, and the authoritative tables are re-read inside one Dexie transaction before writes. No schema bump, server persistence, telemetry, or automatic record deletion is introduced.

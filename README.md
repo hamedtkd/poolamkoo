@@ -1,4 +1,5 @@
 # Poolamkoo — پولم‌کو
+> v0.40 note: Settings now includes a fully local data-health audit for cross-ledger integrity. It detects orphan links, negative historical ledgers, stale fund/plan summary fields, archived open holdings and duplicate market identities; deterministic summary drift can be repaired only after a Recovery Snapshot. IndexedDB stays schema 8.
 > v0.39 note: Incoming-money corrections now preserve executed history. Amount edits cannot go below already executed money, only unexecuted plan amounts are rescaled, execution locks the income date, future dates are rejected, and every valid correction creates a local Recovery Snapshot. IndexedDB stays schema 8.
 > v0.38 note: Goal-fund balances now have an auditable local movement ledger. Manual deposits/withdrawals support date, note, edit/delete with chronological non-negative validation; plan/direct allocation and income-reversal flows use the same ledger. Existing balances migrate in place to one opening movement. IndexedDB is schema 8.
 > v0.36 note: Investment transactions can now be corrected in place with a recovery snapshot and chronological ledger validation. Backdated sells, edits, and deletes are rejected when they would make historical holdings negative; same-day buys are treated as available for same-day sells because Poolamkoo stores transaction dates, not intraday times. IndexedDB stays schema 7.
@@ -179,6 +180,7 @@ This model means:
 - Clearing site data can remove local records.
 - Private browsing is not appropriate for durable storage.
 - Regular exported backups are important for serious use.
+- Settings can audit cross-ledger consistency entirely on-device and only repairs deterministic summary drift after creating a Recovery Snapshot.
 
 See [SECURITY.md](./SECURITY.md) for the security and data-safety model.
 

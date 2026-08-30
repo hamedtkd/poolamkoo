@@ -259,9 +259,17 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Create a Recovery Snapshot before every valid correction and revalidate live state inside one atomic Dexie write boundary.
 - Keep IndexedDB schema 8, backup/transfer formats, provider priority and Background Push backlog unchanged.
 
+## v0.40 — Local data health & consistency audit ✅
+
+- Add an on-device Settings audit across income/allocation links, fund movements, investment transactions, plan targets/progress, archived holdings and persisted market identities.
+- Surface orphan references, invalid records, historical negative-ledger states and execution overruns without silently deleting or rewriting ambiguous financial history.
+- Treat `fund.currentToman` and asset-plan `executedToman` as repairable only when their authoritative ledger/linked transactions are valid and deterministic.
+- Create a Recovery Snapshot before any repair and re-read live data inside one Dexie transaction before synchronizing those derived summary fields.
+- Keep the audit completely local: no diagnostic upload, analytics event expansion, account requirement or hosted financial backend.
+- Keep IndexedDB schema 8, backup/transfer formats, provider priority and Background Push backlog unchanged.
+
 ## Likely next phases
 
-- **v0.40 — Local data health & consistency audit:** detect cross-ledger inconsistencies locally and offer explicit Recovery-Snapshot-backed repair only where deterministic.
 - **v0.41 — Unified financial activity history:** combine income, fund movements and investment transactions into one factual local timeline without adding expense tracking.
 - **v0.42 — Reports & reconciliation upgrade:** expose recorded money-flow reconciliation across incoming money, plans, funds and investments without forecasting or buy/sell advice.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
