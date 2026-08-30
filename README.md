@@ -1,4 +1,5 @@
 # Poolamkoo — پولم‌کو
+> v0.32 note: Partial market refreshes now keep fresh provider rows while filling only relevant missing quotes from the latest real local snapshots; snapshot provenance is visible across the app, coverage is explicit in Settings diagnostics, and snapshot-only quotes never trigger local market alerts.
 > v0.31 note: Settings now exposes live provider status for BrsApi/TSETMC/Tindex plus a privacy-safe copyable market diagnostic containing only operational health metadata—never prices, symbols, asset names, market IDs, amounts, raw upstream text, or provider secrets.
 > v0.30 note: Market requests now use provider health/failure classification, bounded TSETMC request budgets, parallel independent refreshes, safe user-facing errors, and explicit degraded-state metadata while preserving real local snapshots/manual prices and optional legacy Tindex fallback.
 > v0.29 note: Reports now has local CSV export plus a share-safe summary with no amounts/asset names; the mobile More/search surfaces are calmer, the drawer truly dismisses by dragging its handle down, and workspace card motion now follows one top-to-bottom direction.
@@ -86,6 +87,8 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 - One shared market store across the application
 - One initial fetch plus explicit manual refresh
 - Settings provider-health view with a privacy-safe copyable diagnostic that excludes prices, symbols, asset names, market IDs, amounts, raw upstream text, and secrets
+- Partial-refresh continuity: fresh quotes always win, while only missing core/requested exchange quotes can reuse their latest real local Snapshot
+- Snapshot provenance is visible on Dashboard, portfolio, watchlist and market details; local alerts wait for a fresh quote instead of evaluating a Snapshot fallback
 - Real snapshots stored locally
 - Real 1-month and 3-month TSETMC history for linked exchange assets; optional Tindex history for USD/18K gold
 - Line history for public indicators and real exchange candlesticks, with local snapshots as fallback

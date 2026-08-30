@@ -49,7 +49,7 @@ export function marketWatchlistRows({ watchlist, quotes, assets, query = "", fil
 export function watchlistSummary(rows: WatchlistRow[]) {
   return {
     total: rows.length,
-    gainers: rows.filter((row) => (row.quote?.changePercent ?? 0) > 0).length,
+    gainers: rows.filter((row) => row.quote?.runtimeSource !== "snapshot" && (row.quote?.changePercent ?? 0) > 0).length,
     discounts: rows.filter((row) => row.premium !== null && row.premium < -0.5).length,
     premiums: rows.filter((row) => row.premium !== null && row.premium > 0.5).length,
   };

@@ -23,6 +23,7 @@ export function AppTopbar({
   onToggleTheme: (origin?: ThemeOrigin) => void | Promise<void>;
   hideFinancialData: boolean;
 }) {
+  const marketLabel = market?.coverage?.snapshot ? "بازار: تازه + Snapshot محلی" : market?.health?.degraded ? "بازار: به‌روزرسانی ناقص" : "به‌روزرسانی بازار";
   return (
     <div className="sticky top-0 z-20 -mx-3 -mt-3 mb-4 hidden h-16 items-center gap-3 border-b bg-background/88 px-4 backdrop-blur-xl sm:-mx-5 sm:-mt-5 sm:px-5 md:flex lg:-mx-7 lg:-mt-7 lg:px-7 2xl:-mx-8 2xl:-mt-8 2xl:px-8">
       <div className="flex min-w-0 items-center gap-2">
@@ -36,7 +37,7 @@ export function AppTopbar({
       </button>
 
       <div className="flex items-center gap-1.5">
-        <Tool label="به‌روزرسانی بازار"><MarketRefreshButton market={market} dataTour="market-refresh" className="size-10 border bg-background/72" /></Tool>
+        <Tool label={marketLabel}><MarketRefreshButton market={market} dataTour="market-refresh" className="size-10 border bg-background/72" /></Tool>
         <Tool label={hideFinancialData ? "نمایش اعداد" : "مخفی کردن اعداد"}><PrivacyToggle hidden={hideFinancialData} showLabel={false} className="size-10 px-0" /></Tool>
         <Tool label={resolvedTheme === "dark" ? "حالت روشن" : "حالت تاریک"}><ThemeToggle dataTour="theme-toggle" resolvedTheme={resolvedTheme} onToggle={onToggleTheme} className="size-10 border bg-background/72" /></Tool>
         <Tool label="راهنمای سریع">

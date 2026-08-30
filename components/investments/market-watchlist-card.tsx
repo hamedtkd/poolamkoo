@@ -80,7 +80,7 @@ function WatchCard({ row, settings, onDetail, onCreateAsset, onCreateAlert }: { 
       <Metric label="فاصله از NAV" value={row.premium === null ? "—" : `${row.premium >= 0 ? "+" : ""}${formatPercent(row.premium)}`} tone={row.premium === null ? undefined : row.premium <= 0 ? "positive" : "negative"} />
     </div>
     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
-      <MarketSourceLabel source={quote?.source ?? row.item.source} compact className="text-[10px] text-muted-foreground" />
+      <MarketSourceLabel source={quote?.source ?? row.item.source} compact snapshot={quote?.runtimeSource === "snapshot"} snapshotAt={quote?.snapshotCapturedAt} className="text-[10px] text-muted-foreground" />
       <div className="flex flex-wrap gap-1.5"><Button size="sm" variant="outline" onClick={() => onCreateAlert({ marketId: row.item.marketId, symbol: row.item.symbol, name: row.item.name, source: row.item.source, priceToman: quote?.priceToman, navToman: quote?.navToman, changePercent: quote?.changePercent })}><RiNotification3Line /> هشدار</Button><Button size="sm" variant="outline" onClick={onDetail}><RiLineChartLine /> جزئیات</Button>{!row.owned && <Button size="sm" onClick={() => onCreateAsset({ id: row.item.marketId, symbol: row.item.symbol, name: row.item.name, priceToman: quote?.priceToman, changePercent: quote?.changePercent, source: row.item.source })}><RiWallet3Line /> افزودن به سبد</Button>}</div>
     </div>
   </div>;

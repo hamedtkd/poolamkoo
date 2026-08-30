@@ -35,3 +35,10 @@ test("watchlist summary and NAV labels are decision oriented", () => {
   assert.equal(navSignal(4).tone, "negative");
   assert.equal(navSignal(0.2).label, "نزدیک NAV");
 });
+
+
+test("watchlist today summary does not treat snapshot fallback as a fresh gainer", () => {
+  const snapshotQuotes = quotes.map((quote, index) => index === 0 ? { ...quote, runtimeSource: "snapshot" as const, snapshotCapturedAt: "2026-08-27T08:00:00.000Z" } : quote);
+  const rows = marketWatchlistRows({ watchlist, quotes: snapshotQuotes, assets });
+  assert.equal(watchlistSummary(rows).gainers, 1);
+});

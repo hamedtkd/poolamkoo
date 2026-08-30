@@ -2,6 +2,7 @@
 
 import { RiRefreshLine } from "react-icons/ri";
 import type { MarketHealthSummary } from "@/lib/market/reliability";
+import type { MarketCoverage } from "@/lib/market/runtime";
 import { cn } from "@/lib/utils";
 
 export type MarketRefreshControls = {
@@ -9,6 +10,7 @@ export type MarketRefreshControls = {
   lastUpdated: string | null;
   mode?: string;
   health?: MarketHealthSummary;
+  coverage?: MarketCoverage;
   warning?: string;
   refresh: () => void | Promise<void>;
 };
@@ -35,8 +37,10 @@ export function MarketRefreshButton({
     ? "در حال دریافت قیمت‌های بازار"
     : controls.mode === "offline"
       ? "نمایش آخرین قیمت ذخیره‌شده"
-      : controls.health?.degraded
-        ? "قیمت‌ها دریافت شد؛ بعضی منابع بازار مشکل دارند"
+      : controls.coverage?.snapshot
+        ? `بازار ترکیبی: ${new Intl.NumberFormat("fa-IR").format(controls.coverage.live)} تازه و ${new Intl.NumberFormat("fa-IR").format(controls.coverage.snapshot)} Snapshot محلی`
+        : controls.health?.degraded
+          ? "قیمت‌ها دریافت شد؛ بعضی منابع بازار مشکل دارند"
         : controls.mode === "live"
           ? "قیمت‌های بازار به‌روز هستند"
           : controls.mode === "unconfigured"
@@ -61,7 +65,7 @@ export function MarketRefreshButton({
       )}
     >
       <RiRefreshLine className={cn("size-4 shrink-0", controls.loading && "animate-spin")} />
-      {showLabel && <span>{controls.loading ? "در حال دریافت..." : controls.health?.degraded ? "به‌روزرسانی ناقص" : market ? "به‌روزرسانی بازار" : "بازار در حال آماده‌سازی"}</span>}
+      {showLabel && <span>{controls.loading ? "در حال دریافت..." : controls.coverage?.snapshot ? "تازه + Snapshot" : controls.health?.degraded ? "به‌روزرسانی ناقص" : market ? "به‌روزرسانی بازار" : "بازار در حال آماده‌سازی"}</span>}
     </button>
   );
 }

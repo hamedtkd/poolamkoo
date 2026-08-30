@@ -6,6 +6,7 @@ import type {
   MarketProviderId,
   MarketProviderStatus,
 } from "./reliability.ts";
+import type { MarketCoverage } from "./runtime.ts";
 
 export const MARKET_PROVIDER_ORDER = ["brsapi", "tsetmc", "tindex"] as const satisfies readonly MarketProviderId[];
 
@@ -74,33 +75,51 @@ export function marketProviderActivityLabel(health?: MarketProviderHealth) {
 
   const parts: string[] = [];
   if (health.requestedCount !== undefined) {
-    parts.push(`${new Intl.NumberFormat("fa-IR").format(health.itemCount ?? 0)} از ${new Intl.NumberFormat("fa-IR").format(health.requestedCount)} مورد`);
+    parts.push(`${faNumber(health.itemCount ?? 0)} از ${faNumber(health.requestedCount)} مورد`);
   } else if (health.itemCount !== undefined) {
-    parts.push(`${new Intl.NumberFormat("fa-IR").format(health.itemCount)} مورد`);
+    parts.push(`${faNumber(health.itemCount)} مورد`);
   }
-  if (health.latencyMs !== undefined) parts.push(`${new Intl.NumberFormat("fa-IR").format(health.latencyMs)} ms`);
+  if (health.latencyMs !== undefined) parts.push(`${faNumber(health.latencyMs)} ms`);
   const failure = marketProviderFailureLabel(health.failure);
   if (failure) parts.push(failure);
   return parts.length ? parts.join(" · ") : "در این refresh پاسخ Provider دریافت شد.";
 }
 
-export function marketRuntimeStatus(mode?: string, health?: MarketHealthSummary) {
+export function marketRuntimeStatus(mode?: string, health?: MarketHealthSummary, coverage?: MarketCoverage) {
   if (mode === "loading") return { label: "در حال بررسی بازار", detail: "آخرین Snapshot محلی نمایش داده می‌شود تا refresh کامل شود." };
   if (mode === "offline") return { label: "Snapshot محلی", detail: "قیمت تازه در دسترس نیست؛ فقط داده واقعی ذخیره‌شده یا قیمت دستی استفاده می‌شود." };
-  if (mode === "live" && health?.degraded) return { label: "زنده، با محدودیت", detail: "بخشی از منابع تازه پاسخ داده‌اند و fallback واقعی برای بخش‌های ناموفق حفظ شده است." };
+  if (mode === "live" && coverage?.snapshot) return { label: "زنده + Snapshot", detail: "بخش تازه بازار به‌روز شد و مسیرهای ناموفق با آخرین Snapshot واقعی همان نمادها پر شده‌اند." };
+  if (mode === "live" && health?.degraded) return { label: "زنده، با محدودیت", detail: "بخشی از منابع تازه پاسخ داده‌اند؛ برای داده‌های بدون Snapshot قیمت دستی یا حالت ناموجود حفظ می‌شود." };
   if (mode === "live") return { label: "بازار زنده", detail: "داده تازه از Providerهای موردنیاز دریافت شده است." };
   if (mode === "unconfigured") return { label: "منبع اصلی تنظیم نشده", detail: "بورس مستقیم می‌تواند بدون کلید کار کند؛ نرخ‌های پایه به BrsApi یا fallback اختیاری نیاز دارند." };
   if (mode === "unavailable") return { label: "بازار تازه در دسترس نیست", detail: "پولم‌کو داده ساختگی نمی‌سازد و به Snapshot واقعی یا قیمت دستی برمی‌گردد." };
   return { label: "وضعیت بازار آماده نیست", detail: "پس از اولین refresh وضعیت Providerها اینجا نمایش داده می‌شود." };
 }
 
+export function marketCoverageLabel(coverage?: MarketCoverage) {
+  if (!coverage?.total) return "هنوز Quote فعالی برای نمایش نداریم.";
+  if (coverage.snapshot && coverage.live) return `${faNumber(coverage.live)} تازه · ${faNumber(coverage.snapshot)} Snapshot محلی`;
+  if (coverage.snapshot) return `${faNumber(coverage.snapshot)} Snapshot محلی`;
+  return `${faNumber(coverage.live)} Quote تازه`;
+}
+
+export function marketSnapshotCoverageDetail(coverage?: MarketCoverage) {
+  if (!coverage?.snapshot || !coverage.oldestSnapshotAt) return undefined;
+  const date = new Date(coverage.oldestSnapshotAt);
+  if (!Number.isFinite(date.getTime())) return undefined;
+  const formatted = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { dateStyle: "medium", timeStyle: "short" }).format(date);
+  return `قدیمی‌ترین Snapshot فعال این refresh: ${formatted}`;
+}
+
 export function formatMarketDiagnostics({
   mode,
   health,
+  coverage,
   lastUpdated,
 }: {
   mode?: string;
   health?: MarketHealthSummary;
+  coverage?: MarketCoverage;
   lastUpdated?: string | null;
 }) {
   const lines = [
@@ -108,6 +127,10 @@ export function formatMarketDiagnostics({
     `market_mode=${mode || "unknown"}`,
     `market_degraded=${health?.degraded ? "yes" : "no"}`,
     `last_updated=${lastUpdated || "none"}`,
+    `coverage_live=${coverage?.live ?? 0}`,
+    `coverage_snapshot=${coverage?.snapshot ?? 0}`,
+    `coverage_total=${coverage?.total ?? 0}`,
+    `oldest_snapshot_at=${coverage?.oldestSnapshotAt ?? "none"}`,
   ];
 
   for (const provider of MARKET_PROVIDER_ORDER) {
@@ -129,4 +152,8 @@ export function formatMarketDiagnostics({
 
   lines.push("privacy=financial-values-and-identifiers-excluded");
   return lines.join("\n");
+}
+
+function faNumber(value: number) {
+  return new Intl.NumberFormat("fa-IR").format(value);
 }

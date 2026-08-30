@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/format";
 import { marketAlertKindLabel, marketAlertTransition } from "@/lib/market/alerts";
+import { freshMarketQuotes } from "@/lib/market/runtime";
 import type { MarketAlert, MarketQuote, MoneyUnit } from "@/lib/types";
 
 function notificationBody(alert: MarketAlert, quote: MarketQuote, unit: MoneyUnit) {
@@ -35,7 +36,7 @@ async function showNotification(alert: MarketAlert, quote: MarketQuote, unit: Mo
 export function useMarketAlerts(alerts: MarketAlert[], quotes: MarketQuote[], mode: string, unit: MoneyUnit) {
   useEffect(() => {
     if (mode !== "live" || !alerts.length || !quotes.length) return;
-    const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
+    const quoteMap = new Map(freshMarketQuotes(quotes).map((quote) => [quote.symbol, quote]));
     let cancelled = false;
 
     async function evaluate() {

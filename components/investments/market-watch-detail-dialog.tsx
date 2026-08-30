@@ -33,7 +33,7 @@ export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onC
       {row && <>
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2"><span>{row.item.symbol}</span>{row.owned && <Badge>در سبد</Badge>}<NavBadge label={signal.label} tone={signal.tone} /></DialogTitle>
-          <DialogDescription>{row.item.name} · <MarketSourceLabel source={quote?.source ?? row.item.source} /></DialogDescription>
+          <DialogDescription>{row.item.name} · <MarketSourceLabel source={quote?.source ?? row.item.source} snapshot={quote?.runtimeSource === "snapshot"} snapshotAt={quote?.snapshotCapturedAt} /></DialogDescription>
         </DialogHeader>
         <div className="grid gap-2 sm:grid-cols-4">
           <Metric label="قیمت بازار" value={quote ? formatMoney(quote.priceToman, settings.displayUnit, true) : "—"} />

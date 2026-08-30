@@ -108,7 +108,7 @@ function EmptyState({ currentQuote, settings, warning, range }: { currentQuote?:
     <p className="mt-2 text-xs leading-6 text-muted-foreground">برای بازه {rangeLabel} داده کافی نداریم. می‌توانی بدون خروج از این حالت، بازه دیگر را از بالای نمودار انتخاب کنی.</p>
     <p className="mt-1 text-[10px] leading-5 text-muted-foreground">{T.emptyDesc}</p>
     {warning && <p className="mt-2 text-[10px] leading-5 text-muted-foreground">{warning}</p>}
-    {currentQuote && <div className="mx-auto mt-4 w-fit rounded-xl border bg-background/65 px-4 py-3"><div className="text-[10px] text-muted-foreground">{T.current}</div><div className="mt-1 type-strong">{formatMoney(currentQuote.priceToman, settings.displayUnit)}</div><div className="mt-1 text-[9px] text-muted-foreground"><MarketSourceLabel source={currentQuote.source} /></div></div>}
+    {currentQuote && <div className="mx-auto mt-4 w-fit rounded-xl border bg-background/65 px-4 py-3"><div className="text-[10px] text-muted-foreground">{T.current}</div><div className="mt-1 type-strong">{formatMoney(currentQuote.priceToman, settings.displayUnit)}</div><div className="mt-1 text-[9px] text-muted-foreground"><MarketSourceLabel source={currentQuote.source} snapshot={currentQuote.runtimeSource === "snapshot"} snapshotAt={currentQuote.snapshotCapturedAt} /></div></div>}
   </div></div>;
 }
 

@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
 import type { MarketHealthSummary } from "@/lib/market/reliability";
+import {
+  marketQuoteForStorage,
+  mergeRuntimeMarketQuotes,
+  type MarketCoverage,
+} from "@/lib/market/runtime";
 import type { Asset, ExchangeMarketSource, MarketAlert, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 
 type MarketResponse = {
@@ -20,6 +25,7 @@ type MarketTarget = {
   name: string;
 };
 
+const EMPTY_COVERAGE: MarketCoverage = { live: 0, snapshot: 0, total: 0 };
 let inFlight: { key: string; promise: Promise<MarketResponse> } | null = null;
 
 function targetDescriptors(assets: Asset[], watchlist: MarketWatchItem[], alerts: MarketAlert[]) {
@@ -87,35 +93,49 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
   const targetsKey = useMemo(() => JSON.stringify(targetDescriptors(assets, watchlist, alerts)), [alerts, assets, watchlist]);
   const targets = useMemo(() => JSON.parse(targetsKey) as MarketTarget[], [targetsKey]);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
+  const [coverage, setCoverage] = useState<MarketCoverage>(EMPTY_COVERAGE);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState("loading");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | undefined>();
   const [health, setHealth] = useState<MarketHealthSummary | undefined>();
 
+  const applyCached = useCallback((cached: MarketSnapshot[]) => {
+    const merged = mergeRuntimeMarketQuotes({ fresh: [], cached, targets });
+    setQuotes(merged.quotes);
+    setCoverage(merged.coverage);
+    if (merged.quotes.length) {
+      setMode("offline");
+      setLastUpdated(merged.coverage.newestSnapshotAt ?? null);
+    }
+    return merged;
+  }, [targets]);
+
   const applyResponse = useCallback(async (data: MarketResponse) => {
     const rows = Array.isArray(data.quotes) ? data.quotes : [];
+    const cached = await latestCachedQuotes();
+    const merged = mergeRuntimeMarketQuotes({ fresh: rows, cached, targets });
+    setQuotes(merged.quotes);
+    setCoverage(merged.coverage);
     setWarning(data.warning);
     setHealth(data.health);
+
     if (!rows.length) {
-      const cached = await latestCachedQuotes();
-      setQuotes(cached);
-      setMode(cached.length ? "offline" : (data.mode || "unavailable"));
-      setLastUpdated(cached[0]?.capturedAt ?? data.fetchedAt ?? null);
+      setMode(merged.coverage.snapshot ? "offline" : (data.mode || "unavailable"));
+      setLastUpdated(merged.coverage.newestSnapshotAt ?? data.fetchedAt ?? null);
       return;
     }
 
     const capturedAt = data.fetchedAt || new Date().toISOString();
-    setQuotes(rows);
     setMode(data.mode || "live");
     setLastUpdated(capturedAt);
-    await db.marketSnapshots.bulkAdd(rows.map((quote) => ({ ...quote, capturedAt })));
+    await db.marketSnapshots.bulkAdd(rows.map((quote) => ({ ...marketQuoteForStorage(quote), capturedAt })));
     const count = await db.marketSnapshots.count();
     if (count > 5000) {
       const oldIds = await db.marketSnapshots.orderBy("capturedAt").limit(count - 5000).primaryKeys();
       await db.marketSnapshots.bulkDelete(oldIds as number[]);
     }
-  }, []);
+  }, [targets]);
 
   const refresh = useCallback(async () => {
     if (!enabled) return;
@@ -124,26 +144,21 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
       await applyResponse(await requestMarket(targets));
     } catch {
       const cached = await latestCachedQuotes();
-      setQuotes(cached);
-      setMode(cached.length ? "offline" : "unavailable");
-      setLastUpdated(cached[0]?.capturedAt ?? null);
+      const merged = applyCached(cached);
+      if (!merged.quotes.length) setMode("unavailable");
       setHealth(undefined);
       setWarning("دریافت قیمت جدید ناموفق بود.");
     } finally {
       setLoading(false);
     }
-  }, [applyResponse, enabled, targets]);
+  }, [applyCached, applyResponse, enabled, targets]);
 
   useEffect(() => {
     if (!enabled) return;
     let active = true;
     void latestCachedQuotes().then(async (cached) => {
       if (!active) return;
-      if (cached.length) {
-        setQuotes(cached);
-        setMode("offline");
-        setLastUpdated(cached[0]?.capturedAt ?? null);
-      }
+      applyCached(cached);
       try {
         const data = await requestMarket(targets);
         if (active) await applyResponse(data);
@@ -154,7 +169,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
       }
     });
     return () => { active = false; };
-  }, [applyResponse, enabled, targets, targetsKey]);
+  }, [applyCached, applyResponse, enabled, targets, targetsKey]);
 
-  return { quotes, loading, mode, lastUpdated, warning, health, refresh };
+  return { quotes, coverage, loading, mode, lastUpdated, warning, health, refresh };
 }

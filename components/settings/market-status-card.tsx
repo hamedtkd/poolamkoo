@@ -9,23 +9,27 @@ import { toast } from "@/components/ui/toast";
 import {
   formatMarketDiagnostics,
   MARKET_PROVIDER_ORDER,
+  marketCoverageLabel,
   marketProviderActivityLabel,
   marketProviderMeta,
   marketProviderStatusLabel,
   marketRuntimeStatus,
+  marketSnapshotCoverageDetail,
 } from "@/lib/market/status";
 import { cn } from "@/lib/utils";
 
 export function MarketStatusCard() {
   const { market } = useAppRuntime();
-  const runtime = marketRuntimeStatus(market.mode, market.health);
+  const runtime = marketRuntimeStatus(market.mode, market.health, market.coverage);
   const updated = formatUpdatedAt(market.lastUpdated);
+  const snapshotDetail = marketSnapshotCoverageDetail(market.coverage);
 
   async function copyDiagnostics() {
     try {
       await navigator.clipboard.writeText(formatMarketDiagnostics({
         mode: market.mode,
         health: market.health,
+        coverage: market.coverage,
         lastUpdated: market.lastUpdated,
       }));
       toast({
@@ -42,7 +46,7 @@ export function MarketStatusCard() {
     <CardHeader>
       <div className="flex items-center justify-between gap-3">
         <CardTitle className="flex items-center gap-2"><RiPulseLine className="text-primary" /> وضعیت بازار</CardTitle>
-        <Badge className={cn(market.health?.degraded && "border-amber-500/35 bg-amber-500/10")}>{runtime.label}</Badge>
+        <Badge className={cn((market.health?.degraded || market.coverage.snapshot > 0) && "border-amber-500/35 bg-amber-500/10")}>{runtime.label}</Badge>
       </div>
     </CardHeader>
     <CardContent className="space-y-4">
@@ -50,6 +54,8 @@ export function MarketStatusCard() {
         <div className="type-strong">آخرین refresh</div>
         <p className="mt-1 text-xs leading-6 text-muted-foreground">{runtime.detail}</p>
         <p className="mt-1 type-caption text-muted-foreground">{updated ? `آخرین داده: ${updated}` : "هنوز زمان دریافت موفقی ثبت نشده است."}</p>
+        <p className="mt-1 type-caption text-muted-foreground">پوشش فعلی: {marketCoverageLabel(market.coverage)}</p>
+        {snapshotDetail && <p className="mt-1 type-caption text-amber-700 dark:text-amber-300">{snapshotDetail}</p>}
       </div>
 
       <div className="space-y-2" aria-label="وضعیت Providerهای بازار">

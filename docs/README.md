@@ -38,6 +38,7 @@
 
 ## Release history
 
+- [v0.32.0 — Market fallback continuity & freshness](./releases/0.32.0.md)
 - [v0.31.0 — Market transparency & privacy-safe diagnostics](./releases/0.31.0.md)
 - [v0.30.0 — Market provider production reliability](./releases/0.30.0.md)
 - [v0.29.0 — Privacy-safe report export & mobile UX refinement](./releases/0.29.0.md)

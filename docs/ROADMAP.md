@@ -181,6 +181,15 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Preserve the real-data fallback order: provider → local Snapshot → user manual price → unavailable.
 - Keep IndexedDB schema 6, backup formats, workspace-only PWA initialization and Background Push backlog unchanged.
 
+## v0.32 — Market fallback continuity & freshness ✅
+
+- Merge partial market refreshes with only the latest relevant real IndexedDB snapshots instead of dropping every missing quote when another provider succeeds.
+- Keep fresh provider rows authoritative and preserve provider-scoped exchange identity so TSETMC/Tindex records never cross-fill by id alone.
+- Expose live-versus-Snapshot coverage and oldest active fallback time in Settings without adding prices, symbols, asset names or market IDs to diagnostics.
+- Label Snapshot provenance on Dashboard, portfolio, watchlist and market detail surfaces so cached values are never presented as newly fetched quotes.
+- Evaluate local market alerts only against fresh runtime quotes; Snapshot fallback remains display/valuation continuity and cannot trigger or re-arm an alert.
+- Keep IndexedDB schema 6, backup/transfer formats, BrsApi → optional Tindex core priority, direct TSETMC exchange behavior and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

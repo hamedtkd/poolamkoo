@@ -47,9 +47,10 @@ export function MarketAlertsCard({ alerts, quotes, settings, backgroundPush, onC
 }
 
 function AlertRow({ alert, quote, settings }: { alert: MarketAlert; quote?: MarketQuote; settings: AppSettings }) {
-  const met = marketAlertConditionMet(alert, quote);
+  const liveQuote = quote?.runtimeSource === "snapshot" ? undefined : quote;
+  const met = marketAlertConditionMet(alert, liveQuote);
   const threshold = alert.kind.startsWith("price_") ? formatMoney(alert.threshold, settings.displayUnit, true) : formatPercent(alert.threshold);
-  const status = !alert.enabled ? "متوقف" : !quote ? "در انتظار قیمت" : met ? "شرط برقرار" : "در انتظار";
+  const status = !alert.enabled ? "متوقف" : quote?.runtimeSource === "snapshot" ? "در انتظار قیمت تازه" : !liveQuote ? "در انتظار قیمت" : met ? "شرط برقرار" : "در انتظار";
   const statusTone = alert.enabled && met ? "text-destructive" : "text-muted-foreground";
   const lastTriggered = alert.lastTriggeredAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "short", timeStyle: "short" }).format(new Date(alert.lastTriggeredAt)) : null;
 
