@@ -223,3 +223,10 @@ The editor creates a Recovery Snapshot before mutation, then re-reads and revali
 The projection keeps each record's calendar `happenedAt` date authoritative. When several records share a day, `createdAt` is used only for deterministic display ordering because Poolamkoo does not persist a reliable intraday execution timestamp for all ledgers. Fund source (`manual`, plan, direct allocation, income reversal, opening/migration), investment plan linkage and notes remain visible. Historical activity resolves assets through `allAssets`, so an archived asset does not lose its name; missing references remain explicit as unknown entities instead of disappearing.
 
 The `/activity` workspace route has its own session-scoped date range plus category/search filters, remains covered by workspace `noindex` and `robots.txt` disallow rules, and uses `SensitiveValue` for financial amounts. No IndexedDB schema, backup/transfer format, market-provider priority, analytics boundary or Background Push behavior changes in this release.
+
+
+## Reports reconciliation boundary (v0.42)
+
+Reports now distinguishes **period flow** from **current state**. `lib/report-reconciliation.ts` reconciles selected Income rows against their Allocation and Plan totals and labels a still-unexecuted plan as progress rather than corruption. Fund Movement and Investment Transaction summaries are built only from real rows inside the selected report range; opening fund balances are reported separately and excluded from net period flow, and investment buy-minus-sell flow is never described as profit.
+
+Current portfolio valuation uses the full investment ledger even when a report date range is active. This prevents an older buy from disappearing from today's holding merely because the user selected a shorter reporting window. Current fund coverage follows the same current-state boundary. The detailed local CSV may include these aggregate reconciliation/flow facts, while the share-safe text continues to omit amounts and asset names. No schema, provider, telemetry or hosted-financial-data boundary changes in v0.42.

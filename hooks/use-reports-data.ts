@@ -6,7 +6,8 @@ import { portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { incomePlanProgress } from "@/lib/plan-execution";
 import { resolveAssetValuation, type ValuationPriceSource } from "@/lib/market/valuation";
 import { buildReportDecisionSnapshot } from "@/lib/report-insights";
-import type { AllocationEntry, AllocationRule, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
+import { buildReportReconciliation } from "@/lib/report-reconciliation";
+import type { AllocationEntry, AllocationRule, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
 
 export interface PerformanceRow {
   name: string;
@@ -28,12 +29,14 @@ export interface PlanAdherenceRow {
   pct: number;
 }
 
-export function useReportsData({ incomes, allocations, funds, assets, transactions, quotes, planItems, rule }: {
+export function useReportsData({ incomes, allocations, funds, fundMovements, assets, transactions, periodTransactions, quotes, planItems, rule }: {
   incomes: IncomeEvent[];
   allocations: AllocationEntry[];
   funds: GoalFund[];
+  fundMovements: FundMovement[];
   assets: Asset[];
   transactions: InvestmentTransaction[];
+  periodTransactions: InvestmentTransaction[];
   quotes: MarketQuote[];
   planItems?: PlanItem[];
   rule?: AllocationRule;
@@ -75,6 +78,7 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
       if (progress.planned <= 0) return [];
       return [{ incomeId: income.id, title: income.title, happenedAt: income.happenedAt, ...progress }];
     }).sort((a, b) => b.happenedAt.localeCompare(a.happenedAt));
+    const reconciliation = buildReportReconciliation({ incomes, allocations, planItems: safePlanItems, fundMovements, transactions: periodTransactions });
     const decision = buildReportDecisionSnapshot({
       totalIncome,
       allocations: totals,
@@ -84,8 +88,8 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
       funded,
       fundTarget: target,
     });
-    return { performance, pricingIncomplete, totalIncome, totals, funded, target, best, worst, monthly: buildMonthly(incomes, allocations), overallPlan, planRows, decision };
-  }, [allocations, assets, funds, incomes, planItems, quotes, rule, transactions]);
+    return { performance, pricingIncomplete, totalIncome, totals, funded, target, best, worst, monthly: buildMonthly(incomes, allocations), overallPlan, planRows, decision, reconciliation };
+  }, [allocations, assets, fundMovements, funds, incomes, periodTransactions, planItems, quotes, rule, transactions]);
 }
 
 function sumBucket(allocations: AllocationEntry[], bucket: AllocationEntry["bucket"]) {

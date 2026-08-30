@@ -9,6 +9,7 @@ import { AllocationDonut } from "@/components/charts/allocation-donut";
 import { LazyMonthlyBars } from "@/components/charts/lazy-monthly-bars";
 import { DecisionInsightsCard } from "@/components/reports/decision-insights-card";
 import { ReportExportDialog } from "@/components/reports/report-export-dialog";
+import { ReconciliationCard } from "@/components/reports/reconciliation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,7 @@ import { useReportsData, type PerformanceRow, type PlanAdherenceRow } from "@/ho
 import { formatMoney, formatPercent } from "@/lib/format";
 import { valuationPriceSourceLabel } from "@/lib/market/valuation";
 import type { AppDateRange } from "@/lib/date-range";
-import type { AllocationEntry, AllocationRule, AppSettings, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
+import type { AllocationEntry, AllocationRule, AppSettings, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const HELP = {
@@ -34,13 +35,13 @@ const HELP = {
   monthly: "تقسیم پول‌های ورودی در شش ماه اخیر. اگر ماهی ورودی نداشته باشد چیزی برای رسم وجود ندارد.",
 };
 
-export function ReportsSection({ settings, rule, incomes, allocations, funds, assets, transactions, quotes, planItems, range }: {
-  settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; allocations: AllocationEntry[]; funds: GoalFund[];
-  assets: Asset[]; transactions: InvestmentTransaction[]; quotes: MarketQuote[]; planItems: PlanItem[]; range: AppDateRange;
+export function ReportsSection({ settings, rule, incomes, allocations, funds, fundMovements, assets, transactions, periodTransactions, quotes, planItems, range }: {
+  settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; allocations: AllocationEntry[]; funds: GoalFund[]; fundMovements: FundMovement[];
+  assets: Asset[]; transactions: InvestmentTransaction[]; periodTransactions: InvestmentTransaction[]; quotes: MarketQuote[]; planItems: PlanItem[]; range: AppDateRange;
 }) {
   const [exportOpen, setExportOpen] = useState(false);
-  const report = useReportsData({ incomes, allocations, funds, assets, transactions, quotes, planItems, rule });
-  const { performance: perf, pricingIncomplete, totalIncome, totals, funded, target, best, worst, monthly, overallPlan, planRows, decision } = report;
+  const report = useReportsData({ incomes, allocations, funds, fundMovements, assets, transactions, periodTransactions, quotes, planItems, rule });
+  const { performance: perf, pricingIncomplete, totalIncome, totals, funded, target, best, worst, monthly, overallPlan, planRows, decision, reconciliation } = report;
   const planColumns: ColumnDef<DataTableFeatures, PlanAdherenceRow, unknown>[] = [
     { accessorKey: "title", header: "پول ورودی", cell: ({ row }) => <strong>{row.original.title}</strong> },
     { accessorKey: "planned", header: "برنامه", cell: ({ row }) => <SensitiveValue>{formatMoney(row.original.planned, settings.displayUnit)}</SensitiveValue> },
@@ -69,6 +70,7 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
     {pricingIncomplete && <Reveal step={7}><div className="flex gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/7 p-4 text-sm"><RiAlertLine className="mt-0.5 size-5 shrink-0 text-amber-600" /><div><div className="type-strong">بخشی از ارزش سبد با fallback نمایش داده می‌شود</div><p className="mt-1 type-caption leading-6 text-muted-foreground">Snapshot محلی یا بهای خرید می‌تواند برای تداوم نمایش باقی بماند، اما رتبه‌بندی بازده و تصمیم‌های خودکار سبد تا رسیدن قیمت تازه بازار یا قیمت دستی قابل اتکا متوقف می‌شوند.</p></div></div></Reveal>}
 
     <Reveal step={7}><DecisionInsightsCard snapshot={decision} unit={settings.displayUnit} /></Reveal>
+    <Reveal step={7}><ReconciliationCard snapshot={reconciliation} unit={settings.displayUnit} /></Reveal>
 
     <div className="grid gap-4 lg:grid-cols-2">
       <Reveal step={7} className="h-full"><Card><CardHeader><CardTitle><HelpLabel label="تقسیم واقعی پول ثبت‌شده" help={HELP.allocation} /></CardTitle></CardHeader><CardContent className="grid gap-5 sm:grid-cols-[220px_1fr] sm:items-center"><div className="grid place-items-center"><AllocationDonut segments={allocationSegments(decision.allocatedTotal, totals)} /></div><div className="grid gap-2"><Legend color="var(--chart-3)" label="زندگی" value={allocationValue(decision.allocatedTotal, totals.life)} /><Legend color="var(--chart-2)" label="امنیت" value={allocationValue(decision.allocatedTotal, totals.safety)} /><Legend color="var(--chart-1)" label="رشد" value={allocationValue(decision.allocatedTotal, totals.growth)} /></div></CardContent></Card></Reveal>
@@ -77,12 +79,12 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
 
     <Reveal step={8}><Card><CardHeader><CardTitle><HelpLabel label="پایبندی به برنامه‌های پول ورودی" help={HELP.adherence} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">پیشنهاد پولم‌کو با آنچه واقعاً اجرا کرده‌ای مقایسه می‌شود.</p></CardHeader><CardContent><DataTable<PlanAdherenceRow> data={planRows} columns={planColumns} searchPlaceholder="جست‌وجوی برنامه..." mobileCard={(row) => <div className="p-4"><div className="flex items-start justify-between"><strong>{row.title}</strong><SensitiveValue className="type-strong text-primary">{formatPercent(row.pct, 0)}</SensitiveValue></div><div className="mt-3 grid grid-cols-2 gap-2 text-xs"><Small label="برنامه" value={formatMoney(row.planned, settings.displayUnit, true)} /><Small label="اجراشده" value={formatMoney(row.executed, settings.displayUnit, true)} /></div></div>} /></CardContent></Card></Reveal>
 
-    <Reveal step={8}><Card><CardHeader className="flex flex-row items-center justify-between gap-3"><div><CardTitle><HelpLabel label="تخصیص هدف در برابر واقعیت" help={HELP.drift} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">فاصله سبد از هدف بر اساس دارایی و قیمت واقعی موجود محاسبه می‌شود.</p></div><Badge>مرور سبد</Badge></CardHeader><CardContent><DataTable<PerformanceRow> data={perf} columns={columns} searchPlaceholder="جست‌وجوی دارایی..." mobileCard={(row) => <PerformanceMobile row={row} settings={settings} />} /></CardContent></Card></Reveal>
+    <Reveal step={8}><Card><CardHeader className="flex flex-row items-center justify-between gap-3"><div><CardTitle><HelpLabel label="تخصیص هدف در برابر واقعیت" help={HELP.drift} /></CardTitle><p className="mt-1 type-caption text-muted-foreground">این جدول وضعیت فعلی کل سبد را نشان می‌دهد و با فیلتر بازه، خریدهای قدیمی از موجودی فعلی حذف نمی‌شوند.</p></div><Badge>مرور سبد</Badge></CardHeader><CardContent><DataTable<PerformanceRow> data={perf} columns={columns} searchPlaceholder="جست‌وجوی دارایی..." mobileCard={(row) => <PerformanceMobile row={row} settings={settings} />} /></CardContent></Card></Reveal>
 
     <ReportExportDialog
       open={exportOpen}
       onOpenChange={setExportOpen}
-      report={{ range, unit: settings.displayUnit, decision, performance: perf }}
+      report={{ range, unit: settings.displayUnit, decision, reconciliation, performance: perf }}
     />
   </div>;
 }

@@ -277,9 +277,18 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep Activity local and read-only: no expense ledger, inferred cash account, server sync, telemetry expansion or schema migration.
 - Keep IndexedDB schema 8, backup/transfer formats, provider priority and Background Push backlog unchanged.
 
+## v0.42 — Reports & reconciliation upgrade ✅
+
+- Reconcile each selected incoming-money record across recorded income, allocation, planned amount and execution without inventing a cash account.
+- Distinguish incomplete execution (`in_progress`) from structural mismatches that need review, while preserving explicit execution overruns.
+- Summarize real in-range fund deposits/withdrawals separately from opening balances and real investment buys/sells without calling net buy flow profit.
+- Separate period flow from current state: the date filter controls recorded period activity, while current portfolio value/weight keeps the full investment ledger.
+- Extend the explicit detailed CSV with reconciliation and aggregate flow rows while keeping the share-safe summary amount/name-free.
+- Keep IndexedDB schema 8, backup/transfer formats, provider priority, zero-cost deployment boundaries and Background Push backlog unchanged.
+
 ## Likely next phases
 
-- **v0.42 — Reports & reconciliation upgrade:** expose recorded money-flow reconciliation across incoming money, plans, funds and investments without forecasting or buy/sell advice.
+- **v0.43 — v1.0 readiness audit:** review remaining product/UX, offline/PWA, migration, backup/restore, privacy, documentation and release gaps before adding another major feature family.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

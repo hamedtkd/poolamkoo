@@ -1,6 +1,7 @@
 import { formatPercent } from "./format.ts";
 import { formatPersianDate } from "./persian-date.ts";
 import { reportBucketLabel, type ReportDecisionSnapshot } from "./report-insights.ts";
+import type { ReportReconciliationSnapshot } from "./report-reconciliation.ts";
 import type { AppDateRange } from "./date-range.ts";
 import { valuationPriceSourceLabel, type ValuationPriceSource } from "./market/valuation.ts";
 import type { MoneyUnit } from "./types.ts";
@@ -20,6 +21,7 @@ export interface ReportExportInput {
   range: AppDateRange;
   unit: MoneyUnit;
   decision: ReportDecisionSnapshot;
+  reconciliation: ReportReconciliationSnapshot;
   performance: ReportExportPerformanceRow[];
 }
 
@@ -69,6 +71,22 @@ export function buildReportCsv(input: ReportExportInput) {
     ["خلاصه", "ذخیره صندوق‌ها", "", amountForUnit(input.decision.funds.funded, input.unit), unitLabel, "", input.decision.funds.pct, "", ""],
     ["خلاصه", "فاصله تا هدف صندوق‌ها", "", amountForUnit(input.decision.funds.remaining, input.unit), unitLabel, "", "", "", ""],
     ["خلاصه", "پول تخصیص‌نیافته", "", amountForUnit(input.decision.unallocatedToman, input.unit), unitLabel, "", "", "", ""],
+    ["تطبیق جریان", "پوشش تخصیص", "", input.reconciliation.allocationCoveragePct, "درصد", "", "", "", ""],
+    ["تطبیق جریان", "پوشش برنامه", "", input.reconciliation.planningCoveragePct, "درصد", "", "", "", ""],
+    ["تطبیق جریان", "اجرای برنامه", "", input.reconciliation.executionPct, "درصد", "", "", "", ""],
+    ["تطبیق جریان", "ورودی تخصیص‌نشده", "", amountForUnit(input.reconciliation.unallocatedToman, input.unit), unitLabel, "", "", "", ""],
+    ["تطبیق جریان", "تخصیص بیش از ورودی", "", amountForUnit(input.reconciliation.overallocatedToman, input.unit), unitLabel, "", "", "", ""],
+    ["تطبیق جریان", "تخصیص بدون برنامه", "", amountForUnit(input.reconciliation.unplannedToman, input.unit), unitLabel, "", "", "", ""],
+    ["تطبیق جریان", "برنامه بیش از تخصیص", "", amountForUnit(input.reconciliation.overplannedToman, input.unit), unitLabel, "", "", "", ""],
+    ["تطبیق جریان", "برنامه باقی‌مانده", "", amountForUnit(input.reconciliation.executionRemainingToman, input.unit), unitLabel, "", "", "", ""],
+    ["تطبیق جریان", "اجرای بیش از برنامه", "", amountForUnit(input.reconciliation.executionOverrunToman, input.unit), unitLabel, "", "", "", ""],
+    ["گردش صندوق", "واریز در بازه", "", amountForUnit(input.reconciliation.funds.deposits, input.unit), unitLabel, "", "", "", ""],
+    ["گردش صندوق", "برداشت در بازه", "", amountForUnit(input.reconciliation.funds.withdrawals, input.unit), unitLabel, "", "", "", ""],
+    ["گردش صندوق", "موجودی آغازین دیده‌شده", "", amountForUnit(input.reconciliation.funds.opening, input.unit), unitLabel, "", "", "", ""],
+    ["گردش صندوق", "خالص گردش دوره", "", amountForUnit(input.reconciliation.funds.netMovement, input.unit), unitLabel, "", "", "", ""],
+    ["گردش سرمایه‌گذاری", "خرید در بازه", "", amountForUnit(input.reconciliation.investments.buys, input.unit), unitLabel, "", "", "", ""],
+    ["گردش سرمایه‌گذاری", "فروش در بازه", "", amountForUnit(input.reconciliation.investments.sells, input.unit), unitLabel, "", "", "", ""],
+    ["گردش سرمایه‌گذاری", "خالص جریان خرید", "", amountForUnit(input.reconciliation.investments.netBuyFlow, input.unit), unitLabel, "", "", "", ""],
   ];
 
   for (const bucket of input.decision.buckets) {

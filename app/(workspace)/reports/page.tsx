@@ -15,7 +15,7 @@ export default function ReportsPage() {
       <Reveal direction="down" step={0}>
       <PageDateFilterBar
         title="فیلتر گزارش‌ها"
-        description="نمودارها و جدول‌های تحلیلی این صفحه بر اساس بازه انتخابی فیلتر می‌شوند."
+        description="ورودی، برنامه و گردش‌های واقعی بر اساس این بازه فیلتر می‌شوند؛ وضعیت فعلی صندوق‌ها و کل سبد مستقل از بازه باقی می‌ماند."
         value={dateFilter.getRange(scope)}
         onValueChange={(value) => dateFilter.setRange(scope, value)}
       />
@@ -26,8 +26,10 @@ export default function ReportsPage() {
         incomes={filtered.incomes}
         allocations={filtered.allocations}
         funds={data.funds}
+        fundMovements={filtered.fundMovements}
         assets={data.allAssets}
-        transactions={filtered.transactions}
+        transactions={data.transactions}
+        periodTransactions={filtered.transactions}
         quotes={market.quotes}
         planItems={filtered.planItems}
         range={dateFilter.getRange(scope)}
