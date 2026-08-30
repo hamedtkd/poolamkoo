@@ -8,6 +8,7 @@ export interface TourStep {
   target: string;
   title: string;
   description: string;
+  location: string;
 }
 
 export interface TourRect {
@@ -20,19 +21,19 @@ export interface TourRect {
 }
 
 const desktopSteps: TourStep[] = [
-  { target: '[data-tour="new-money"]', title: "پول جدید از اینجا شروع می‌شود", description: "هر مبلغ تازه را ثبت کن تا پولم‌کو همان لحظه برای زندگی، امنیت و رشد برنامه پیشنهاد بدهد." },
-  { target: '[data-tour="global-search"]', title: "هر چیزی را سریع پیدا کن", description: "با جست‌وجوی کلی یا میانبر Ctrl/⌘ + K بین صفحه‌ها، پول‌های ورودی، صندوق‌ها و دارایی‌ها بگرد." },
-  { target: '[data-tour="income"]', title: "برنامه و اجرای هر پول", description: "در پول‌های ورودی می‌بینی برای هر مبلغ چه برنامه‌ای داشتی، چقدرش اجرا شده و کجا از برنامه عقب مانده‌ای." },
-  { target: '[data-tour="investments"]', title: "خرید واقعی را اینجا ثبت کن", description: "پیشنهاد سرمایه‌گذاری با خرید واقعی فرق دارد. خرید طلا، دلار یا هر دارایی را اینجا ثبت کن تا سود و زیان واقعی حساب شود." },
-  { target: '[data-tour="market-refresh"]', title: "قیمت بازار مشترک است", description: "قیمت‌ها یک‌بار دریافت می‌شوند و همه صفحه‌ها از همان داده استفاده می‌کنند. فقط وقتی لازم بود این دکمه را بزن." },
-  { target: '[data-tour="theme-toggle"]', title: "ظاهر را سریع عوض کن", description: "تم روشن و تاریک از همین کنترل تغییر می‌کند و انتخابت روی همین دستگاه ذخیره می‌شود." },
+  { target: '[data-tour="new-money"]', title: "پول جدید از اینجا شروع می‌شود", description: "هر مبلغ تازه را ثبت کن تا پولم‌کو همان لحظه برای زندگی، امنیت و رشد برنامه پیشنهاد بدهد.", location: "سایدبار" },
+  { target: '[data-tour="global-search"]', title: "هر چیزی را سریع پیدا کن", description: "با جست‌وجوی کلی یا میانبر Ctrl/⌘ + K بین صفحه‌ها، پول‌های ورودی، صندوق‌ها و دارایی‌ها بگرد.", location: "نوار بالای صفحه" },
+  { target: '[data-tour="income"]', title: "برنامه و اجرای هر پول", description: "در پول‌های ورودی می‌بینی برای هر مبلغ چه برنامه‌ای داشتی، چقدرش اجرا شده و کجا از برنامه عقب مانده‌ای.", location: "منوی اصلی" },
+  { target: '[data-tour="investments"]', title: "خرید واقعی را اینجا ثبت کن", description: "پیشنهاد سرمایه‌گذاری با خرید واقعی فرق دارد. خرید طلا، دلار یا هر دارایی را اینجا ثبت کن تا سود و زیان واقعی حساب شود.", location: "منوی اصلی" },
+  { target: '[data-tour="market-refresh"]', title: "قیمت بازار مشترک است", description: "قیمت‌ها یک‌بار دریافت می‌شوند و همه صفحه‌ها از همان داده استفاده می‌کنند. فقط وقتی لازم بود این دکمه را بزن.", location: "کنترل‌های بالای صفحه" },
+  { target: '[data-tour="theme-toggle"]', title: "ظاهر را سریع عوض کن", description: "تم روشن و تاریک از همین کنترل تغییر می‌کند و انتخابت روی همین دستگاه ذخیره می‌شود.", location: "کنترل‌های بالای صفحه" },
 ];
 
 const mobileSteps: TourStep[] = [
-  { target: '[data-tour="mobile-more"]', title: "میانبرهای اصلی اینجاست", description: "از منوی بیشتر می‌توانی پول جدید ثبت کنی، بازار را تازه کنی، تم را عوض کنی و به تنظیمات بروی." },
-  { target: '[data-tour="investments"]', title: "سرمایه‌گذاری و خرید واقعی", description: "خریدهای واقعی و پیشنهادهای انجام‌نشده را از بخش سرمایه دنبال کن." },
-  { target: '[data-tour="funds"]', title: "هزینه‌های آینده را جدا نگه دار", description: "برای درمان، هدیه، سفر یا صندوق اضطراری هدف بساز تا هزینه‌های ناگهانی برنامه‌ات را خراب نکنند." },
-  { target: '[data-tour="reports"]', title: "آخر ماه نتیجه را ببین", description: "گزارش‌ها نشان می‌دهند چقدر طبق برنامه پیش رفته‌ای و تصمیم‌هایت چه نتیجه‌ای داشته‌اند." },
+  { target: '[data-tour="mobile-more"]', title: "میانبرهای اصلی اینجاست", description: "از منوی بیشتر می‌توانی پول جدید ثبت کنی، بازار را تازه کنی، تم را عوض کنی و به تنظیمات بروی.", location: "نوار پایین" },
+  { target: '[data-tour="investments"]', title: "سرمایه‌گذاری و خرید واقعی", description: "خریدهای واقعی و پیشنهادهای انجام‌نشده را از بخش سرمایه دنبال کن.", location: "نوار پایین" },
+  { target: '[data-tour="funds"]', title: "هزینه‌های آینده را جدا نگه دار", description: "برای درمان، هدیه، سفر یا صندوق اضطراری هدف بساز تا هزینه‌های ناگهانی برنامه‌ات را خراب نکنند.", location: "نوار پایین" },
+  { target: '[data-tour="global-search"]', title: "جست‌وجو همیشه در دسترس است", description: "از بالای صفحه جست‌وجوی کلی را باز کن و بدون گشتن بین منوها به بخش یا داده موردنظرت برس.", location: "نوار بالای صفحه" },
 ];
 
 export function useProductTour(guideComplete: boolean) {
@@ -46,8 +47,8 @@ export function useProductTour(guideComplete: boolean) {
   const measure = useCallback(() => {
     if (!open || !step) return setRect(null);
     const nodes = [...document.querySelectorAll<HTMLElement>(step.target)];
-    const measured = nodes.map((node) => ({ node, rect: node.getBoundingClientRect() }));
-    const visible = measured.find(({ rect: nodeRect }) => nodeRect.width > 0 && nodeRect.height > 0);
+    const measured = nodes.map((node) => ({ node, rect: node.getBoundingClientRect(), style: getComputedStyle(node) }));
+    const visible = measured.find(({ rect: nodeRect, style }) => style.display !== "none" && style.visibility !== "hidden" && nodeRect.width > 0 && nodeRect.height > 0);
     if (!visible) return setRect(null);
     const next = visible.rect;
     setRect({ top: next.top, left: next.left, width: next.width, height: next.height, right: next.right, bottom: next.bottom });
@@ -77,13 +78,26 @@ export function useProductTour(guideComplete: boolean) {
   }, [guideComplete, start]);
 
   useEffect(() => {
+    if (!open || !step) return;
+    const frame = window.requestAnimationFrame(() => {
+      const nodes = [...document.querySelectorAll<HTMLElement>(step.target)];
+      const target = nodes.find((node) => {
+        const bounds = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return style.display !== "none" && style.visibility !== "hidden" && bounds.width > 0 && bounds.height > 0;
+      });
+      target?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      measure();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [index, measure, open, step]);
+
+  useEffect(() => {
     if (!open) return;
-    const initialFrame = window.requestAnimationFrame(measure);
     const update = () => window.requestAnimationFrame(measure);
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
     return () => {
-      window.cancelAnimationFrame(initialFrame);
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };

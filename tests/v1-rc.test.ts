@@ -5,13 +5,13 @@ import { APP_VERSION, LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.t
 
 const read = (path: string) => readFileSync(path, "utf8");
 
-test("v1 RC1 uses one canonical prerelease version without a database schema bump", () => {
+test("v1 RC2 uses one canonical prerelease version without a database schema bump", () => {
   const pkg = JSON.parse(read("package.json")) as { version: string };
   const lock = JSON.parse(read("package-lock.json")) as { version: string; packages: Record<string, { version?: string }> };
-  assert.equal(APP_VERSION, "1.0.0-rc.1");
-  assert.equal(pkg.version, "1.0.0-rc.1");
-  assert.equal(lock.version, "1.0.0-rc.1");
-  assert.equal(lock.packages[""]?.version, "1.0.0-rc.1");
+  assert.equal(APP_VERSION, "1.0.0-rc.2");
+  assert.equal(pkg.version, "1.0.0-rc.2");
+  assert.equal(lock.version, "1.0.0-rc.2");
+  assert.equal(lock.packages[""]?.version, "1.0.0-rc.2");
   assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 8);
 });
 
@@ -23,15 +23,17 @@ test("RC gate composes the full production release gate before metadata acceptan
   assert.equal(checker.includes("LOCAL_DATABASE_SCHEMA_VERSION = 8"), true);
 });
 
-test("RC documentation keeps feature freeze and manual acceptance explicit", () => {
-  const release = read("docs/releases/1.0.0-rc.1.md");
-  const acceptance = read("docs/audits/v1-rc1-acceptance.md");
+test("RC2 documentation keeps feature freeze and product-tour recheck explicit", () => {
+  const release = read("docs/releases/1.0.0-rc.2.md");
+  const acceptance = read("docs/audits/v1-rc2-acceptance.md");
   const roadmap = read("docs/ROADMAP.md");
   assert.equal(release.includes("Feature freeze"), true);
-  assert.equal(release.includes("Backup → Restore"), true);
+  assert.equal(release.includes("Spotlight"), true);
+  assert.equal(release.includes("Backup/Recovery/Device Transfer"), true);
+  assert.equal(acceptance.includes("راهنمای سریع Desktop/Mobile"), true);
   assert.equal(acceptance.includes("Chromium desktop"), true);
   assert.equal(acceptance.includes("old-tab"), true);
   assert.equal(acceptance.includes("No feature expansion"), true);
-  assert.equal(roadmap.includes("v1.0.0-rc.1 — Release candidate validation"), true);
+  assert.equal(roadmap.includes("v1.0.0-rc.2 — Product tour release-blocker fix"), true);
   assert.equal(roadmap.includes("v1.0.0 stable"), true);
 });

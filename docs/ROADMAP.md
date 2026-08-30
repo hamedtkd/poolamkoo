@@ -294,13 +294,21 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Remove generic IndexedDB repair from the Workspace error boundary and route recovery decisions through Settings → Local Data Health / Data Safety.
 - Extend structural and production-browser gates for these boundaries while keeping IndexedDB schema 8 and all portability formats unchanged.
 
-## v1.0.0-rc.1 — Release candidate validation 🚧
+## v1.0.0-rc.1 — Release candidate validation ✅
 
 - Freeze feature development and use the v0.43 readiness audit as the release baseline.
 - Run `npm run check:rc`, which executes the full Production release gate before validating RC version/schema/document alignment.
 - Keep IndexedDB schema 8 and Backup/Recovery/Device Transfer contracts unchanged.
 - Complete manual Chromium desktop PWA install/update, mobile-class PWA, Backup → Restore, old-tab upgrade and responsive/theme acceptance on the real Candidate.
 - Fix only reproducible release blockers. A non-blocking enhancement stays out of the RC.
+
+## v1.0.0-rc.2 — Product tour release-blocker fix 🚧
+
+- Fix the RC1 manual-acceptance blocker where the tour overlay dimmed the control being explained and some steps could resolve to hidden/unavailable targets.
+- Use a true transparent spotlight hole, explicit page-area labels and only currently visible Desktop/Mobile targets.
+- Extend the production browser release gate so the highlighted control cannot overlap any shade and Desktop search must have a real tour target.
+- Keep Feature freeze, IndexedDB schema 8, Backup/Recovery/Device Transfer contracts and provider boundaries unchanged.
+- Re-run the full RC gate and manual guide pass before continuing the remaining v1.0.0 stable acceptance matrix.
 
 ## Likely next phases
 

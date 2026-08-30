@@ -280,7 +280,7 @@ After the Workspace Service Worker is registered, the production browser smoke r
 
 ## 21. v1.0 release-candidate acceptance
 
-برای `v1.0.0-rc.1` ابتدا Gate خودکار Candidate را اجرا کن:
+برای Candidate فعال `v1.0.0-rc.2` ابتدا Gate خودکار Candidate را اجرا کن:
 
 ```bash
 npm install
@@ -293,6 +293,9 @@ npm run check:rc
 - [ ] mobile-class browser: نصب/launch، Offline route و Resume بدون از دست‌رفتن IndexedDB
 - [ ] Backup → Restore با داده غیرنمایشی؛ Preview معتبر و Recovery Snapshot قبل از replacement
 - [ ] old-tab upgrade روی همان Origin؛ blocked/versionchange امن و بدون نیاز به Clear Site Data
+- [ ] راهنمای سریع روی Desktop و 390px: Target زیر Shade نرود، برچسب محل واضح باشد و هیچ مرحله‌ای بدون Highlight واقعی نماند
 - [ ] مرور 390px و desktop در Light/Dark برای Dashboard، Income، Funds، Investments، Reports و Settings
+
+Browser Smoke RC2 علاوه بر Gateهای قبلی، Tour را باز می‌کند و عدم هم‌پوشانی Shade با Target و وجود Target واقعی برای جست‌وجوی Desktop را assert می‌کند.
 
 اگر این Manual gateها blocker نداشتند، Candidate می‌تواند به `v1.0.0` stable ارتقا پیدا کند. در RC Feature جدید اضافه نکن؛ فقط blocker با reproduction روشن مجاز است.

@@ -30,7 +30,7 @@ export function AppTopbar({
         <TodayDate className="rounded-xl bg-muted/35 px-2.5 py-1.5" />
       </div>
 
-      <button type="button" onClick={onOpenSearch} className="mx-auto flex h-10 w-full max-w-md items-center gap-2 rounded-xl border bg-background/72 px-3 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="جست‌وجوی کلی">
+      <button type="button" onClick={onOpenSearch} data-tour="global-search" className="mx-auto flex h-10 w-full max-w-md items-center gap-2 rounded-xl border bg-background/72 px-3 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="جست‌وجوی کلی">
         <RiSearch2Line className="size-4" />
         <span className="flex-1 text-start type-body">جست‌وجوی کلی</span>
         <kbd className="rounded-md bg-muted px-1.5 py-0.5 text-[10px]">Ctrl/⌘ K</kbd>

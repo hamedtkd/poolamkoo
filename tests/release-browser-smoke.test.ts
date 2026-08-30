@@ -42,6 +42,8 @@ test("release smoke covers landing, dashboard/dialog visibility, reports and PWA
     "persisted onboarding completion",
     "dashboard critical content must be visible with normal motion preference",
     "workspace must compile tailwindcss-animated stagger utilities with distinct delays",
+    "product tour must leave the highlighted control visually outside the overlay",
+    "desktop global search must have a real visible tour target",
     "shared dialog content must never render blank under normal motion preference",
     "reports must expose privacy-safe export controls",
     "drag-to-dismiss mobile drawer",

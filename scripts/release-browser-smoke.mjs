@@ -161,6 +161,25 @@ async function clientNavigate(client, href, readyText) {
   })()`), `workspace content must remain visible after client navigation to ${href}`);
 }
 
+async function assertTourSpotlight(client, targetName, locationLabel) {
+  return evaluate(client, `(() => {
+    const target = [...document.querySelectorAll(${JSON.stringify(`[data-tour="${targetName}"]`)})].find((node) => {
+      if (!(node instanceof HTMLElement)) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    });
+    const spotlight = document.querySelector('[data-tour-spotlight=true]');
+    if (!(target instanceof HTMLElement) || !(spotlight instanceof HTMLElement)) return false;
+    const targetRect = target.getBoundingClientRect();
+    const spotRect = spotlight.getBoundingClientRect();
+    const shades = [...document.querySelectorAll('[data-tour-shade]')].filter((node) => node instanceof HTMLElement).map((node) => node.getBoundingClientRect());
+    const overlapsTarget = shades.some((shade) => shade.left < targetRect.right && shade.right > targetRect.left && shade.top < targetRect.bottom && shade.bottom > targetRect.top);
+    const card = document.querySelector('[role=dialog]')?.textContent ?? '';
+    return !overlapsTarget && spotRect.left <= targetRect.left && spotRect.right >= targetRect.right && spotRect.top <= targetRect.top && spotRect.bottom >= targetRect.bottom && card.includes(${JSON.stringify(`در حال نمایش: ${locationLabel}`)});
+  })()`);
+}
+
 async function dragElementDown(client, selector, distance = 180) {
   const point = await evaluate(client, `(() => {
     const node = document.querySelector(${JSON.stringify(selector)});
@@ -362,6 +381,15 @@ async function main() {
       return running.length >= 4 && delays.size >= 3;
     })()`), "workspace must compile tailwindcss-animated stagger utilities with distinct delays");
 
+    await evaluate(client, "window.dispatchEvent(new Event('poolamkoo:start-tour')); true");
+    await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') !== null", "product tour spotlight");
+    assert(await assertTourSpotlight(client, "new-money", "سایدبار"), "product tour must leave the highlighted control visually outside the overlay");
+    await evaluate(client, `[...document.querySelectorAll('[role=dialog] button')].find((node) => node.textContent?.includes('بعدی'))?.click(); true`);
+    await waitFor(client, "document.querySelector('[role=dialog]')?.textContent?.includes('هر چیزی را سریع پیدا کن')", "product tour search step");
+    assert(await assertTourSpotlight(client, "global-search", "نوار بالای صفحه"), "desktop global search must have a real visible tour target");
+    await evaluate(client, `[...document.querySelectorAll('[role=dialog] button')].find((node) => node.textContent?.includes('رد کردن راهنما'))?.click(); true`);
+    await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') === null", "product tour close");
+
     const openedNewMoney = await evaluate(client, `(() => {
       const button = [...document.querySelectorAll('button')].find((node) => node.textContent?.includes('پول جدید دارم'));
       if (!(button instanceof HTMLButtonElement)) return false;
@@ -412,6 +440,22 @@ async function main() {
     })()`), "mobile more drawer must stay focused instead of duplicating the primary bottom navigation");
     await dragElementDown(client, "[data-drawer-drag-handle=true]", 190);
     await waitFor(client, "document.querySelector('[data-drawer-content=true]') === null", "drag-to-dismiss mobile drawer");
+
+    await evaluate(client, "window.dispatchEvent(new Event('poolamkoo:start-tour')); true");
+    const mobileTour = [
+      ["میانبرهای اصلی اینجاست", "mobile-more", "نوار پایین"],
+      ["سرمایه‌گذاری و خرید واقعی", "investments", "نوار پایین"],
+      ["هزینه‌های آینده را جدا نگه دار", "funds", "نوار پایین"],
+      ["جست‌وجو همیشه در دسترس است", "global-search", "نوار بالای صفحه"],
+    ];
+    for (let index = 0; index < mobileTour.length; index += 1) {
+      const [title, targetName, locationLabel] = mobileTour[index];
+      await waitFor(client, `document.querySelector('[role=dialog]')?.textContent?.includes(${JSON.stringify(title)})`, `mobile product tour step ${index + 1}`);
+      assert(await assertTourSpotlight(client, targetName, locationLabel), `mobile product tour step ${index + 1} must keep a visible target outside the overlay`);
+      const action = index === mobileTour.length - 1 ? "تمام" : "بعدی";
+      await evaluate(client, `[...document.querySelectorAll('[role=dialog] button')].find((node) => node.textContent?.includes(${JSON.stringify(action)}))?.click(); true`);
+    }
+    await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') === null", "mobile product tour close");
     await client.call("Emulation.clearDeviceMetricsOverride");
 
     await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
@@ -422,7 +466,7 @@ async function main() {
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, product-tour spotlight clarity, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

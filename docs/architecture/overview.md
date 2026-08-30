@@ -245,3 +245,10 @@ Generic Workspace render/runtime failures no longer call `repairLocalData`. A ge
 RC1 introduces no new financial model or persistence contract. It freezes the v0.43 product boundary and promotes the existing production release gate to the candidate acceptance path through `npm run check:rc`. The RC metadata guard keeps package/runtime version alignment explicit and refuses an accidental IndexedDB schema bump beyond 8.
 
 Real PWA install/update, mobile-class offline/resume, Backup → Restore and old-tab upgrade remain manual acceptance because the isolated Chromium smoke cannot prove platform install UX or a user's real multi-tab/device behavior. A failing manual scenario is a release blocker; a new feature request is not RC scope.
+
+
+## RC2 product-tour spotlight boundary (v1.0.0-rc.2)
+
+RC1 manual acceptance exposed a UX blocker in the quick guide: one full-screen dim layer remained visually above the element being explained, while hidden responsive targets could leave a step without a meaningful highlight. RC2 keeps the target in its normal DOM stacking context and instead draws four independent shade regions around a padded hole. The target therefore stays visually untouched while the surrounding UI is de-emphasized.
+
+Each step now carries an explicit page-area label, Desktop global search exposes a real tour target, and the Mobile sequence uses only controls present in the closed-navigation state. The production browser gate starts the tour and verifies that shade rectangles do not intersect the highlighted control and that the next Desktop search step resolves to a visible target. No persistence, market, backup or PWA contract changes; IndexedDB remains schema 8.

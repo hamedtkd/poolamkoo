@@ -50,5 +50,5 @@ test("v1 readiness audit and release note document the hardened boundaries", () 
   assert.equal(audit.includes("Ready for a v1.0 release-candidate pass"), true);
   assert.equal(audit.includes("Generic error recovery"), true);
   assert.equal(roadmap.includes("v0.43 — v1.0 readiness hardening ✅"), true);
-  assert.equal(roadmap.includes("v1.0.0-rc.1 — Release candidate validation"), true);
+  assert.equal(roadmap.includes("v1.0.0-rc.2 — Product tour release-blocker fix"), true);
 });
