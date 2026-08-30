@@ -54,7 +54,8 @@ export const transactionSchema = z.object({
   type: z.enum(["buy", "sell"], { error: "نوع تراکنش را انتخاب کن." }),
   amount: requiredNumber("مبلغ کل را وارد کن.").positive("مبلغ باید بیشتر از صفر باشد."),
   price: requiredNumber("قیمت واحد را وارد کن.").positive("قیمت واحد باید بیشتر از صفر باشد."),
-  date: z.date({ error: "تاریخ معامله را انتخاب کن." }),
+  date: z.date({ error: "تاریخ معامله را انتخاب کن." }).refine((date) => date.getTime() <= Date.now(), "تاریخ معامله نمی‌تواند در آینده باشد."),
+  note: z.string().trim().max(200, "یادداشت نباید بیشتر از ۲۰۰ حرف باشد.").optional(),
 });
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;

@@ -38,6 +38,7 @@
 
 ## Release history
 
+- [v0.36.0 — Investment transaction correction & ledger integrity](./releases/0.36.0.md)
 - [v0.35.0 — Verified schema migration release gate](./releases/0.35.0.md)
 - [v0.34.0 — Persisted provider-scoped market identity](./releases/0.34.0.md)
 - [v0.33.0 — Portfolio quote identity & decision safety](./releases/0.33.0.md)

@@ -220,6 +220,16 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Clear the migration fixture before the normal fresh-onboarding/dashboard/reports/mobile/PWA smoke so release tests remain independent and deterministic.
 - Keep IndexedDB schema 7, backup/transfer formats, provider priority, zero-cost deployment boundaries and Background Push backlog unchanged.
 
+## v0.36 — Investment transaction correction & ledger integrity ✅
+
+- Add in-place editing for investment transactions instead of forcing delete-and-recreate corrections.
+- Build one pure chronological ledger validator that prevents any buy/sell correction from making holdings negative at a historical date.
+- Reject backdated sells when the quantity did not exist on that date, even if the current portfolio has enough units today.
+- Reject deletion or reduction of an older buy when a later recorded sell depends on those units.
+- Create a local Recovery Snapshot before every transaction edit and keep linked income-plan execution synchronized after edits/deletes.
+- Allow an optional transaction note while preserving the original asset/link identity; editing an old transaction never overwrites the user's current manual fallback price.
+- Keep IndexedDB schema 7, backup/transfer formats, provider priority, zero-cost deployment boundaries and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

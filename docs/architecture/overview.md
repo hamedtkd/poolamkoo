@@ -177,3 +177,10 @@ No backup envelope format, database name, table primary key, market-provider pri
 The schema-7 model introduced in v0.34 is unchanged. v0.35 instead verifies the upgrade path in the same production-browser gate used for routing, dialogs, Reports and PWA boundaries. `scripts/fixtures/schema6-idb.mjs` mirrors the exact `storesV6` contract and builds a raw IndexedDB database at native version 60; Dexie maps declared version 6 to that native version. The current application must then open the same `poolyar-local` database and reach native version 70/schema 7 before the smoke proceeds.
 
 The browser assertion reads the migrated stores directly: legacy exchange rows must gain `tindex`, explicit `tsetmc` rows must remain unchanged, the provider-scoped compound indexes must exist, and raw `marketId` may no longer be globally unique in Watchlist. A second TSETMC row with the same raw market id as a migrated Tindex row is inserted as a collision proof. The temporary fixture is then cleared before the existing fresh-profile smoke continues, so migration verification cannot contaminate onboarding, product-media data or the user's real browser storage.
+
+
+## Investment ledger correction boundary (v0.36)
+
+`lib/investment-ledger.ts` owns the chronological quantity invariant for manually entered investment transactions. A candidate add/edit is evaluated against the full recorded history for the asset, not only today's portfolio balance. A change is rejected when any sell would make the quantity negative at that historical date. Because transaction persistence stores a calendar date and no intraday timestamp, same-day buys are ordered before same-day sells for validation.
+
+The same invariant also protects destructive deletion: removing an earlier buy is blocked if a later sell depends on those units. In-place edits keep the asset, income and plan linkage stable, create a Recovery Snapshot before mutation, and resynchronize linked investment plan execution. Editing an old transaction deliberately does not rewrite `manualPriceToman`; that value remains an explicit current fallback, not a side effect of historical correction. IndexedDB remains schema 7.

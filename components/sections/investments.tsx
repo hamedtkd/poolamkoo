@@ -23,6 +23,7 @@ import { db } from "@/lib/db";
 import { createRecoverySnapshot } from "@/lib/recovery";
 import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { investmentLedgerErrorMessage, validateInvestmentLedger } from "@/lib/investment-ledger";
 import type { MarketAlertTarget } from "@/lib/market/alerts";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
 import type { AppSettings, Asset, AssetKind, IncomeEvent, InvestmentTransaction, MarketAlert, MarketInstrument, MarketQuote, MarketSnapshot, MarketWatchItem, PlanItem } from "@/lib/types";
@@ -50,7 +51,7 @@ const T = {
   delete: "\u062d\u0630\u0641 \u062a\u0631\u0627\u06a9\u0646\u0634",
 };
 
-type TransactionTarget = { asset: Asset; planItem?: PlanItem } | null;
+type TransactionTarget = { asset: Asset; planItem?: PlanItem; transaction?: InvestmentTransaction } | null;
 
 export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, marketAlerts, backgroundPush, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
   settings: AppSettings;
@@ -93,11 +94,20 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
 
   async function deleteTransaction() {
     if (!deleteTransactionId) return;
+    const tx = transactions.find((row) => row.id === deleteTransactionId);
+    if (tx) {
+      const check = validateInvestmentLedger(transactions.filter((row) => row.assetId === tx.assetId && row.id !== deleteTransactionId));
+      const ledgerMessage = investmentLedgerErrorMessage(check);
+      if (ledgerMessage) {
+        toast({ tone: "error", title: "این تراکنش فعلاً قابل حذف نیست", description: ledgerMessage });
+        return;
+      }
+    }
     try {
       await createRecoverySnapshot("قبل از حذف تراکنش سرمایه‌گذاری");
-      const tx = await db.transactions.get(deleteTransactionId);
+      const persisted = tx ?? await db.transactions.get(deleteTransactionId);
       await db.transactions.delete(deleteTransactionId);
-      if (tx?.planItemId) await syncInvestmentPlanItem(tx.planItemId);
+      if (persisted?.planItemId) await syncInvestmentPlanItem(persisted.planItemId);
       toast({ tone: "success", title: "تراکنش حذف شد", description: "یک نقطه بازیابی محلی از وضعیت قبل حذف نگه داشتیم." });
       setDeleteTransactionId(null);
     } catch (error) {
@@ -106,8 +116,19 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   }
 
   const activeAsset = transactionTarget?.asset ?? null;
-  const activePlan = transactionTarget?.planItem;
+  const activeTransaction = transactionTarget?.transaction;
+  const activePlan = transactionTarget?.planItem ?? (activeTransaction?.planItemId ? planItems.find((item) => item.id === activeTransaction.planItemId) : undefined);
   const activePosition = activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id) : undefined;
+  function editTransaction(transaction: InvestmentTransaction) {
+    const asset = assets.find((item) => item.id === transaction.assetId);
+    if (!asset) {
+      toast({ tone: "error", title: "دارایی تراکنش پیدا نشد", description: "این رکورد را از نسخه پشتیبان بررسی کن یا دوباره دارایی را بساز." });
+      return;
+    }
+    const planItem = transaction.planItemId ? planItems.find((item) => item.id === transaction.planItemId) : undefined;
+    setTransactionTarget({ asset, planItem, transaction });
+  }
+
   function createAssetFromMarket(instrument: MarketInstrument) {
     setEditingAsset(null);
     setSeedInstrument(instrument);
@@ -123,12 +144,12 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
     <Reveal step={7}><PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} /></Reveal>
     <Reveal step={8}><MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} watchlist={watchlist} /></Reveal>
     <Reveal step={8}><PortfolioDecisionCard review={portfolio.allocation} settings={settings} /></Reveal>
-    <Reveal step={8}><PortfolioTables positions={portfolio.positions} allocationRows={portfolio.allocation.rows} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onDeleteTransaction={setDeleteTransactionId} /></Reveal>
+    <Reveal step={8}><PortfolioTables positions={portfolio.positions} allocationRows={portfolio.allocation.rows} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onEditTransaction={editTransaction} onDeleteTransaction={setDeleteTransactionId} /></Reveal>
     <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />
     <MarketAlertDialog open={!!alertTarget} target={alertTarget} settings={settings} onOpenChange={(open) => !open && setAlertTarget(null)} />
-    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activePosition?.pricingReliable ? activePosition.price : activeAsset?.manualPriceToman} availableQty={activePosition?.qty ?? 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />
+    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activePosition?.pricingReliable ? activePosition.price : activeAsset?.manualPriceToman} settings={settings} planItem={activePlan} initialAmount={activeTransaction ? undefined : activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} transaction={activeTransaction} transactions={transactions} />
     <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={deleteTransactionId !== null} onOpenChange={(open) => !open && setDeleteTransactionId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.deleteTitle}</AlertDialogTitle><AlertDialogDescription>{T.deleteDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction destructive onClick={() => void deleteTransaction()}>{T.delete}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;
