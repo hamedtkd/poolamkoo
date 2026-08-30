@@ -6,7 +6,7 @@ import { db, exportDatabaseObject, importDatabaseObject } from "@/lib/db";
 export async function createRecoverySnapshot(reason: string) {
   const payload = await exportDatabaseObject();
   payload.marketSnapshots = []; // market cache is re-fetchable and would make local recovery points unnecessarily large
-  const itemCount = payload.incomes.length + payload.transactions.length + payload.planItems.length + payload.allocations.length;
+  const itemCount = payload.incomes.length + payload.transactions.length + payload.planItems.length + payload.allocations.length + payload.fundMovements.length;
   const id = await db.recoverySnapshots.add({
     reason, payload: JSON.stringify(payload), itemCount, schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     appVersion: APP_VERSION, createdAt: new Date().toISOString(),

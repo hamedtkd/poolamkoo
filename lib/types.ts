@@ -64,6 +64,21 @@ export interface GoalFund {
   updatedAt: string;
 }
 
+export type FundMovementType = "deposit" | "withdraw" | "opening";
+export type FundMovementSource = "manual" | "opening" | "plan" | "direct" | "income_reversal" | "migration";
+
+export interface FundMovement {
+  id?: number;
+  fundId: number;
+  type: FundMovementType;
+  source: FundMovementSource;
+  amountToman: number;
+  happenedAt: string;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Asset {
   id?: number;
   name: string;

@@ -29,6 +29,10 @@ export function createPoolamkooMediaDemoData() {
     { id: 2, name: "بیمه خودرو", targetToman: 20_000_000, currentToman: 14_000_000, dueAt: "2026-09-30T12:00:00+03:30", icon: "car", category: "planned", createdAt: now, updatedAt: now },
     { id: 3, name: "سفر زمستان", targetToman: 60_000_000, currentToman: 22_000_000, dueAt: "2026-12-15T12:00:00+03:30", icon: "plane", category: "custom", createdAt: now, updatedAt: now },
   ];
+  const fundMovements = funds.filter((fund) => fund.currentToman > 0).map((fund) => ({
+    id: fund.id, fundId: fund.id, type: "opening", source: "opening", amountToman: fund.currentToman,
+    happenedAt: "2026-08-26", note: "موجودی آغازین داده نمایشی", createdAt: now, updatedAt: now,
+  }));
   const assets = [
     { id: 1, name: "طلای ۱۸ عیار", kind: "gold", symbol: "IR_GOLD_18K", targetPct: 35, icon: "gold", archived: false, createdAt: now, updatedAt: now },
     { id: 2, name: "دلار", kind: "currency", symbol: "USD", targetPct: 25, icon: "dollar", archived: false, createdAt: now, updatedAt: now },
@@ -61,7 +65,7 @@ export function createPoolamkooMediaDemoData() {
     ];
   });
   const settings = [{ id: "settings", displayUnit: "toman", palette: "amber", darkMode: "light", onboardingComplete: true, guideComplete: true, hideFinancialData: false, emergencyMonths: 3, monthlyEssentialToman: 12_000_000, incomeStability: "stable", riskTolerance: "medium", updatedAt: now }];
-  return { allocationRules, incomes, allocations, funds, assets, transactions, marketSnapshots, marketWatchlist: [], marketAlerts: [], planItems, settings };
+  return { allocationRules, incomes, allocations, funds, fundMovements, assets, transactions, marketSnapshots, marketWatchlist: [], marketAlerts: [], planItems, settings };
 }
 
 export const POOLAMKOO_MEDIA_ANCHOR = ANCHOR;

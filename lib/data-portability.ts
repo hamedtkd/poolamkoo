@@ -1,9 +1,11 @@
 import { LOCAL_DATABASE_SCHEMA_VERSION } from "./app-version.ts";
 import { assertPortableMarketIdentities } from "./market/identity.ts";
+import { assertPortableFundLedger } from "./fund-ledger.ts";
 
 export type PortableDataPreview = {
   incomes: number;
   funds: number;
+  fundMovements: number;
   assets: number;
   transactions: number;
   planItems: number;
@@ -32,15 +34,16 @@ export function validatePortableData(data: Record<string, unknown>): PortableDat
     if (!Array.isArray(data[key])) throw new Error(`داده ناقص است: بخش ${key} پیدا نشد.`);
   }
   assertPortableMarketIdentities(data);
+  assertPortableFundLedger(data);
   const settings = data.settings as unknown[];
   if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) {
     throw new Error("داده تنظیمات معتبر پولم‌کو را ندارد.");
   }
   const preview = {
-    incomes: countRows(data, "incomes"), funds: countRows(data, "funds"), assets: countRows(data, "assets"),
+    incomes: countRows(data, "incomes"), funds: countRows(data, "funds"), fundMovements: countRows(data, "fundMovements"), assets: countRows(data, "assets"),
     transactions: countRows(data, "transactions"), planItems: countRows(data, "planItems"),
     watchlist: countRows(data, "marketWatchlist"), alerts: countRows(data, "marketAlerts"), total: 0,
   };
-  preview.total = preview.incomes + preview.funds + preview.assets + preview.transactions + preview.planItems + preview.watchlist + preview.alerts;
+  preview.total = preview.incomes + preview.funds + preview.fundMovements + preview.assets + preview.transactions + preview.planItems + preview.watchlist + preview.alerts;
   return preview;
 }

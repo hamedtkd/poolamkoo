@@ -29,7 +29,7 @@ test("transfer payload preview validates required Poolamkoo data", () => {
     allocationRules: [{}], incomes: [{}, {}], allocations: [], funds: [{}], assets: [{}, {}], transactions: [{}, {}, {}],
     settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{ marketId: "legacy-watch" }], marketAlerts: [{ marketId: "legacy-alert-1" }, { marketId: "legacy-alert-2" }],
   });
-  assert.deepEqual(preview, { incomes: 2, funds: 1, assets: 2, transactions: 3, planItems: 1, watchlist: 1, alerts: 2, total: 12 });
+  assert.deepEqual(preview, { incomes: 2, funds: 1, fundMovements: 0, assets: 2, transactions: 3, planItems: 1, watchlist: 1, alerts: 2, total: 12 });
 });
 
 test("large transfer payload is split into bounded chunks", () => {

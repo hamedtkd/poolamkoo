@@ -239,6 +239,16 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Preserve archived asset identity in reports and transaction history instead of degrading labels after archive.
 - Keep IndexedDB schema 7, backup/transfer formats, market-provider priority and Background Push backlog unchanged.
 
+## v0.38 — Fund movement ledger & correction safety ✅
+
+- Add a first-class local movement ledger for goal-fund deposits, withdrawals and opening balances instead of treating `currentToman` as an independently editable source of truth.
+- Route manual fund movements, plan execution, direct new-money allocation and income-deletion reversals through one ledger mutation boundary while keeping `fund.currentToman` as a denormalized current balance.
+- Allow manual movements to carry date/note and be edited or deleted only when chronological replay never makes the fund balance negative; system-generated movements remain read-only for auditability.
+- Upgrade IndexedDB from schema 7 to schema 8 in place, converting each pre-ledger positive fund balance into one explicit migration opening movement without changing the database name or existing primary keys.
+- Normalize older Backup/Recovery/Device Transfer payloads that have fund balances but no movement rows, while rejecting orphan, invalid, negative or balance-mismatched ledger payloads before destructive replacement.
+- Extend the production browser release fixture so the verified schema 6 profile must upgrade through schema 7 market identity and schema 8 opening-fund migration before the normal workspace/PWA smoke.
+- Keep provider priority, decision-safe market rules, zero-cost deployment boundaries and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

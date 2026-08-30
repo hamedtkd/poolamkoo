@@ -38,6 +38,8 @@
 
 ## Release history
 
+- [v0.38.0 — Fund movement ledger & correction safety](./releases/0.38.0.md)
+- [v0.37.0 — Safe asset archive lifecycle](./releases/0.37.0.md)
 - [v0.36.0 — Investment transaction correction & ledger integrity](./releases/0.36.0.md)
 - [v0.35.0 — Verified schema migration release gate](./releases/0.35.0.md)
 - [v0.34.0 — Persisted provider-scoped market identity](./releases/0.34.0.md)
@@ -93,5 +95,3 @@
 - [v0.3.1](./releases/0.3.1.md)
 - [v0.3.0](./releases/0.3.0.md)
 - [v0.2.x](./releases/0.2.x.md)
-
-- [v0.37.0](./releases/0.37.0.md)

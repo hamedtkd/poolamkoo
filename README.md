@@ -1,4 +1,5 @@
 # Poolamkoo — پولم‌کو
+> v0.38 note: Goal-fund balances now have an auditable local movement ledger. Manual deposits/withdrawals support date, note, edit/delete with chronological non-negative validation; plan/direct allocation and income-reversal flows use the same ledger. Existing balances migrate in place to one opening movement. IndexedDB is schema 8.
 > v0.36 note: Investment transactions can now be corrected in place with a recovery snapshot and chronological ledger validation. Backdated sells, edits, and deletes are rejected when they would make historical holdings negative; same-day buys are treated as available for same-day sells because Poolamkoo stores transaction dates, not intraday times. IndexedDB stays schema 7.
 > v0.35 note: The production browser release gate now seeds a real legacy schema-6 IndexedDB profile and verifies the in-place 6→7 migration, provider normalization, compound indexes, and same-market-id TSETMC/Tindex coexistence before running the normal workspace/PWA smoke. Schema remains 7.
 > v0.34 note: Persisted exchange identity now uses provider + market-id too. IndexedDB schema 7 migrates legacy Tindex-linked assets/watchlist/alerts safely, watchlist uniqueness is provider-scoped, and old backups are normalized before restore without changing backup formats.
@@ -81,7 +82,7 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 - Emergency fund
 - Planned costs such as medical care, travel, insurance, and gifts
 - Target, balance, due date, and progress tracking
-- Deposit and withdrawal flows without turning the app into detailed expense bookkeeping
+- Auditable deposit/withdrawal history with date, note, safe correction, and system-source provenance without turning the app into detailed expense bookkeeping
 
 ### Market data
 
@@ -317,7 +318,7 @@ For a release candidate, run the production-browser gate too:
 npm run check:release
 ```
 
-`check:release` runs the normal quality suite, creates one production build, then opens that build in an isolated Chrome/Edge/Chromium profile and verifies Landing → Workspace, fresh onboarding/local bootstrap, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
+`check:release` runs the normal quality suite, creates one production build, then opens that build in an isolated Chrome/Edge/Chromium profile and verifies the legacy schema 6 → current schema 8 database migration before Landing → Workspace, fresh onboarding/local bootstrap, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
 
 ## PWA
 
@@ -344,3 +345,6 @@ Settings can now move local data directly to another device without an account o
 ### v0.37 — Safe asset archive lifecycle
 
 Asset archive is now reversible and guarded: open holdings or unfinished asset-targeted plans cannot be archived, archived assets can be restored with a Recovery Snapshot, and legacy archived holdings remain included in portfolio valuation until restored. IndexedDB remains schema 7.
+### v0.38 — Auditable fund movement ledger
+
+Goal-fund balances now have a first-class local movement history. Manual deposits and withdrawals can be dated, noted, corrected, or deleted only when chronological replay stays non-negative; plan execution, direct new-money funding, and income-deletion reversals use the same ledger boundary. Existing positive balances migrate in place to one opening movement as IndexedDB advances to schema 8.

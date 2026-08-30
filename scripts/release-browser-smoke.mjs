@@ -6,10 +6,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createPoolamkooMediaDemoData, POOLAMKOO_MEDIA_ANCHOR } from "./media/demo-data.mjs";
 import {
-  CURRENT_SCHEMA7_NATIVE_VERSION,
+  CURRENT_SCHEMA8_NATIVE_VERSION,
   LEGACY_SCHEMA6_NATIVE_VERSION,
   legacySchema6SeedExpression,
-  migratedSchema7InspectionExpression,
+  migratedSchema8InspectionExpression,
   providerCollisionInsertExpression,
 } from "./fixtures/schema6-idb.mjs";
 
@@ -182,14 +182,16 @@ async function verifyLegacySchemaMigration(client, origin) {
   assert(seededVersion === LEGACY_SCHEMA6_NATIVE_VERSION, "legacy schema 6 fixture must use native IndexedDB version 60");
 
   await navigate(client, `${origin}/dashboard`, "قانون پول فعلی");
-  const migrated = await evaluate(client, migratedSchema7InspectionExpression());
-  assert(migrated?.nativeVersion === CURRENT_SCHEMA7_NATIVE_VERSION, "schema 6 profile must upgrade in place to schema 7");
+  const migrated = await evaluate(client, migratedSchema8InspectionExpression());
+  assert(migrated?.nativeVersion === CURRENT_SCHEMA8_NATIVE_VERSION, "schema 6 profile must upgrade in place through schema 8");
   assert(migrated?.assets?.some((row) => row.marketId === "shared-market-id" && row.marketSource === "tindex"), "legacy linked assets must normalize to Tindex during schema 7 migration");
   assert(migrated?.watchlist?.some((row) => row.marketId === "shared-market-id" && row.source === "tindex"), "legacy watchlist rows must survive migration with Tindex identity");
   assert(migrated?.alerts?.some((row) => row.marketId === "legacy-alert-id" && row.source === "tindex"), "legacy market alerts must survive migration with Tindex identity");
   assert(migrated?.alerts?.some((row) => row.marketId === "explicit-tsetmc-id" && row.source === "tsetmc"), "explicit TSETMC identity must survive schema 7 migration");
   assert(migrated?.watchIndexes?.includes("[source+marketId]") && migrated?.alertIndexes?.includes("[source+marketId]"), "schema 7 must expose provider-scoped market indexes after migration");
   assert(migrated?.watchMarketIdUnique === false, "raw marketId must stop being globally unique after schema 7 migration");
+  assert(migrated?.funds?.some((row) => row.id === 1 && row.currentToman === 2_500_000), "legacy fund balance must survive schema 8 migration");
+  assert(migrated?.fundMovements?.some((row) => row.fundId === 1 && row.type === "opening" && row.source === "migration" && row.amountToman === 2_500_000), "schema 8 migration must create an opening fund-ledger row for legacy balances");
 
   const collisions = await evaluate(client, providerCollisionInsertExpression(POOLAMKOO_MEDIA_ANCHOR));
   assert(JSON.stringify(collisions) === JSON.stringify([
@@ -418,7 +420,7 @@ async function main() {
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: schema 6→7 migration, landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

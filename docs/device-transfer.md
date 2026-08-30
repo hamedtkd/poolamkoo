@@ -43,3 +43,7 @@ Envelope رمزنگاری‌شده داخل WebRTC عمداً روی فرمت v1
 ## Schema 7 market identity compatibility (v0.34)
 
 The transfer protocol/encrypted envelope remains unchanged. A sender still announces `schemaVersion` in the metadata frame, and the receiver rejects future schemas before import. When schema 6 or older payloads are accepted by a schema 7 client, legacy market-linked assets/watchlist/alerts that lack an explicit provider are normalized to Tindex before IndexedDB persistence. Explicit TSETMC identities remain unchanged.
+
+## Schema 8 fund-ledger compatibility (v0.38)
+
+The direct-transfer protocol and encrypted v1 transfer envelope are unchanged. Current senders announce schema 8. A schema-8 receiver still accepts older compatible payloads; when `fundMovements` is absent, each positive legacy `fund.currentToman` is normalized to one local `opening` movement with source `migration` before persistence. Payloads that already contain a ledger must pass chronological non-negative and final-balance validation. Future schemas are still rejected before import, and the receiver continues to create a Recovery Snapshot before replacing local data.

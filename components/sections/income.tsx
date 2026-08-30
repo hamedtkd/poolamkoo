@@ -17,6 +17,7 @@ import { db } from "@/lib/db";
 import { createRecoverySnapshot } from "@/lib/recovery";
 import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, formatPercent, toPersianDate } from "@/lib/format";
+import { applyFundMovementWithinTransaction } from "@/lib/fund-ledger-store";
 import { incomePlanProgress } from "@/lib/plan-execution";
 import type { AllocationEntry, AppSettings, IncomeEvent, PlanItem } from "@/lib/types";
 
@@ -45,19 +46,26 @@ export function IncomeSection({ incomes, allocations, planItems, settings, onNew
     if (!deleteId) return;
     try {
       await createRecoverySnapshot("قبل از حذف پول ورودی");
-      await db.transaction("rw", db.incomes, db.allocations, db.planItems, db.transactions, db.funds, async () => {
-        const plans = await db.planItems.where("incomeId").equals(deleteId).toArray();
-        for (const item of plans) {
-          if (item.targetType !== "fund" || !item.targetId || item.executedToman <= 0) continue;
-          const fund = await db.funds.get(item.targetId);
-          if (fund?.id) await db.funds.update(fund.id, { currentToman: Math.max(0, fund.currentToman - item.executedToman), updatedAt: new Date().toISOString() });
-        }
-        const linked = await db.transactions.where("incomeId").equals(deleteId).toArray();
-        for (const tx of linked) if (tx.id) await db.transactions.update(tx.id, { incomeId: undefined, planItemId: undefined });
-        await db.planItems.where("incomeId").equals(deleteId).delete();
-        await db.allocations.where("incomeId").equals(deleteId).delete();
-        await db.incomes.delete(deleteId);
-      });
+      await db.transaction(
+        "rw",
+        [db.incomes, db.allocations, db.planItems, db.transactions, db.funds, db.fundMovements],
+        async () => {
+          const plans = await db.planItems.where("incomeId").equals(deleteId).toArray();
+          for (const item of plans) {
+            if (item.targetType !== "fund" || !item.targetId || item.executedToman <= 0) continue;
+            const fund = await db.funds.get(item.targetId);
+            if (fund?.id) await applyFundMovementWithinTransaction({
+              fundId: fund.id, type: "withdraw", source: "income_reversal", amountToman: item.executedToman,
+              happenedAt: new Date().toISOString().slice(0, 10), note: `برگشت اجرای «${item.label}» پس از حذف پول ورودی`,
+            });
+          }
+          const linked = await db.transactions.where("incomeId").equals(deleteId).toArray();
+          for (const tx of linked) if (tx.id) await db.transactions.update(tx.id, { incomeId: undefined, planItemId: undefined });
+          await db.planItems.where("incomeId").equals(deleteId).delete();
+          await db.allocations.where("incomeId").equals(deleteId).delete();
+          await db.incomes.delete(deleteId);
+        },
+      );
       toast({ tone: "success", title: "پول ورودی حذف شد", description: "قبل از حذف یک نقطه بازیابی محلی ساخته شد." });
       setDeleteId(null);
     } catch (error) {

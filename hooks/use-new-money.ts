@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { splitIncome } from "@/lib/calculations";
 import { db } from "@/lib/db";
+import { applyFundMovementWithinTransaction } from "@/lib/fund-ledger-store";
 import {
   directFundTotal,
   fundsWithDirectBalances,
@@ -129,7 +130,7 @@ export function useNewMoney({ rule, settings, funds, assets, transactions, quote
     const now = new Date().toISOString();
     let savedIncomeId: number | undefined;
 
-    await db.transaction("rw", db.incomes, db.allocations, db.planItems, db.funds, async () => {
+    await db.transaction("rw", db.incomes, db.allocations, db.planItems, db.funds, db.fundMovements, async () => {
       const incomeIdKey = await db.incomes.add({ amountToman: data.amount, title: data.title.trim(), happenedAt: dateToISO(data.date), createdAt: now });
       if (typeof incomeIdKey !== "number") throw new Error("ثبت پول ورودی انجام نشد. دوباره تلاش کنید.");
       const incomeId = incomeIdKey;
@@ -150,8 +151,12 @@ export function useNewMoney({ rule, settings, funds, assets, transactions, quote
         plans.push({ incomeId, bucket: "safety", targetType: "fund", targetId: fund.id, label: `${fund.name} · کنارگذاری مستقیم`, plannedToman: amountToman, executedToman: amountToman, createdAt: now, updatedAt: now });
       }
       for (const [fundId, amountToman] of directByFund) {
-        const current = await db.funds.get(fundId);
-        if (current) await db.funds.update(fundId, { currentToman: Math.max(0, current.currentToman) + amountToman, updatedAt: now });
+        const fund = funds.find((item) => item.id === fundId);
+        if (!fund) continue;
+        await applyFundMovementWithinTransaction({
+          fundId, type: "deposit", source: "direct", amountToman, happenedAt: dateToISO(data.date),
+          note: `${fund.name} · کنارگذاری مستقیم`,
+        });
       }
       appendPlanItems(plans, incomeId, lifeAmount, safetyAmount, growthAmount, fundPlan, assetPlan, now);
       if (plans.length) await db.planItems.bulkAdd(plans);

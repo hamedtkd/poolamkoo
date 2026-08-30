@@ -1,5 +1,5 @@
 export const LEGACY_SCHEMA6_NATIVE_VERSION = 60;
-export const CURRENT_SCHEMA7_NATIVE_VERSION = 70;
+export const CURRENT_SCHEMA8_NATIVE_VERSION = 80;
 
 export const SCHEMA6_STORES = {
   allocationRules: "++id, preset, updatedAt",
@@ -44,7 +44,8 @@ function nativeStoreDefinitions() {
 
 function legacySeed(now) {
   return {
-    allocationRules: [], incomes: [], allocations: [], funds: [], transactions: [], marketSnapshots: [], planItems: [], recoverySnapshots: [], appMeta: [],
+    allocationRules: [], incomes: [], allocations: [], transactions: [], marketSnapshots: [], planItems: [], recoverySnapshots: [], appMeta: [],
+    funds: [{ id: 1, name: "Legacy migration fund", targetToman: 5_000_000, currentToman: 2_500_000, icon: "fund", category: "planned", createdAt: now, updatedAt: now }],
     assets: [{
       id: 1, name: "Legacy migration asset", kind: "stock", symbol: "LEGACY", marketId: "shared-market-id",
       targetPct: 100, manualPriceToman: 1_000, icon: "stock", archived: false, createdAt: now, updatedAt: now,
@@ -102,25 +103,27 @@ export function legacySchema6SeedExpression(now) {
   })()`;
 }
 
-export function migratedSchema7InspectionExpression() {
+export function migratedSchema8InspectionExpression() {
   return `(async () => {
     const db = await new Promise((resolve, reject) => {
       const request = indexedDB.open("poolyar-local");
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    const tx = db.transaction(["assets", "marketWatchlist", "marketAlerts"], "readonly");
+    const tx = db.transaction(["assets", "funds", "fundMovements", "marketWatchlist", "marketAlerts"], "readonly");
     const getAll = (name) => new Promise((resolve, reject) => {
       const request = tx.objectStore(name).getAll();
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    const [assets, watchlist, alerts] = await Promise.all([getAll("assets"), getAll("marketWatchlist"), getAll("marketAlerts")]);
+    const [assets, funds, fundMovements, watchlist, alerts] = await Promise.all([getAll("assets"), getAll("funds"), getAll("fundMovements"), getAll("marketWatchlist"), getAll("marketAlerts")]);
     const watchStore = tx.objectStore("marketWatchlist");
     const alertStore = tx.objectStore("marketAlerts");
     const result = {
       nativeVersion: db.version,
       assets,
+      funds,
+      fundMovements,
       watchlist,
       alerts,
       watchIndexes: [...watchStore.indexNames],

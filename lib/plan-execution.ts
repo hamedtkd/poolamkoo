@@ -1,6 +1,7 @@
 "use client";
 
 import { db } from "@/lib/db";
+import { applyFundMovementWithinTransaction } from "@/lib/fund-ledger-store";
 import { incomePlanProgress, planProgress, planRemaining } from "@/lib/plan-progress";
 import type { PlanItem } from "@/lib/types";
 
@@ -11,12 +12,14 @@ export async function executeNonInvestmentPlan(item: PlanItem, amountToman: numb
   const amount = Math.min(amountToman, planRemaining(item));
   if (amount <= 0) return;
   const now = new Date().toISOString();
-  await db.transaction("rw", db.planItems, db.funds, async () => {
+  await db.transaction("rw", db.planItems, db.funds, db.fundMovements, async () => {
     const currentExecuted = Number.isFinite(item.executedToman) ? item.executedToman : 0;
     await db.planItems.update(item.id!, { executedToman: currentExecuted + amount, updatedAt: now });
     if (item.targetType === "fund" && item.targetId) {
-      const fund = await db.funds.get(item.targetId);
-      if (fund) await db.funds.update(fund.id!, { currentToman: Math.max(0, fund.currentToman ?? 0) + amount, updatedAt: now });
+      await applyFundMovementWithinTransaction({
+        fundId: item.targetId, type: "deposit", source: "plan", amountToman: amount,
+        happenedAt: now.slice(0, 10), note: `اجرای برنامه: ${item.label}`,
+      });
     }
   });
 }

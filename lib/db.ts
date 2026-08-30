@@ -4,7 +4,8 @@ import Dexie, { type EntityTable } from "dexie";
 import { LOCAL_DATA_BLOCKED_EVENT, LOCAL_DATA_VERSION_CHANGE_EVENT } from "@/lib/local-data-issues";
 import { LOCAL_DATABASE_SCHEMA_VERSION } from "@/lib/app-version";
 import { validatePortableData } from "@/lib/data-portability";
-import { storesV1, storesV2, storesV4, storesV5, storesV6, storesV7 } from "@/lib/db-schema";
+import { legacyFundOpeningMovement, normalizePortableFundLedger } from "@/lib/fund-ledger";
+import { storesV1, storesV2, storesV4, storesV5, storesV6, storesV7, storesV8 } from "@/lib/db-schema";
 import { normalizeLegacyAssetIdentityRow, normalizeLegacyExchangeIdentityRow, normalizePortableMarketIdentities } from "@/lib/market/identity";
 import type {
   AllocationEntry,
@@ -12,6 +13,7 @@ import type {
   AppSettings,
   Asset,
   GoalFund,
+  FundMovement,
   IncomeEvent,
   InvestmentTransaction,
   MarketAlert,
@@ -43,6 +45,7 @@ export class PoolYarDB extends Dexie {
   incomes!: EntityTable<IncomeEvent, "id">;
   allocations!: EntityTable<AllocationEntry, "id">;
   funds!: EntityTable<GoalFund, "id">;
+  fundMovements!: EntityTable<FundMovement, "id">;
   assets!: EntityTable<Asset, "id">;
   transactions!: EntityTable<InvestmentTransaction, "id">;
   marketSnapshots!: EntityTable<MarketSnapshot, "id">;
@@ -63,10 +66,15 @@ export class PoolYarDB extends Dexie {
     this.version(4).stores(storesV4);
     this.version(5).stores(storesV5);
     this.version(6).stores(storesV6);
-    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV7).upgrade(async (tx) => {
+    this.version(7).stores(storesV7).upgrade(async (tx) => {
       await tx.table("assets").toCollection().modify((row) => normalizeLegacyAssetIdentityRow(row as Record<string, unknown>));
       await tx.table("marketWatchlist").toCollection().modify((row) => normalizeLegacyExchangeIdentityRow(row as Record<string, unknown>));
       await tx.table("marketAlerts").toCollection().modify((row) => normalizeLegacyExchangeIdentityRow(row as Record<string, unknown>));
+    });
+    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV8).upgrade(async (tx) => {
+      const funds = await tx.table("funds").toArray() as GoalFund[];
+      const openings = funds.map((fund) => legacyFundOpeningMovement(fund)).filter((row): row is FundMovement => Boolean(row));
+      if (openings.length) await tx.table("fundMovements").bulkAdd(openings);
     });
   }
 }
@@ -185,17 +193,17 @@ function addGrowthPlans(plans: PlanItem[], incomeId: number, growth: number, ass
 export async function exportDatabaseObject() {
   return {
     allocationRules: await db.allocationRules.toArray(), incomes: await db.incomes.toArray(),
-    allocations: await db.allocations.toArray(), funds: await db.funds.toArray(), assets: await db.assets.toArray(),
+    allocations: await db.allocations.toArray(), funds: await db.funds.toArray(), fundMovements: await db.fundMovements.toArray(), assets: await db.assets.toArray(),
     transactions: await db.transactions.toArray(), marketSnapshots: await db.marketSnapshots.toArray(),
     marketWatchlist: await db.marketWatchlist.toArray(), marketAlerts: await db.marketAlerts.toArray(),
     planItems: await db.planItems.toArray(), settings: await db.settings.toArray(),
   };
 }
 
-const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
+const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "fundMovements", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
 export async function importDatabaseObject(data: Record<string, unknown>) {
   validatePortableData(data);
-  const normalizedData = normalizePortableMarketIdentities(data);
+  const normalizedData = normalizePortableFundLedger(normalizePortableMarketIdentities(data));
 
   await db.transaction("rw", db.tables, async () => {
     for (const name of backupTableNames) await db.table(name).clear();

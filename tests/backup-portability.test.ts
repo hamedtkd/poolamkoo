@@ -22,7 +22,7 @@ async function recalculateV2Digest(envelope: Awaited<ReturnType<typeof createBac
 
 test("portable data preview validates required local-first tables", () => {
   assert.deepEqual(validatePortableData(validData), {
-    incomes: 2, funds: 1, assets: 2, transactions: 3, planItems: 1, watchlist: 1, alerts: 2, total: 12,
+    incomes: 2, funds: 1, fundMovements: 0, assets: 2, transactions: 3, planItems: 1, watchlist: 1, alerts: 2, total: 12,
   });
   assert.throws(() => validatePortableData({ ...validData, settings: [] }), /تنظیمات معتبر/);
 });

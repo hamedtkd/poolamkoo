@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { db } from "@/lib/db";
-import { dateToISO, isoToDate } from "@/lib/format";
+import { applyFundMovementWithinTransaction } from "@/lib/fund-ledger-store";
+import { dateToISO, formatMoney, isoToDate } from "@/lib/format";
 import type { AppSettings, GoalFund } from "@/lib/types";
 import { fundSchema, type FundFormValues } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
@@ -42,23 +43,35 @@ export function FundEditor({ open, onOpenChange, fund, settings, onSaved }: Fund
 
   const save = form.handleSubmit(async (values) => {
     const now = new Date().toISOString();
-    const payload = {
+    const base = {
       name: values.name.trim(),
       targetToman: values.targetToman,
-      currentToman: values.currentToman,
       dueAt: values.dueAt ? dateToISO(values.dueAt) : undefined,
       category: values.category,
       icon: fund?.icon ?? "fund",
       updatedAt: now,
-    } satisfies Omit<GoalFund, "id" | "createdAt">;
+    };
 
     let saved: GoalFund;
     if (fund?.id) {
+      const payload = { ...base, currentToman: fund.currentToman } satisfies Omit<GoalFund, "id" | "createdAt">;
       await db.funds.update(fund.id, payload);
       saved = { ...fund, ...payload };
     } else {
-      const id = await db.funds.add({ ...payload, createdAt: now });
-      saved = { ...payload, id: Number(id), createdAt: now };
+      let id = 0;
+      await db.transaction("rw", db.funds, db.fundMovements, async () => {
+        const key = await db.funds.add({ ...base, currentToman: 0, createdAt: now });
+        id = Number(key);
+        if (values.currentToman > 0) {
+          await applyFundMovementWithinTransaction({
+            fundId: id, type: "opening", source: "opening", amountToman: values.currentToman,
+            happenedAt: dateToISO(new Date()), note: "موجودی آغازین صندوق",
+          });
+        }
+      });
+      const created = await db.funds.get(id);
+      if (!created) throw new Error("صندوق ساخته شد اما دوباره خوانده نشد.");
+      saved = created;
     }
     onSaved?.(saved);
     onOpenChange(false);
@@ -75,17 +88,26 @@ export function FundEditor({ open, onOpenChange, fund, settings, onSaved }: Fund
           <Field label="نام" error={form.formState.errors.name?.message}>
             <Input {...form.register("name")} placeholder="مثلاً دندان‌پزشکی" />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Controller name="targetToman" control={form.control} render={({ field, fieldState }) => (
               <Field label="هدف" error={fieldState.error?.message}>
                 <MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} />
               </Field>
             )} />
-            <Controller name="currentToman" control={form.control} render={({ field, fieldState }) => (
-              <Field label="موجودی فعلی" error={fieldState.error?.message}>
-                <MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} />
+            {fund ? (
+              <Field label="موجودی فعلی">
+                <div className="rounded-xl border bg-muted/30 px-3 py-2.5 text-sm">
+                  <div className="type-strong">{formatMoney(fund.currentToman, settings.displayUnit)}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">موجودی از دفتر گردش محاسبه می‌شود؛ برای تغییرش از واریز / برداشت استفاده کن.</div>
+                </div>
               </Field>
-            )} />
+            ) : (
+              <Controller name="currentToman" control={form.control} render={({ field, fieldState }) => (
+                <Field label="موجودی آغازین" error={fieldState.error?.message}>
+                  <MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} />
+                </Field>
+              )} />
+            )}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <Controller name="category" control={form.control} render={({ field }) => (

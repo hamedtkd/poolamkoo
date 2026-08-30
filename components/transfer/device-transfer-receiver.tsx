@@ -37,6 +37,6 @@ export function DeviceTransferReceiver({ transfer }: { transfer: Controller }) {
 }
 
 function Preview({ preview, onImport }: { preview: NonNullable<Controller["preview"]>; onImport: () => void }) {
-  const rows = [["پول‌های ورودی", preview.incomes], ["صندوق‌ها", preview.funds], ["دارایی‌ها", preview.assets], ["تراکنش‌ها", preview.transactions], ["کارت‌های برنامه", preview.planItems], ["دیده‌بان", preview.watchlist], ["هشدارها", preview.alerts]] as const;
+  const rows = [["پول‌های ورودی", preview.incomes], ["صندوق‌ها", preview.funds], ["گردش صندوق", preview.fundMovements], ["دارایی‌ها", preview.assets], ["تراکنش‌ها", preview.transactions], ["کارت‌های برنامه", preview.planItems], ["دیده‌بان", preview.watchlist], ["هشدارها", preview.alerts]] as const;
   return <div className="space-y-3 rounded-2xl border p-4"><div><div className="type-strong">پیش‌نمایش داده دریافتی</div><p className="mt-1 text-xs text-muted-foreground">{new Intl.NumberFormat("fa-IR").format(preview.total)} رکورد قابل انتقال شناسایی شد.</p></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{rows.map(([label, value]) => <div key={label} className="rounded-xl bg-muted/45 p-2"><div className="text-[10px] text-muted-foreground">{label}</div><div className="mt-1 type-strong">{new Intl.NumberFormat("fa-IR").format(value)}</div></div>)}</div><Button className="w-full" onClick={onImport}>وارد کردن روی این دستگاه</Button></div>;
 }

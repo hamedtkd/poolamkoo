@@ -90,6 +90,7 @@ export function useAppData() {
   const incomes = useLiveQuery(() => canQuery ? db.incomes.orderBy("happenedAt").reverse().toArray() : [], [canQuery]) ?? [];
   const allocations = useLiveQuery(() => canQuery ? db.allocations.toArray() : [], [canQuery]) ?? [];
   const funds = useLiveQuery(() => canQuery ? db.funds.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
+  const fundMovements = useLiveQuery(() => canQuery ? db.fundMovements.orderBy("happenedAt").reverse().toArray() : [], [canQuery]) ?? [];
   const allAssetsQuery = useLiveQuery(() => canQuery ? db.assets.toArray() : [], [canQuery]);
   const allAssets = useMemo(() => allAssetsQuery ?? [], [allAssetsQuery]);
   const assets = useMemo(() => allAssets.filter((asset) => !asset.archived), [allAssets]);
@@ -109,6 +110,7 @@ export function useAppData() {
     incomes,
     allocations,
     funds,
+    fundMovements,
     assets,
     allAssets,
     archivedAssets,

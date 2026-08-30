@@ -5,5 +5,5 @@ import { useAppRuntime } from "@/components/app/app-runtime";
 
 export default function FundsPage() {
   const { data } = useAppRuntime();
-  return <FundsSection funds={data.funds} settings={data.settings} />;
+  return <FundsSection funds={data.funds} fundMovements={data.fundMovements} planItems={data.planItems} settings={data.settings} />;
 }

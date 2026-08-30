@@ -42,3 +42,8 @@ export const storesV7 = {
   marketWatchlist: "++id, &[source+marketId], marketId, symbol, updatedAt",
   marketAlerts: "++id, [source+marketId], marketId, symbol, kind, enabled, updatedAt",
 };
+
+export const storesV8 = {
+  ...storesV7,
+  fundMovements: "++id, fundId, type, source, happenedAt, createdAt",
+};

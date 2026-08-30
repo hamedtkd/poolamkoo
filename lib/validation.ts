@@ -101,6 +101,8 @@ export const onboardingSchema = z.object({
 export const fundMovementSchema = z.object({
   type: z.enum(["deposit", "withdraw"], { error: "نوع عملیات را انتخاب کن." }),
   amount: requiredNumber("مبلغ را وارد کن.").positive("مبلغ باید بیشتر از صفر باشد."),
+  date: z.date({ error: "تاریخ را انتخاب کن." }).refine((date) => date.getTime() <= Date.now(), "تاریخ گردش صندوق نمی‌تواند در آینده باشد."),
+  note: z.string().trim().max(200, "یادداشت نباید بیشتر از ۲۰۰ حرف باشد.").optional(),
 });
 export type FundMovementFormValues = z.infer<typeof fundMovementSchema>;
 
