@@ -46,7 +46,7 @@ export function DataHealthCard() {
   }
 
   const status = statusMeta(report);
-  return <Card>
+  return <Card id="local-data-health" className="scroll-mt-24">
     <CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><RiDatabase2Line className="text-primary" /> سلامت داده محلی</CardTitle><Badge className={status.className}>{status.label}</Badge></div></CardHeader>
     <CardContent className="space-y-4">
       <div className="rounded-2xl border bg-background/70 p-3">

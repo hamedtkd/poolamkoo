@@ -286,9 +286,17 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Extend the explicit detailed CSV with reconciliation and aggregate flow rows while keeping the share-safe summary amount/name-free.
 - Keep IndexedDB schema 8, backup/transfer formats, provider priority, zero-cost deployment boundaries and Background Push backlog unchanged.
 
+## v0.43 — v1.0 readiness hardening ✅
+
+- Audit product/UX, offline/PWA, migration, backup/restore, recovery, privacy, documentation and release gates without adding another major feature family.
+- Keep public navigations network-only after Workspace PWA registration even though the Service Worker needs root scope for sibling app routes.
+- Treat “Later” as dismissal of the current waiting worker for the active app session; a genuinely new worker may notify again.
+- Remove generic IndexedDB repair from the Workspace error boundary and route recovery decisions through Settings → Local Data Health / Data Safety.
+- Extend structural and production-browser gates for these boundaries while keeping IndexedDB schema 8 and all portability formats unchanged.
+
 ## Likely next phases
 
-- **v0.43 — v1.0 readiness audit:** review remaining product/UX, offline/PWA, migration, backup/restore, privacy, documentation and release gaps before adding another major feature family.
+- **v1.0 release candidate:** run the full release gate plus manual cross-browser PWA install/update, Backup→Restore and old-tab upgrade checks; fix blockers only rather than opening a new feature family.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

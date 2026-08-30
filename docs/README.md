@@ -5,6 +5,7 @@
 ## مسیر مستندات
 
 - `architecture/` معماری Local-First، بازار، داده و UI
+- `audits/` ممیزی‌های Release-readiness و مرزهای قبل از نسخه‌های اصلی
 - `releases/` تاریخچه نسخه‌ها و تغییرات
 - `testing/` تست، کنترل کیفیت و انتشار
 - `backlog/` آزمایش‌های متوقف‌شده و ایده‌های نگه‌داری‌شده
@@ -30,6 +31,9 @@
 - [Roadmap](./ROADMAP.md)
 - [Background Push backlog](./backlog/background-push.md)
 
+## v1 readiness
+- [v0.43 readiness audit](./audits/v1-readiness-v0.43.md)
+
 ## Data safety
 - [مدل ماندگاری داده و Backup](./data-safety.md)
 
@@ -38,6 +42,7 @@
 
 ## Release history
 
+- [v0.43.0 — v1.0 readiness hardening](./releases/0.43.0.md)
 - [v0.42.0 — Reports & reconciliation upgrade](./releases/0.42.0.md)
 - [v0.41.0 — Unified financial activity history](./releases/0.41.0.md)
 - [v0.40.0 — Local data health & consistency audit](./releases/0.40.0.md)

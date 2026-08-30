@@ -3,8 +3,9 @@ export const PWA_UPDATE_MESSAGE = "SKIP_WAITING";
 export type PwaUpdateSignals = {
   hasController: boolean;
   hasWaitingWorker: boolean;
+  waitingWorkerDismissed?: boolean;
 };
 
 export function pwaUpdateReady(signals: PwaUpdateSignals) {
-  return signals.hasController && signals.hasWaitingWorker;
+  return signals.hasController && signals.hasWaitingWorker && !signals.waitingWorkerDismissed;
 }

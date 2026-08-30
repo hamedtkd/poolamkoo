@@ -1,5 +1,10 @@
-const CACHE = "poolamkoo-v66";
+const CACHE = "poolamkoo-v67";
 const PRECACHE = ["/dashboard", "/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamkoo.svg"];
+const WORKSPACE_NAVIGATION_PREFIXES = ["/dashboard", "/activity", "/income", "/funds", "/investments", "/reports", "/settings"];
+
+function isWorkspaceNavigation(pathname) {
+  return pathname === "/offline" || WORKSPACE_NAVIGATION_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => Promise.allSettled(PRECACHE.map((path) => cache.add(path)))));
@@ -34,6 +39,10 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (request.mode === "navigate") {
+    if (url.origin === self.location.origin && !isWorkspaceNavigation(url.pathname)) {
+      event.respondWith(fetch(request));
+      return;
+    }
     event.respondWith(fetch(request).then((response) => {
       if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
       return response;

@@ -417,10 +417,12 @@ async function main() {
     await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal browser root must remain landing even after workspace PWA registration");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "returning to the public landing must remove workspace manifest metadata");
+    assert(await evaluate(client, "Boolean(navigator.serviceWorker.controller)"), "public landing should remain under the existing root-scope worker after workspace registration");
+    assert(await evaluate(client, "caches.match('/').then((response) => response === undefined)"), "workspace service worker must not cache the public landing navigation");
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

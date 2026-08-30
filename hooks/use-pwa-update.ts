@@ -8,6 +8,7 @@ export type PwaUpdateStatus = "idle" | "ready" | "applying";
 export function usePwaUpdate() {
   const [status, setStatus] = useState<PwaUpdateStatus>("idle");
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
+  const dismissedWaitingWorkerRef = useRef<ServiceWorker | null>(null);
   const applyRequestedRef = useRef(false);
   const reloadingRef = useRef(false);
 
@@ -20,10 +21,13 @@ export function usePwaUpdate() {
 
     const inspectUpdate = () => {
       if (disposed || !registration) return;
-      if (pwaUpdateReady({
+      const waiting = registration.waiting;
+      const ready = pwaUpdateReady({
         hasController: Boolean(navigator.serviceWorker.controller),
-        hasWaitingWorker: Boolean(registration.waiting),
-      })) setStatus("ready");
+        hasWaitingWorker: Boolean(waiting),
+        waitingWorkerDismissed: Boolean(waiting && dismissedWaitingWorkerRef.current === waiting),
+      });
+      setStatus((current) => current === "applying" ? current : ready ? "ready" : "idle");
     };
     const onInstallingStateChange = () => {
       if (installing?.state === "installed") window.setTimeout(inspectUpdate, 0);
@@ -80,6 +84,7 @@ export function usePwaUpdate() {
 
   const dismissUpdate = useCallback(() => {
     applyRequestedRef.current = false;
+    dismissedWaitingWorkerRef.current = registrationRef.current?.waiting ?? null;
     setStatus("idle");
   }, []);
 

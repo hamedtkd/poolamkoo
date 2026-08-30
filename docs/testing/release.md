@@ -272,3 +272,8 @@ The migration checks below are automated inside `npm run check:release` using a 
 - [x] Verify a TSETMC and a Tindex row with the same raw `marketId` can coexist after migration; provider-scoped runtime selection remains covered by market identity unit tests.
 - [x] Verify the same legacy profile reaches schema 8 and each positive pre-ledger fund balance becomes one `opening` / `migration` Fund Movement with the same amount.
 - [ ] Optional manual spot-check: restore a real schema 6/7 backup and verify missing legacy provider fields normalize to Tindex before persistence; duplicate Watchlist identity within one provider must be rejected before destructive replacement.
+
+
+### v0.43 public/PWA boundary
+
+After the Workspace Service Worker is registered, the production browser smoke returns to `/` and verifies that the public Landing navigation is network-only and absent from Cache Storage. This specifically guards the root-scope Service Worker from turning public pages into offline Workspace cache entries.

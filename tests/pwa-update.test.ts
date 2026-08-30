@@ -11,3 +11,8 @@ test("a waiting worker is update-ready only when an old worker controls the page
   assert.equal(pwaUpdateReady({ hasController: true, hasWaitingWorker: false }), false);
   assert.equal(PWA_UPDATE_MESSAGE, "SKIP_WAITING");
 });
+
+test("dismissing the current waiting worker keeps that same update quiet", () => {
+  assert.equal(pwaUpdateReady({ hasController: true, hasWaitingWorker: true, waitingWorkerDismissed: true }), false);
+  assert.equal(pwaUpdateReady({ hasController: true, hasWaitingWorker: true, waitingWorkerDismissed: false }), true);
+});
