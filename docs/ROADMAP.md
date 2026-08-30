@@ -302,13 +302,23 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Complete manual Chromium desktop PWA install/update, mobile-class PWA, Backup → Restore, old-tab upgrade and responsive/theme acceptance on the real Candidate.
 - Fix only reproducible release blockers. A non-blocking enhancement stays out of the RC.
 
-## v1.0.0-rc.2 — Product tour release-blocker fix 🚧
+## v1.0.0-rc.2 — Product tour release-blocker fix ⚠️ superseded
 
 - Fix the RC1 manual-acceptance blocker where the tour overlay dimmed the control being explained and some steps could resolve to hidden/unavailable targets.
 - Use a true transparent spotlight hole, explicit page-area labels and only currently visible Desktop/Mobile targets.
 - Extend the production browser release gate so the highlighted control cannot overlap any shade and Desktop search must have a real tour target.
 - Keep Feature freeze, IndexedDB schema 8, Backup/Recovery/Device Transfer contracts and provider boundaries unchanged.
 - Re-run the full RC gate and manual guide pass before continuing the remaining v1.0.0 stable acceptance matrix.
+- Full local `check:rc` later failed at the new Production Browser Smoke spotlight assertion, so RC2 is not a valid stable candidate even though its normal CI workflow passed.
+
+## v1.0.0-rc.3 — Product-tour masked spotlight stabilization 🚧
+
+- Keep one SVG mask with a real transparent cutout around the active guide target.
+- Bind the Spotlight and Overlay to the exact active `data-tour-target`, retry target resolution across layout frames and preserve valid geometry through transient scroll/resize changes.
+- Make Production Browser Smoke deterministic with explicit 1280×900 Desktop and 425×800 Mobile viewports instead of Chromium defaults.
+- Emit exact Target/Spotlight/Overlay/viewport diagnostics if the guide gate still fails.
+- Keep Feature freeze, IndexedDB schema 8, Backup/Recovery/Device Transfer contracts and provider boundaries unchanged.
+- Do not Commit/Tag/Release RC3 until `npm run check:rc` is fully green on the real local Production Browser Smoke.
 
 ## Likely next phases
 

@@ -162,22 +162,70 @@ async function clientNavigate(client, href, readyText) {
 }
 
 async function assertTourSpotlight(client, targetName, locationLabel) {
-  return evaluate(client, `(() => {
-    const target = [...document.querySelectorAll(${JSON.stringify(`[data-tour="${targetName}"]`)})].find((node) => {
-      if (!(node instanceof HTMLElement)) return false;
-      const rect = node.getBoundingClientRect();
-      const style = getComputedStyle(node);
-      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-    });
-    const spotlight = document.querySelector('[data-tour-spotlight=true]');
-    if (!(target instanceof HTMLElement) || !(spotlight instanceof HTMLElement)) return false;
-    const targetRect = target.getBoundingClientRect();
-    const spotRect = spotlight.getBoundingClientRect();
-    const shades = [...document.querySelectorAll('[data-tour-shade]')].filter((node) => node instanceof HTMLElement).map((node) => node.getBoundingClientRect());
-    const overlapsTarget = shades.some((shade) => shade.left < targetRect.right && shade.right > targetRect.left && shade.top < targetRect.bottom && shade.bottom > targetRect.top);
-    const card = document.querySelector('[role=dialog]')?.textContent ?? '';
-    return !overlapsTarget && spotRect.left <= targetRect.left && spotRect.right >= targetRect.right && spotRect.top <= targetRect.top && spotRect.bottom >= targetRect.bottom && card.includes(${JSON.stringify(`در حال نمایش: ${locationLabel}`)});
-  })()`);
+  let lastState = null;
+  for (let attempt = 0; attempt < 36; attempt += 1) {
+    lastState = await evaluate(client, `(() => {
+      const selector = ${JSON.stringify('[data-tour="__TARGET__"]')}.replace('__TARGET__', ${JSON.stringify(targetName)});
+      const target = [...document.querySelectorAll(selector)].find((node) => {
+        if (!(node instanceof HTMLElement)) return false;
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+      });
+      const spotlight = document.querySelector('[data-tour-spotlight=true][data-tour-target="' + ${JSON.stringify(targetName)} + '"]');
+      const overlay = document.querySelector('[data-tour-overlay=masked][data-tour-target="' + ${JSON.stringify(targetName)} + '"]');
+      const overlayIsSvg = overlay instanceof Element && overlay.namespaceURI === 'http://www.w3.org/2000/svg' && overlay.tagName.toLowerCase() === 'svg';
+      if (!(target instanceof HTMLElement) || !(spotlight instanceof HTMLElement) || !overlayIsSvg) {
+        return {
+          ok: false,
+          reason: 'missing exact target, spotlight, or masked overlay',
+          targetFound: target instanceof HTMLElement,
+          spotlightFound: spotlight instanceof HTMLElement,
+          overlayFound: overlayIsSvg,
+          viewport: { width: innerWidth, height: innerHeight },
+          mobileQuery: matchMedia('(max-width: 767px)').matches,
+          activeSpotlight: document.querySelector('[data-tour-spotlight=true]')?.getAttribute('data-tour-target') ?? null,
+          activeOverlay: document.querySelector('[data-tour-overlay]')?.getAttribute('data-tour-target') ?? null,
+        };
+      }
+      const targetRect = target.getBoundingClientRect();
+      const spotRect = spotlight.getBoundingClientRect();
+      const cutout = overlay.querySelector('[data-tour-cutout=true]');
+      const dimmer = overlay.querySelector('[data-tour-dimmer=true]');
+      const hole = {
+        top: Number(overlay.getAttribute('data-tour-hole-top')),
+        left: Number(overlay.getAttribute('data-tour-hole-left')),
+        right: Number(overlay.getAttribute('data-tour-hole-right')),
+        bottom: Number(overlay.getAttribute('data-tour-hole-bottom')),
+      };
+      const epsilon = 1;
+      const targetInsideHole = hole.left <= targetRect.left + epsilon
+        && hole.right >= targetRect.right - epsilon
+        && hole.top <= targetRect.top + epsilon
+        && hole.bottom >= targetRect.bottom - epsilon;
+      const ringContainsTarget = spotRect.left <= targetRect.left + epsilon
+        && spotRect.right >= targetRect.right - epsilon
+        && spotRect.top <= targetRect.top + epsilon
+        && spotRect.bottom >= targetRect.bottom - epsilon;
+      const maskIsCutOut = cutout?.getAttribute('fill') === 'black'
+        && dimmer?.getAttribute('mask') === 'url(#product-tour-spotlight-mask)';
+      const card = document.querySelector('[role=dialog]')?.textContent ?? '';
+      const ok = targetInsideHole && ringContainsTarget && maskIsCutOut && card.includes(${JSON.stringify(`در حال نمایش: ${locationLabel}`)});
+      return {
+        ok,
+        reason: ok ? null : 'spotlight geometry did not settle inside the SVG cutout',
+        target: { left: targetRect.left, right: targetRect.right, top: targetRect.top, bottom: targetRect.bottom },
+        hole,
+        spot: { left: spotRect.left, right: spotRect.right, top: spotRect.top, bottom: spotRect.bottom },
+        maskIsCutOut,
+        viewport: { width: innerWidth, height: innerHeight },
+      };
+    })()`);
+    if (lastState?.ok) return true;
+    await new Promise((resolveWait) => setTimeout(resolveWait, 60));
+  }
+  console.error(`Product tour spotlight failed for ${targetName}:`, lastState);
+  return false;
 }
 
 async function dragElementDown(client, selector, distance = 180) {
@@ -317,6 +365,7 @@ async function main() {
     await client.call("Network.enable");
     await client.call("Network.setBlockedURLs", { urls: ["*/api/market*", "*/api/push/*", "*static.cloudflareinsights.com*"] });
     await client.call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
+    await client.call("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await client.call("Page.addScriptToEvaluateOnNewDocument", { source: `(() => { const RealDate=Date; const fixed=${JSON.stringify(POOLAMKOO_MEDIA_ANCHOR)}; class FixedDate extends RealDate { constructor(...args){ super(...(args.length?args:[fixed])); } static now(){ return new RealDate(fixed).getTime(); } } FixedDate.parse=RealDate.parse; FixedDate.UTC=RealDate.UTC; window.Date=FixedDate; })();` });
     await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
 
@@ -382,7 +431,7 @@ async function main() {
     })()`), "workspace must compile tailwindcss-animated stagger utilities with distinct delays");
 
     await evaluate(client, "window.dispatchEvent(new Event('poolamkoo:start-tour')); true");
-    await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') !== null", "product tour spotlight");
+    await waitFor(client, "document.querySelector('[data-tour-spotlight=true][data-tour-target=\"new-money\"]') !== null && document.querySelector('[data-tour-overlay=masked][data-tour-target=\"new-money\"]') !== null", "desktop product tour new-money spotlight");
     assert(await assertTourSpotlight(client, "new-money", "سایدبار"), "product tour must leave the highlighted control visually outside the overlay");
     await evaluate(client, `[...document.querySelectorAll('[role=dialog] button')].find((node) => node.textContent?.includes('بعدی'))?.click(); true`);
     await waitFor(client, "document.querySelector('[role=dialog]')?.textContent?.includes('هر چیزی را سریع پیدا کن')", "product tour search step");
@@ -456,7 +505,7 @@ async function main() {
       await evaluate(client, `[...document.querySelectorAll('[role=dialog] button')].find((node) => node.textContent?.includes(${JSON.stringify(action)}))?.click(); true`);
     }
     await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') === null", "mobile product tour close");
-    await client.call("Emulation.clearDeviceMetricsOverride");
+    await client.call("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 
     await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal browser root must remain landing even after workspace PWA registration");

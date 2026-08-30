@@ -40,28 +40,32 @@ export function useProductTour(guideComplete: boolean) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<TourRect | null>(null);
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const mobile = useMediaQuery("(max-width: 767px)");
   const steps = useMemo(() => mobile ? mobileSteps : desktopSteps, [mobile]);
   const step = steps[Math.min(index, steps.length - 1)];
 
   const measure = useCallback(() => {
-    if (!open || !step) return setRect(null);
-    const nodes = [...document.querySelectorAll<HTMLElement>(step.target)];
-    const measured = nodes.map((node) => ({ node, rect: node.getBoundingClientRect(), style: getComputedStyle(node) }));
-    const visible = measured.find(({ rect: nodeRect, style }) => style.display !== "none" && style.visibility !== "hidden" && nodeRect.width > 0 && nodeRect.height > 0);
-    if (!visible) return setRect(null);
-    const next = visible.rect;
+    if (!open || !step) return false;
+    const target = findRenderableTarget(step.target);
+    if (!target) return false;
+    const next = target.getBoundingClientRect();
+    setTargetElement((current) => current === target ? current : target);
     setRect({ top: next.top, left: next.left, width: next.width, height: next.height, right: next.right, bottom: next.bottom });
+    return true;
   }, [open, step]);
 
   const start = useCallback(() => {
     setIndex(0);
+    setRect(null);
+    setTargetElement(null);
     setOpen(true);
   }, []);
 
   const finish = useCallback(() => {
     setOpen(false);
     setRect(null);
+    setTargetElement(null);
     void db.settings.update("settings", { guideComplete: true, updatedAt: new Date().toISOString() });
   }, []);
 
@@ -79,25 +83,51 @@ export function useProductTour(guideComplete: boolean) {
 
   useEffect(() => {
     if (!open || !step) return;
-    const frame = window.requestAnimationFrame(() => {
-      const nodes = [...document.querySelectorAll<HTMLElement>(step.target)];
-      const target = nodes.find((node) => {
-        const bounds = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        return style.display !== "none" && style.visibility !== "hidden" && bounds.width > 0 && bounds.height > 0;
-      });
-      target?.scrollIntoView({ block: "nearest", inline: "nearest" });
-      measure();
-    });
+    let frame = 0;
+    let attempts = 0;
+    const resolveTarget = () => {
+      if (attempts === 0) {
+        setRect(null);
+        setTargetElement(null);
+      }
+      const target = findRenderableTarget(step.target);
+      if (!target) {
+        attempts += 1;
+        if (attempts < 18) frame = window.requestAnimationFrame(resolveTarget);
+        return;
+      }
+      target.scrollIntoView({ block: "nearest", inline: "nearest" });
+      frame = window.requestAnimationFrame(() => { measure(); });
+    };
+    frame = window.requestAnimationFrame(resolveTarget);
     return () => window.cancelAnimationFrame(frame);
   }, [index, measure, open, step]);
 
   useEffect(() => {
+    if (!open || !targetElement || typeof ResizeObserver === "undefined") return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => { measure(); });
+    });
+    observer.observe(targetElement);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [measure, open, targetElement]);
+
+  useEffect(() => {
     if (!open) return;
-    const update = () => window.requestAnimationFrame(measure);
+    let frame = 0;
+    const update = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => { measure(); });
+    };
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
@@ -107,4 +137,12 @@ export function useProductTour(guideComplete: boolean) {
   const previous = () => setIndex((value) => Math.max(0, value - 1));
 
   return { open, index, rect, mobile, steps, step, start, finish, next, previous };
+}
+
+function findRenderableTarget(selector: string) {
+  return [...document.querySelectorAll<HTMLElement>(selector)].find((node) => {
+    const bounds = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return style.display !== "none" && style.visibility !== "hidden" && bounds.width > 0 && bounds.height > 0;
+  }) ?? null;
 }

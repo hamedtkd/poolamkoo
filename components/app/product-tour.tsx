@@ -6,6 +6,8 @@ import { useProductTour, type TourRect } from "@/hooks/use-product-tour";
 import { cn } from "@/lib/utils";
 
 const SPOTLIGHT_PAD = 7;
+const SPOTLIGHT_RADIUS = 16;
+const MASK_ID = "product-tour-spotlight-mask";
 
 export function ProductTour({ guideComplete }: { guideComplete: boolean }) {
   const tour = useProductTour(guideComplete);
@@ -13,15 +15,17 @@ export function ProductTour({ guideComplete }: { guideComplete: boolean }) {
 
   const cardStyle = getCardStyle(tour.rect, tour.mobile);
   const focusLabelStyle = getFocusLabelStyle(tour.rect);
+  const targetName = tourTargetName(tour.step.target);
   return (
     <div className="fixed inset-0 z-[170]" aria-live="polite">
       <button type="button" className="fixed inset-0 z-[169] cursor-default bg-transparent" aria-label="بستن راهنما" onClick={tour.finish} />
-      <TourShade rect={tour.rect} />
+      <TourOverlay rect={tour.rect} targetName={targetName} />
       {tour.rect && (
         <>
           <div
             data-tour-spotlight="true"
-            className="pointer-events-none fixed z-[171] rounded-[16px] ring-2 ring-primary ring-offset-2 ring-offset-background/70 transition-all duration-200"
+            data-tour-target={targetName}
+            className="pointer-events-none fixed z-[171] rounded-[16px] ring-2 ring-primary ring-offset-2 ring-offset-background/70"
             style={spotlightStyle(tour.rect)}
           />
           <div
@@ -65,17 +69,32 @@ export function ProductTour({ guideComplete }: { guideComplete: boolean }) {
   );
 }
 
-function TourShade({ rect }: { rect: TourRect | null }) {
-  if (!rect) return <div data-tour-shade="fallback" className="pointer-events-none fixed inset-0 z-[170] bg-black/50" />;
+function TourOverlay({ rect, targetName }: { rect: TourRect | null; targetName: string }) {
+  if (!rect) return <div data-tour-overlay="fallback" data-tour-target={targetName} className="pointer-events-none fixed inset-0 z-[170] bg-black/50 dark:bg-black/60" />;
   const hole = spotlightBounds(rect);
-  const shade = "pointer-events-none fixed z-[170] bg-black/50 dark:bg-black/60";
   return (
-    <>
-      <div data-tour-shade="top" className={shade} style={{ inset: `0 0 auto 0`, height: hole.top }} />
-      <div data-tour-shade="bottom" className={shade} style={{ inset: `${hole.bottom}px 0 0 0` }} />
-      <div data-tour-shade="left" className={shade} style={{ top: hole.top, left: 0, width: hole.left, height: hole.height }} />
-      <div data-tour-shade="right" className={shade} style={{ top: hole.top, left: hole.right, right: 0, height: hole.height }} />
-    </>
+    <svg
+      data-tour-overlay="masked"
+      data-tour-target={targetName}
+      data-tour-hole-top={hole.top}
+      data-tour-hole-left={hole.left}
+      data-tour-hole-right={hole.right}
+      data-tour-hole-bottom={hole.bottom}
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-[170] size-full"
+      width={window.innerWidth}
+      height={window.innerHeight}
+      viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <mask id={MASK_ID} maskUnits="userSpaceOnUse" x="0" y="0" width={window.innerWidth} height={window.innerHeight} style={{ maskType: "luminance" }}>
+          <rect x="0" y="0" width={window.innerWidth} height={window.innerHeight} fill="white" />
+          <rect data-tour-cutout="true" x={hole.left} y={hole.top} width={hole.width} height={hole.height} rx={SPOTLIGHT_RADIUS} fill="black" />
+        </mask>
+      </defs>
+      <rect data-tour-dimmer="true" x="0" y="0" width={window.innerWidth} height={window.innerHeight} className="fill-black/50 dark:fill-black/60" mask={`url(#${MASK_ID})`} />
+    </svg>
   );
 }
 
@@ -114,4 +133,8 @@ function getCardStyle(rect: TourRect | null, mobile: boolean): React.CSSProperti
 
 function formatFa(value: number) {
   return new Intl.NumberFormat("fa-IR").format(value);
+}
+
+function tourTargetName(selector: string) {
+  return selector.match(/data-tour=["']([^"']+)["']/)?.[1] ?? selector;
 }

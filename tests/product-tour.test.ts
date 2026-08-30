@@ -4,15 +4,31 @@ import test from "node:test";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
-test("product tour uses a real transparent spotlight instead of dimming its target", () => {
+test("product tour uses one masked overlay with a real transparent cutout", () => {
   const component = read("components/app/product-tour.tsx");
-  assert.equal(component.includes('data-tour-shade="top"'), true);
-  assert.equal(component.includes('data-tour-shade="bottom"'), true);
-  assert.equal(component.includes('data-tour-shade="left"'), true);
-  assert.equal(component.includes('data-tour-shade="right"'), true);
+  assert.equal(component.includes('data-tour-overlay="masked"'), true);
+  assert.equal(component.includes('data-tour-cutout="true"'), true);
+  assert.equal(component.includes('data-tour-dimmer="true"'), true);
   assert.equal(component.includes('data-tour-spotlight="true"'), true);
+  assert.equal(component.includes('data-tour-target={targetName}'), true);
+  assert.equal(component.includes('fill="black"'), true);
+  assert.equal(component.includes('maskType: "luminance"'), true);
+  assert.equal(component.includes('mask={`url(#${MASK_ID})`}'), true);
+  assert.equal(component.includes('data-tour-shade="top"'), false);
   assert.equal(component.includes("9999px"), false);
   assert.equal(component.includes("boxShadow"), false);
+});
+
+test("product tour resolves a target across layout frames and keeps measuring the real element", () => {
+  const hook = read("hooks/use-product-tour.ts");
+  assert.equal(hook.includes("attempts < 18"), true);
+  assert.equal(hook.includes("requestAnimationFrame(resolveTarget)"), true);
+  assert.equal(hook.includes("requestAnimationFrame(() => { measure(); })"), true);
+  assert.equal(hook.includes("useEffect(() => { measure();"), false);
+  assert.equal(hook.includes("scrollIntoView"), true);
+  assert.equal(hook.includes("new ResizeObserver"), true);
+  assert.equal(hook.includes("observer.observe(targetElement)"), true);
+  assert.equal(hook.includes("if (!target) return false"), true);
 });
 
 test("every guide card names the page area currently being highlighted", () => {
