@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { futureFocusPercent, portfolioPosition } from "@/lib/calculations";
+import { portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { resolveAssetValuation } from "@/lib/market/valuation";
 import type { AllocationRule, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote } from "@/lib/types";
 
@@ -14,7 +15,7 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
   quotes: MarketQuote[];
 }) {
   return useMemo(() => {
-    const positions = assets.map((asset) => {
+    const positions = portfolioRelevantAssets(assets, transactions).map((asset) => {
       const valuation = resolveAssetValuation(asset, quotes);
       const position = portfolioPosition(asset, transactions, valuation.price);
       return {

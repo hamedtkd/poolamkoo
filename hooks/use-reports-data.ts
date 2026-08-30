@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { portfolioPosition } from "@/lib/calculations";
+import { portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { incomePlanProgress } from "@/lib/plan-execution";
 import { resolveAssetValuation, type ValuationPriceSource } from "@/lib/market/valuation";
 import { buildReportDecisionSnapshot } from "@/lib/report-insights";
@@ -38,7 +39,7 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
   rule?: AllocationRule;
 }) {
   return useMemo(() => {
-    const positions = assets.map((asset) => {
+    const positions = portfolioRelevantAssets(assets, transactions).map((asset) => {
       const valuation = resolveAssetValuation(asset, quotes);
       const position = portfolioPosition(asset, transactions, valuation.price);
       return { asset, ...position, priceSource: valuation.source, pricingReliable: position.qty <= 0 || valuation.decisionReady };

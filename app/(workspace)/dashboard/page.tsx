@@ -27,7 +27,7 @@ export default function DashboardPage() {
         rule={data.rule}
         incomes={filtered.incomes}
         funds={data.funds}
-        assets={data.assets}
+        assets={data.allAssets}
         transactions={filtered.transactions}
         quotes={market.quotes}
         snapshots={filtered.snapshots}

@@ -23,6 +23,8 @@ export default function InvestmentsPage() {
       <InvestmentsSection
         settings={data.settings}
         assets={data.assets}
+        allAssets={data.allAssets}
+        archivedAssets={data.archivedAssets}
         transactions={data.transactions}
         quotes={market.quotes}
         snapshots={data.snapshots}

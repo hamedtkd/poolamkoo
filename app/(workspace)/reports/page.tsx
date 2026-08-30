@@ -26,7 +26,7 @@ export default function ReportsPage() {
         incomes={filtered.incomes}
         allocations={filtered.allocations}
         funds={data.funds}
-        assets={data.assets}
+        assets={data.allAssets}
         transactions={filtered.transactions}
         quotes={market.quotes}
         planItems={filtered.planItems}

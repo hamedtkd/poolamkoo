@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, defaultSettings, ensureSeedData } from "@/lib/db";
 import {
@@ -90,7 +90,10 @@ export function useAppData() {
   const incomes = useLiveQuery(() => canQuery ? db.incomes.orderBy("happenedAt").reverse().toArray() : [], [canQuery]) ?? [];
   const allocations = useLiveQuery(() => canQuery ? db.allocations.toArray() : [], [canQuery]) ?? [];
   const funds = useLiveQuery(() => canQuery ? db.funds.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
-  const assets = useLiveQuery(() => canQuery ? db.assets.filter((a) => !a.archived).toArray() : [], [canQuery]) ?? [];
+  const allAssetsQuery = useLiveQuery(() => canQuery ? db.assets.toArray() : [], [canQuery]);
+  const allAssets = useMemo(() => allAssetsQuery ?? [], [allAssetsQuery]);
+  const assets = useMemo(() => allAssets.filter((asset) => !asset.archived), [allAssets]);
+  const archivedAssets = useMemo(() => allAssets.filter((asset) => asset.archived), [allAssets]);
   const transactions = useLiveQuery(() => canQuery ? db.transactions.toArray() : [], [canQuery]) ?? [];
   const snapshots = useLiveQuery(() => canQuery ? db.marketSnapshots.orderBy("capturedAt").reverse().limit(1000).toArray() : [], [canQuery]) ?? [];
   const watchlist = useLiveQuery(() => canQuery ? db.marketWatchlist.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
@@ -107,6 +110,8 @@ export function useAppData() {
     allocations,
     funds,
     assets,
+    allAssets,
+    archivedAssets,
     transactions,
     snapshots,
     watchlist,

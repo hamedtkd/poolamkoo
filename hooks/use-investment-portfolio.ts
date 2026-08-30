@@ -36,18 +36,19 @@ export function useInvestmentPortfolio(assets: Asset[], transactions: Investment
     };
   }), [assets, transactions, quotes]);
 
+  const activePositions = useMemo(() => positions.filter((position) => !position.asset.archived), [positions]);
   const totals = useMemo(() => ({
     value: positions.reduce((sum, row) => sum + row.currentValue, 0),
     cost: positions.reduce((sum, row) => sum + row.cost, 0),
-    targetPct: assets.reduce((sum, asset) => sum + asset.targetPct, 0),
+    targetPct: assets.filter((asset) => !asset.archived).reduce((sum, asset) => sum + asset.targetPct, 0),
   }), [assets, positions]);
 
-  const allocation = useMemo(() => buildPortfolioAllocation(positions.map((position) => ({
+  const allocation = useMemo(() => buildPortfolioAllocation(activePositions.map((position) => ({
     asset: position.asset,
     currentValue: position.currentValue,
     hasHolding: position.qty > 0,
     pricingReliable: position.pricingReliable,
-  }))), [positions]);
+  }))), [activePositions]);
 
   return {
     positions,

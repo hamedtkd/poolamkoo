@@ -16,11 +16,13 @@ import { useBackupSafety } from "@/hooks/use-backup-safety";
 import { useCommunitySupport } from "@/hooks/use-community-support";
 import { useMarket } from "@/hooks/use-market";
 import { useMarketAlerts } from "@/hooks/use-market-alerts";
+import { portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 
 export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const [newMoneyOpen, setNewMoneyOpen] = useState(false);
   const data = useAppData();
-  const market = useMarket(data.assets, data.watchlist, data.marketAlerts, data.ready);
+  const marketAssets = portfolioRelevantAssets(data.allAssets, data.transactions);
+  const market = useMarket(marketAssets, data.watchlist, data.marketAlerts, data.ready);
   useMarketAlerts(data.marketAlerts, market.quotes, market.mode, data.settings.displayUnit);
   const backgroundPush = useBackgroundPush(data.marketAlerts, data.ready);
   const dateFilter = useAppDateFilter(data);

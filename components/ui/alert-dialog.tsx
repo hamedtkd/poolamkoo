@@ -52,10 +52,10 @@ export function AlertDialogCancel({ children = "انصراف" }: { children?: Re
   );
 }
 
-export function AlertDialogAction({ children, onClick, destructive = false }: { children: React.ReactNode; onClick?: () => void; destructive?: boolean }) {
+export function AlertDialogAction({ children, onClick, destructive = false, disabled = false }: { children: React.ReactNode; onClick?: () => void; destructive?: boolean; disabled?: boolean }) {
   return (
     <AlertDialogPrimitive.Action asChild>
-      <Button className={destructive ? "bg-destructive text-white hover:bg-destructive/90" : undefined} onClick={onClick}>
+      <Button className={destructive ? "bg-destructive text-white hover:bg-destructive/90" : undefined} disabled={disabled} onClick={onClick}>
         {children}
       </Button>
     </AlertDialogPrimitive.Action>

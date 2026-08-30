@@ -93,3 +93,5 @@
 - [v0.3.1](./releases/0.3.1.md)
 - [v0.3.0](./releases/0.3.0.md)
 - [v0.2.x](./releases/0.2.x.md)
+
+- [v0.37.0](./releases/0.37.0.md)

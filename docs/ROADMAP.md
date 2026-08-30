@@ -230,6 +230,15 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Allow an optional transaction note while preserving the original asset/link identity; editing an old transaction never overwrites the user's current manual fallback price.
 - Keep IndexedDB schema 7, backup/transfer formats, provider priority, zero-cost deployment boundaries and Background Push backlog unchanged.
 
+## v0.37 — Safe asset archive lifecycle ✅
+
+- Block archive while an asset still has open quantity so current portfolio value cannot disappear from the active UI.
+- Block archive while an unfinished income-plan item still targets that asset.
+- Add an explicit archived-assets surface with Recovery-Snapshot-backed restore.
+- Keep legacy archived holdings valuation-relevant until restored, while excluding archived assets from target-allocation/new-money decisions.
+- Preserve archived asset identity in reports and transaction history instead of degrading labels after archive.
+- Keep IndexedDB schema 7, backup/transfer formats, market-provider priority and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

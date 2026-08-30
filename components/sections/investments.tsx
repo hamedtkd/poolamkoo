@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { BackgroundPushControls } from "@/hooks/use-background-push";
 import { RiAddLine, RiFileUploadLine, RiFundsLine, RiHistoryLine, RiLineChartLine, RiShoppingBag3Line } from "react-icons/ri";
 import { Reveal, RevealGrid } from "@/components/animation/reveal";
+import { ArchivedAssetsCard } from "@/components/investments/archived-assets-card";
 import { AssetDialog } from "@/components/investments/asset-dialog";
 import { MarketAlertDialog } from "@/components/investments/market-alert-dialog";
 import { MarketAlertsCard } from "@/components/investments/market-alerts-card";
@@ -23,6 +24,7 @@ import { db } from "@/lib/db";
 import { createRecoverySnapshot } from "@/lib/recovery";
 import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { assetArchiveBlockers, portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { investmentLedgerErrorMessage, validateInvestmentLedger } from "@/lib/investment-ledger";
 import type { MarketAlertTarget } from "@/lib/market/alerts";
 import { planRemaining, syncInvestmentPlanItem } from "@/lib/plan-execution";
@@ -53,9 +55,11 @@ const T = {
 
 type TransactionTarget = { asset: Asset; planItem?: PlanItem; transaction?: InvestmentTransaction } | null;
 
-export function InvestmentsSection({ settings, assets, transactions, quotes, snapshots, watchlist, marketAlerts, backgroundPush, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
+export function InvestmentsSection({ settings, assets, allAssets, archivedAssets, transactions, quotes, snapshots, watchlist, marketAlerts, backgroundPush, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
   settings: AppSettings;
   assets: Asset[];
+  allAssets: Asset[];
+  archivedAssets: Asset[];
   transactions: InvestmentTransaction[];
   quotes: MarketQuote[];
   snapshots: MarketSnapshot[];
@@ -69,7 +73,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   visiblePlanItems?: PlanItem[];
   visibleIncomes?: IncomeEvent[];
 }) {
-  const portfolio = useInvestmentPortfolio(assets, transactions, quotes);
+  const portfolio = useInvestmentPortfolio(portfolioRelevantAssets(allAssets, transactions), transactions, quotes);
   const [assetDialogOpen, setAssetDialogOpen] = useState(false);
   const [openingHoldingOpen, setOpeningHoldingOpen] = useState(false);
   const [historyImportOpen, setHistoryImportOpen] = useState(false);
@@ -83,12 +87,29 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
 
   async function archiveAsset() {
     if (!archiveTarget?.id) return;
+    const blockers = assetArchiveBlockers(archiveTarget.id, transactions, planItems);
+    if (blockers.blocked) {
+      toast({ tone: "error", title: "این دارایی هنوز قابل آرشیو نیست", description: archiveBlockerDescription(blockers) });
+      return;
+    }
     try {
       await createRecoverySnapshot("قبل از آرشیو دارایی");
       await db.assets.update(archiveTarget.id, { archived: true, updatedAt: new Date().toISOString() });
       setArchiveTarget(null);
     } catch (error) {
       toast({ tone: "error", title: "آرشیو دارایی انجام نشد", description: toPersianUiError(error, "دوباره تلاش کن.") });
+    }
+  }
+
+
+  async function restoreAsset(asset: Asset) {
+    if (!asset.id) return;
+    try {
+      await createRecoverySnapshot("قبل از بازگردانی دارایی آرشیوشده");
+      await db.assets.update(asset.id, { archived: false, updatedAt: new Date().toISOString() });
+      toast({ tone: "success", title: "دارایی به سبد برگشت", description: "تاریخچه قبلی بدون تغییر حفظ شد." });
+    } catch (error) {
+      toast({ tone: "error", title: "بازگردانی دارایی انجام نشد", description: toPersianUiError(error, "دوباره تلاش کن.") });
     }
   }
 
@@ -120,7 +141,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
   const activePlan = transactionTarget?.planItem ?? (activeTransaction?.planItemId ? planItems.find((item) => item.id === activeTransaction.planItemId) : undefined);
   const activePosition = activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id) : undefined;
   function editTransaction(transaction: InvestmentTransaction) {
-    const asset = assets.find((item) => item.id === transaction.assetId);
+    const asset = allAssets.find((item) => item.id === transaction.assetId);
     if (!asset) {
       toast({ tone: "error", title: "دارایی تراکنش پیدا نشد", description: "این رکورد را از نسخه پشتیبان بررسی کن یا دوباره دارایی را بساز." });
       return;
@@ -144,15 +165,23 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
     <Reveal step={7}><PendingPlanPurchases planItems={visiblePlanItems ?? planItems} incomes={visibleIncomes ?? incomes} assets={assets} settings={settings} onBuy={(planItem, asset) => setTransactionTarget({ planItem, asset })} /></Reveal>
     <Reveal step={8}><MarketChartCard settings={settings} snapshots={visibleSnapshots ?? snapshots} quotes={quotes} assets={assets} watchlist={watchlist} /></Reveal>
     <Reveal step={8}><PortfolioDecisionCard review={portfolio.allocation} settings={settings} /></Reveal>
-    <Reveal step={8}><PortfolioTables positions={portfolio.positions} allocationRows={portfolio.allocation.rows} transactions={visibleTransactions ?? transactions} assets={assets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onEditTransaction={editTransaction} onDeleteTransaction={setDeleteTransactionId} /></Reveal>
+    <Reveal step={8}><PortfolioTables positions={portfolio.positions} allocationRows={portfolio.allocation.rows} transactions={visibleTransactions ?? transactions} assets={allAssets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onRestoreAsset={(asset) => void restoreAsset(asset)} onEditTransaction={editTransaction} onDeleteTransaction={setDeleteTransactionId} /></Reveal>
+    <Reveal step={9}><ArchivedAssetsCard assets={archivedAssets} transactions={transactions} planItems={planItems} onRestore={(asset) => void restoreAsset(asset)} /></Reveal>
     <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />
     <MarketAlertDialog open={!!alertTarget} target={alertTarget} settings={settings} onOpenChange={(open) => !open && setAlertTarget(null)} />
     <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activePosition?.pricingReliable ? activePosition.price : activeAsset?.manualPriceToman} settings={settings} planItem={activePlan} initialAmount={activeTransaction ? undefined : activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} transaction={activeTransaction} transactions={transactions} />
-    <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{archiveTarget?.id ? archiveBlockerDescription(assetArchiveBlockers(archiveTarget.id, transactions, planItems), T.archiveDesc) : T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction disabled={archiveTarget?.id ? assetArchiveBlockers(archiveTarget.id, transactions, planItems).blocked : true} onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={deleteTransactionId !== null} onOpenChange={(open) => !open && setDeleteTransactionId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.deleteTitle}</AlertDialogTitle><AlertDialogDescription>{T.deleteDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction destructive onClick={() => void deleteTransaction()}>{T.delete}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;
+}
+
+function archiveBlockerDescription(blockers: ReturnType<typeof assetArchiveBlockers>, fallback?: string) {
+  if (blockers.openQuantity > 0 && blockers.pendingPlanCount > 0) return "این دارایی هنوز موجودی باز و برنامه مالی انجام‌نشده دارد. ابتدا هر دو را تعیین‌تکلیف کن.";
+  if (blockers.openQuantity > 0) return "تا وقتی موجودی این دارایی صفر نشده، آرشیو آن می‌تواند ارزش سبد را پنهان کند. ابتدا موقعیت را ببند یا اصلاح کن.";
+  if (blockers.pendingPlanCount > 0) return "یک یا چند آیتم برنامه مالی هنوز به این دارایی متصل است. ابتدا برنامه را اجرا یا ویرایش کن.";
+  return fallback ?? "دارایی آماده آرشیو است.";
 }
 
 function Kpi({ icon, iconTone = "primary", label, value, help, accent }: { icon: React.ReactNode; iconTone?: "primary" | "danger" | "neutral"; label: string; value: string; help: string; accent?: boolean }) {

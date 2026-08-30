@@ -340,3 +340,7 @@ See [LICENSE](./LICENSE).
 ### Direct device transfer
 
 Settings can now move local data directly to another device without an account or financial-data backend. Pairing uses copy/share codes, the payload is additionally protected with a one-time AES-GCM PIN, the receiver previews record counts before import, and a recovery snapshot is created before destination replacement. See [docs/device-transfer.md](./docs/device-transfer.md).
+
+### v0.37 — Safe asset archive lifecycle
+
+Asset archive is now reversible and guarded: open holdings or unfinished asset-targeted plans cannot be archived, archived assets can be restored with a Recovery Snapshot, and legacy archived holdings remain included in portfolio valuation until restored. IndexedDB remains schema 7.
