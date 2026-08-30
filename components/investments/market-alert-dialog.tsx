@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { db } from "@/lib/db";
 import { marketAlertKindOptions, suggestedMarketAlertThreshold, type MarketAlertTarget } from "@/lib/market/alerts";
+import { MARKET_IDENTITY_INDEX, marketIdentityKey, marketIdentityTuple } from "@/lib/market/identity";
 import { toLatinDigits } from "@/lib/persian-date";
 import type { AppSettings, MarketAlertKind } from "@/lib/types";
 
@@ -20,7 +21,7 @@ export function MarketAlertDialog({ open, target, settings, onOpenChange }: {
   onOpenChange: (open: boolean) => void;
 }) {
   return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="sm:max-w-lg">
-    {open && target && <MarketAlertDialogSession key={`${target.marketId}-${target.symbol}`} target={target} settings={settings} onDone={() => onOpenChange(false)} />}
+    {open && target && <MarketAlertDialogSession key={`${marketIdentityKey(target)}-${target.symbol}`} target={target} settings={settings} onDone={() => onOpenChange(false)} />}
   </DialogContent></Dialog>;
 }
 
@@ -58,9 +59,9 @@ function MarketAlertDialogSession({ target, settings, onDone }: { target: Market
     setSaving(true);
     try {
       const now = new Date().toISOString();
-      const duplicate = await db.marketAlerts.where("marketId").equals(target.marketId).and((row) => row.kind === kind && row.threshold === threshold).first();
+      const duplicate = await db.marketAlerts.where(MARKET_IDENTITY_INDEX).equals(marketIdentityTuple(target)).and((row) => row.kind === kind && row.threshold === threshold).first();
       if (duplicate?.id) {
-        await db.marketAlerts.update(duplicate.id, { enabled: true, notifyBrowser, armed: true, symbol: target.symbol, name: target.name, updatedAt: now });
+        await db.marketAlerts.update(duplicate.id, { enabled: true, notifyBrowser, armed: true, symbol: target.symbol, name: target.name, source: target.source, updatedAt: now });
       } else {
         await db.marketAlerts.add({ marketId: target.marketId, symbol: target.symbol, name: target.name, source: target.source, kind, threshold, enabled: true, notifyBrowser, armed: true, createdAt: now, updatedAt: now });
       }

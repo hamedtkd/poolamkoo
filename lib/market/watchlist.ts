@@ -1,4 +1,5 @@
 import { premiumToNavPercent } from "./nav.ts";
+import { marketIdentityKey } from "./identity.ts";
 import { marketQuoteForTarget } from "./valuation.ts";
 import { normalizeSearchText } from "../search.ts";
 import type { Asset, MarketQuote, MarketWatchItem } from "../types.ts";
@@ -21,14 +22,14 @@ export function marketWatchlistRows({ watchlist, quotes, assets, query = "", fil
   filter?: WatchlistFilter;
   sort?: WatchlistSort;
 }) {
-  const ownedMarketKeys = new Set(assets.flatMap((asset) => asset.marketId && asset.marketSource ? [`${asset.marketSource}:${asset.marketId}`] : []));
+  const ownedMarketKeys = new Set(assets.flatMap((asset) => asset.marketId && asset.marketSource ? [marketIdentityKey({ source: asset.marketSource, marketId: asset.marketId })] : []));
   const normalizedQuery = normalizeSearchText(query);
   const rows: WatchlistRow[] = watchlist.map((item) => {
     const quote = marketQuoteForTarget({ source: item.source, marketId: item.marketId, symbol: item.symbol }, quotes);
     return {
       item,
       quote,
-      owned: ownedMarketKeys.has(`${item.source}:${item.marketId}`),
+      owned: ownedMarketKeys.has(marketIdentityKey(item)),
       premium: quote?.runtimeSource === "snapshot" ? null : quote ? premiumToNavPercent(quote.priceToman, quote.navToman) : null,
     };
   }).filter((row) => {

@@ -1,3 +1,4 @@
+import { marketIdentityKey } from "./identity.ts";
 import type { MarketQuote } from "../types";
 
 const CORE_SYMBOLS = ["USD", "IR_GOLD_18K", "BTC"] as const;
@@ -21,7 +22,9 @@ export function mergeMarketQuotes({
   exchange?: readonly MarketQuote[];
 }) {
   const result = new Map<string, MarketQuote>();
-  const key = (quote: MarketQuote) => quote.marketId ? `exchange:${quote.marketId}` : quote.symbol;
+  const key = (quote: MarketQuote) => quote.marketId && (quote.source === "tsetmc" || quote.source === "tindex")
+    ? `exchange:${marketIdentityKey({ source: quote.source, marketId: quote.marketId })}`
+    : quote.symbol;
   for (const quote of fallback) result.set(key(quote), quote);
   for (const quote of primary) result.set(key(quote), quote);
   for (const quote of exchange) result.set(key(quote), quote);

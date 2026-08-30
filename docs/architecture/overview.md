@@ -161,3 +161,12 @@ Valuation now distinguishes continuity from decision freshness. Fresh provider q
 Detailed local CSV export includes the valuation-source label so a user can audit which rows used fresh market, Snapshot, manual or cost-basis pricing. The privacy-minimized share text is unchanged. Local market alerts use the same provider-scoped lookup and filter Snapshot rows before evaluation. IndexedDB schema 6 and persisted MarketSnapshot shape remain unchanged.
 
 The release lint command also uses `--max-warnings=0`; warning-free source is part of the release contract instead of an advisory console state.
+
+
+## Persisted provider-scoped identity (v0.34)
+
+Runtime quote selection became provider-scoped in v0.33, but the older IndexedDB Watchlist schema still treated raw `marketId` as globally unique. v0.34 closes that persistence gap. Schema 7 uses a unique compound `[source+marketId]` index for `marketWatchlist` and a non-unique compound index for `marketAlerts`, while keeping the numeric primary keys and old `marketId` index available for compatibility. UI lookups, duplicate checks and notification identity use the same provider-scoped key. Server quote merge, client target dedupe/Snapshot lookup and market-chart selection use that same helper as well, closing the remaining raw-id/symbol collision paths.
+
+The Dexie chain keeps schema 6 explicitly and upgrades to 7 in place. During migration, an exchange-linked asset with `marketId` but no valid `marketSource`, or a Watchlist/Alert row without a valid `source`, is treated as legacy Tindex. That default is historically safe because those rows predate direct TSETMC linking. Explicit `tsetmc` rows are preserved. Backup/Recovery/Device Transfer payloads are normalized with the same rule before writing into schema 7; Watchlist duplicates within one provider are rejected during preview validation, while the same raw market id from different providers is valid.
+
+No backup envelope format, database name, table primary key, market-provider priority or financial-data boundary changes in this release. The schema bump exists only because persisted market identity now requires a real compound index.

@@ -27,7 +27,7 @@ test("device transfer PIN is short, readable and random enough for a one-time se
 test("transfer payload preview validates required Poolamkoo data", () => {
   const preview = validateTransferData({
     allocationRules: [{}], incomes: [{}, {}], allocations: [], funds: [{}], assets: [{}, {}], transactions: [{}, {}, {}],
-    settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{}], marketAlerts: [{}, {}],
+    settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{ marketId: "legacy-watch" }], marketAlerts: [{ marketId: "legacy-alert-1" }, { marketId: "legacy-alert-2" }],
   });
   assert.deepEqual(preview, { incomes: 2, funds: 1, assets: 2, transactions: 3, planItems: 1, watchlist: 1, alerts: 2, total: 12 });
 });

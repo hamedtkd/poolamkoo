@@ -201,6 +201,16 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Add no new market provider until auth/schema, sustainable zero-cost terms and deployment behavior are verified end-to-end.
 - Keep IndexedDB schema 6, backup/transfer formats, BrsApi → optional Tindex core priority, direct TSETMC exchange behavior and Background Push backlog unchanged.
 
+## v0.34 — Persisted provider-scoped market identity ✅
+
+- Move persistent Watchlist uniqueness from raw `marketId` to compound `source + marketId`, matching the runtime/decision identity contract introduced in v0.33.
+- Add a provider-scoped compound index for Market Alerts and use it for duplicate detection, dialog identity and notification tags.
+- Reuse the same provider-scoped key for server quote merge, client target dedupe/Snapshot lookup and chart selection so collisions cannot reappear between persistence and runtime.
+- Upgrade IndexedDB from schema 6 to schema 7 with a real Dexie migration that preserves explicit TSETMC rows and normalizes pre-TSETMC linked assets/watchlist/alerts to legacy Tindex.
+- Normalize older Backup/Recovery/Device Transfer payloads before persistence and reject duplicate Watchlist identities within the same Provider before destructive replacement.
+- Keep the database name, primary keys, backup envelope versions and direct-transfer protocol compatible; no server-side financial storage or telemetry is introduced.
+- Keep BrsApi core priority, direct TSETMC exchange behavior, Tindex legacy/emergency role, decision-safe Snapshot rules and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

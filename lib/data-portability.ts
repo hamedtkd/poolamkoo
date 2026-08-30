@@ -1,4 +1,5 @@
 import { LOCAL_DATABASE_SCHEMA_VERSION } from "./app-version.ts";
+import { assertPortableMarketIdentities } from "./market/identity.ts";
 
 export type PortableDataPreview = {
   incomes: number;
@@ -30,6 +31,7 @@ export function validatePortableData(data: Record<string, unknown>): PortableDat
   for (const key of REQUIRED_TABLES) {
     if (!Array.isArray(data[key])) throw new Error(`داده ناقص است: بخش ${key} پیدا نشد.`);
   }
+  assertPortableMarketIdentities(data);
   const settings = data.settings as unknown[];
   if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) {
     throw new Error("داده تنظیمات معتبر پولم‌کو را ندارد.");

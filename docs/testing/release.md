@@ -262,3 +262,10 @@ git push origin vX.Y.Z
 - [ ] Browser Release Smoke وجود animation واقعی کامپایل‌شده و حداقل سه delay متفاوت را از Computed Style تأیید کند
 - [ ] Browser Release Smoke دیگر `AbortError` را ignore نکند
 - [ ] `prefers-reduced-motion: reduce` تمام حرکت‌های ورود Workspace را غیرفعال کند
+
+
+## v0.34 market identity migration
+
+- [ ] Upgrade an existing schema 6 profile and verify legacy `marketId` assets/watchlist/alerts remain available after the in-place schema 7 migration.
+- [ ] Verify a TSETMC and a Tindex row with the same raw `marketId` can coexist in Watchlist and are selected independently in chart/alert flows.
+- [ ] Restore a schema 6 backup and verify missing legacy provider fields normalize to Tindex before persistence; duplicate Watchlist identity within one provider must be rejected before destructive replacement.

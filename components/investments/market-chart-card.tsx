@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { useMarketHistory } from "@/hooks/use-market-history";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { marketIdentityKey } from "@/lib/market/identity";
 import { marketQuoteForTarget } from "@/lib/market/valuation";
 import type { AppSettings, Asset, MarketHistoryRange, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
   assets: Asset[];
   watchlist?: MarketWatchItem[];
 }) {
-  const [symbol, setSymbol] = useState("USD");
+  const [selectedKey, setSelectedKey] = useState("USD");
   const [range, setRange] = useState<MarketHistoryRange>("3m");
   const exchangeAssets = assets.filter((asset) => asset.symbol && (asset.kind === "stock" || asset.kind === "fund"));
   const exchangeItems = dedupeMarketItems([
@@ -42,9 +43,11 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
     { value: "IR_GOLD_18K", label: "طلای ۱۸ عیار" },
     { value: "BTC", label: "بیت‌کوین" },
     { value: "USDT", label: "تتر" },
-    ...exchangeItems.map((item) => ({ value: item.symbol, label: item.name })),
+    ...exchangeItems.map((item) => ({ value: marketItemKey(item), label: marketItemLabel(item) })),
   ]);
-  const selectedMarketItem = exchangeItems.find((item) => item.symbol === symbol);
+  const activeKey = options.some((option) => option.value === selectedKey) ? selectedKey : "USD";
+  const selectedMarketItem = exchangeItems.find((item) => marketItemKey(item) === activeKey);
+  const symbol = selectedMarketItem?.symbol ?? activeKey;
   const history = useMarketHistory({ symbol, marketId: selectedMarketItem?.marketId, marketSource: selectedMarketItem?.marketSource, snapshots, range });
   const candles = history.candles;
   const first = candles[0];
@@ -59,7 +62,7 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
         <CardTitle className="flex items-center gap-2"><RiLineChartLine className="text-primary" />{T.title}</CardTitle>
         <p className="mt-1 max-w-3xl type-caption text-muted-foreground">{T.desc}</p>
       </div>
-      <div className="w-full sm:w-48"><Select value={symbol} onValueChange={setSymbol} options={options} /></div>
+      <div className="w-full sm:w-48"><Select value={activeKey} onValueChange={setSelectedKey} options={options} /></div>
     </CardHeader>
     <CardContent>
       <div className="mb-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -125,6 +128,19 @@ function dedupeOptions(options: Array<{ value: string; label: string }>) {
   return [...new Map(options.map((option) => [option.value, option])).values()];
 }
 
-function dedupeMarketItems(items: Array<{ symbol: string; name: string; marketId?: string; marketSource?: Asset["marketSource"] }>) {
-  return [...new Map(items.map((item) => [item.symbol, item])).values()];
+type MarketChartItem = { symbol: string; name: string; marketId?: string; marketSource?: Asset["marketSource"] };
+
+function marketItemKey(item: MarketChartItem) {
+  return item.marketId && item.marketSource
+    ? marketIdentityKey({ source: item.marketSource, marketId: item.marketId })
+    : item.symbol;
+}
+
+function marketItemLabel(item: MarketChartItem) {
+  if (!item.marketId || !item.marketSource) return item.name;
+  return `${item.name} · ${item.marketSource === "tsetmc" ? "TSETMC" : "Tindex"}`;
+}
+
+function dedupeMarketItems(items: MarketChartItem[]) {
+  return [...new Map(items.map((item) => [marketItemKey(item), item])).values()];
 }

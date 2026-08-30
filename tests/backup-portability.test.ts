@@ -6,7 +6,7 @@ import { createBackupEnvelope, openBackupEnvelope, verifyBackupEnvelopeIntegrity
 
 const validData = {
   allocationRules: [{}], incomes: [{}, {}], allocations: [], funds: [{}], assets: [{}, {}], transactions: [{}, {}, {}],
-  settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{}], marketAlerts: [{}, {}],
+  settings: [{ id: "settings" }], planItems: [{}], marketWatchlist: [{ marketId: "legacy-watch" }], marketAlerts: [{ marketId: "legacy-alert-1" }, { marketId: "legacy-alert-2" }],
 };
 
 async function recalculateV2Digest(envelope: Awaited<ReturnType<typeof createBackupEnvelope>>) {

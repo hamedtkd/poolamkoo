@@ -1,3 +1,4 @@
+import { marketIdentityKey } from "./identity.ts";
 import type { ExchangeMarketSource, MarketQuote, MarketSnapshot, MarketSymbol } from "../types.ts";
 
 export type MarketRuntimeSource = "live" | "snapshot";
@@ -19,13 +20,13 @@ const CORE_RUNTIME_SYMBOLS: readonly MarketSymbol[] = ["USD", "IR_GOLD_18K", "BT
 
 export function marketQuoteKey(quote: Pick<MarketQuote, "marketId" | "source" | "symbol">) {
   if (quote.marketId && (quote.source === "tsetmc" || quote.source === "tindex")) {
-    return `${quote.source}:${quote.marketId}`;
+    return marketIdentityKey({ source: quote.source, marketId: quote.marketId });
   }
   return quote.symbol;
 }
 
 export function marketTargetKey(target: MarketRuntimeTarget) {
-  return `${target.source}:${target.id}`;
+  return marketIdentityKey({ source: target.source, marketId: target.id });
 }
 
 export function mergeRuntimeMarketQuotes({

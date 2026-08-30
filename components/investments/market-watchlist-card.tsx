@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { type MarketAlertTarget } from "@/lib/market/alerts";
 import { marketWatchlistRows, navSignal, watchlistSummary, type WatchlistFilter, type WatchlistRow, type WatchlistSort } from "@/lib/market/watchlist";
+import { MARKET_IDENTITY_INDEX, marketIdentityKey, marketIdentityTuple } from "@/lib/market/identity";
 import type { AppSettings, Asset, MarketInstrument, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -31,14 +32,14 @@ export function MarketWatchlistCard({ watchlist, quotes, snapshots, assets, sett
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<WatchlistFilter>("all");
   const [sort, setSort] = useState<WatchlistSort>("newest");
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailKey, setDetailKey] = useState<string | null>(null);
   const allRows = useMemo(() => marketWatchlistRows({ watchlist, quotes, assets }), [assets, quotes, watchlist]);
   const rows = useMemo(() => marketWatchlistRows({ watchlist, quotes, assets, query, filter, sort }), [assets, filter, query, quotes, sort, watchlist]);
   const summary = useMemo(() => watchlistSummary(allRows), [allRows]);
-  const detailRow = detailId ? allRows.find((row) => row.item.marketId === detailId) ?? null : null;
+  const detailRow = detailKey ? allRows.find((row) => marketIdentityKey(row.item) === detailKey) ?? null : null;
 
   async function add(instrument: MarketInstrument) {
-    const current = await db.marketWatchlist.where("marketId").equals(instrument.id).first();
+    const current = await db.marketWatchlist.where(MARKET_IDENTITY_INDEX).equals(marketIdentityTuple({ source: instrument.source, marketId: instrument.id })).first();
     const now = new Date().toISOString();
     if (current?.id) await db.marketWatchlist.update(current.id, { symbol: instrument.symbol, name: instrument.name, updatedAt: now });
     else await db.marketWatchlist.add({ marketId: instrument.id, symbol: instrument.symbol, name: instrument.name, source: instrument.source, createdAt: now, updatedAt: now });
@@ -57,11 +58,11 @@ export function MarketWatchlistCard({ watchlist, quotes, snapshots, assets, sett
       {watchlist.length ? <>
         <WatchlistSummary total={summary.total} gainers={summary.gainers} discounts={summary.discounts} premiums={summary.premiums} />
         <MarketWatchlistToolbar query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} sort={sort} onSortChange={setSort} />
-        {rows.length ? <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">{rows.map((row) => <WatchCard key={row.item.marketId} row={row} settings={settings} onDetail={() => setDetailId(row.item.marketId)} onCreateAsset={onCreateAsset} onCreateAlert={onCreateAlert} />)}</div> : <div className="rounded-2xl border border-dashed p-7 text-center"><div className="type-strong">چیزی با این فیلتر پیدا نشد</div><p className="mt-1 type-caption text-muted-foreground">فیلتر یا عبارت جست‌وجو را تغییر بده.</p></div>}
+        {rows.length ? <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">{rows.map((row) => <WatchCard key={marketIdentityKey(row.item)} row={row} settings={settings} onDetail={() => setDetailKey(marketIdentityKey(row.item))} onCreateAsset={onCreateAsset} onCreateAlert={onCreateAlert} />)}</div> : <div className="rounded-2xl border border-dashed p-7 text-center"><div className="type-strong">چیزی با این فیلتر پیدا نشد</div><p className="mt-1 type-caption text-muted-foreground">فیلتر یا عبارت جست‌وجو را تغییر بده.</p></div>}
       </> : <EmptyWatchlist onAdd={() => setPickerOpen(true)} />}
     </CardContent>
     <Dialog open={pickerOpen} onOpenChange={setPickerOpen}><DialogContent><DialogHeader><DialogTitle>افزودن به دیده‌بان</DialogTitle><DialogDescription>نماد بورسی یا صندوق قابل معامله را جست‌وجو کن. فقط نماد ذخیره می‌شود و هنوز خریدی ثبت نخواهد شد.</DialogDescription></DialogHeader><ExchangeInstrumentPicker settings={settings} onSelect={(instrument) => void add(instrument)} onClear={() => undefined} /></DialogContent></Dialog>
-    <MarketWatchDetailDialog row={detailRow} snapshots={snapshots} settings={settings} onClose={() => setDetailId(null)} onCreateAsset={(instrument) => { setDetailId(null); onCreateAsset(instrument); }} onCreateAlert={(target) => { setDetailId(null); onCreateAlert(target); }} />
+    <MarketWatchDetailDialog row={detailRow} snapshots={snapshots} settings={settings} onClose={() => setDetailKey(null)} onCreateAsset={(instrument) => { setDetailKey(null); onCreateAsset(instrument); }} onCreateAlert={(target) => { setDetailKey(null); onCreateAlert(target); }} />
   </Card>;
 }
 

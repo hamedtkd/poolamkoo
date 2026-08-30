@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
+import { marketIdentityKey } from "@/lib/market/identity";
 import type { MarketHealthSummary } from "@/lib/market/reliability";
 import {
   marketQuoteForStorage,
@@ -26,6 +27,10 @@ type MarketTarget = {
 };
 
 const EMPTY_COVERAGE: MarketCoverage = { live: 0, snapshot: 0, total: 0 };
+
+function targetKey(target: Pick<MarketTarget, "source" | "id">) {
+  return marketIdentityKey({ source: target.source, marketId: target.id });
+}
 let inFlight: { key: string; promise: Promise<MarketResponse> } | null = null;
 
 function targetDescriptors(assets: Asset[], watchlist: MarketWatchItem[], alerts: MarketAlert[]) {
@@ -43,23 +48,23 @@ function targetDescriptors(assets: Asset[], watchlist: MarketWatchItem[], alerts
   }
   const unique = new Map<string, MarketTarget>();
   for (const target of targets) {
-    const key = `${target.source}:${target.id}`;
+    const key = targetKey(target);
     if (!unique.has(key)) unique.set(key, target);
   }
-  return [...unique.values()].sort((a, b) => `${a.source}:${a.id}`.localeCompare(`${b.source}:${b.id}`));
+  return [...unique.values()].sort((a, b) => targetKey(a).localeCompare(targetKey(b)));
 }
 
 function normalizeExchangeQuotes(quotes: MarketQuote[], targets: readonly MarketTarget[]) {
-  const lookup = new Map(targets.map((target) => [`${target.source}:${target.id}`, target]));
+  const lookup = new Map(targets.map((target) => [targetKey(target), target]));
   return quotes.map((quote) => {
     if (!quote.marketId || (quote.source !== "tsetmc" && quote.source !== "tindex")) return quote;
-    const target = lookup.get(`${quote.source}:${quote.marketId}`);
+    const target = lookup.get(marketIdentityKey({ source: quote.source, marketId: quote.marketId }));
     return target ? { ...quote, symbol: target.symbol, name: target.name } : quote;
   });
 }
 
 async function requestMarket(targets: readonly MarketTarget[]) {
-  const key = targets.map((target) => `${target.source}:${target.id}`).join(",");
+  const key = targets.map(targetKey).join(",");
   if (!inFlight || inFlight.key !== key) {
     const params = new URLSearchParams();
     for (const target of targets) params.append(target.source, target.id);
@@ -82,7 +87,7 @@ async function latestCachedQuotes() {
   const latest = new Map<string, MarketSnapshot>();
   for (const row of rows) {
     const key = row.marketId && (row.source === "tsetmc" || row.source === "tindex")
-      ? `${row.source}:${row.marketId}`
+      ? marketIdentityKey({ source: row.source, marketId: row.marketId })
       : row.symbol;
     if (!latest.has(key)) latest.set(key, row);
   }

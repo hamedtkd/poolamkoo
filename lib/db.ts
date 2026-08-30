@@ -4,6 +4,8 @@ import Dexie, { type EntityTable } from "dexie";
 import { LOCAL_DATA_BLOCKED_EVENT, LOCAL_DATA_VERSION_CHANGE_EVENT } from "@/lib/local-data-issues";
 import { LOCAL_DATABASE_SCHEMA_VERSION } from "@/lib/app-version";
 import { validatePortableData } from "@/lib/data-portability";
+import { storesV1, storesV2, storesV4, storesV5, storesV6, storesV7 } from "@/lib/db-schema";
+import { normalizeLegacyAssetIdentityRow, normalizeLegacyExchangeIdentityRow, normalizePortableMarketIdentities } from "@/lib/market/identity";
 import type {
   AllocationEntry,
   AllocationRule,
@@ -19,45 +21,6 @@ import type {
   RecoverySnapshot,
   AppMeta,
 } from "@/lib/types";
-
-const storesV2 = {
-  allocationRules: "++id, preset, updatedAt",
-  incomes: "++id, happenedAt, createdAt",
-  allocations: "++id, incomeId, bucket, createdAt",
-  funds: "++id, category, dueAt, updatedAt",
-  assets: "++id, kind, symbol, updatedAt",
-  transactions: "++id, assetId, incomeId, planItemId, type, happenedAt, createdAt",
-  marketSnapshots: "++id, symbol, capturedAt",
-  planItems: "++id, incomeId, bucket, targetType, targetId, updatedAt",
-  settings: "id, updatedAt",
-};
-
-const storesV4 = {
-  ...storesV2,
-  marketWatchlist: "++id, &marketId, symbol, updatedAt",
-};
-
-const stores = {
-  ...storesV4,
-  marketAlerts: "++id, marketId, symbol, kind, enabled, updatedAt",
-};
-
-const storesV6 = {
-  ...stores,
-  recoverySnapshots: "++id, createdAt, reason",
-  appMeta: "&key, updatedAt",
-};
-
-const storesV1 = {
-  allocationRules: "++id, preset, updatedAt",
-  incomes: "++id, happenedAt, createdAt",
-  allocations: "++id, incomeId, bucket, createdAt",
-  funds: "++id, category, dueAt, updatedAt",
-  assets: "++id, kind, symbol, updatedAt",
-  transactions: "++id, assetId, type, happenedAt, createdAt",
-  marketSnapshots: "++id, symbol, capturedAt",
-  settings: "id, updatedAt",
-};
 
 function safeAmount(value: unknown) {
   const number = typeof value === "number" ? value : Number(value ?? 0);
@@ -98,8 +61,13 @@ export class PoolYarDB extends Dexie {
       await tx.table("planItems").toCollection().modify((row) => normalizePlanRow(row));
     });
     this.version(4).stores(storesV4);
-    this.version(5).stores(stores);
-    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV6);
+    this.version(5).stores(storesV5);
+    this.version(6).stores(storesV6);
+    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV7).upgrade(async (tx) => {
+      await tx.table("assets").toCollection().modify((row) => normalizeLegacyAssetIdentityRow(row as Record<string, unknown>));
+      await tx.table("marketWatchlist").toCollection().modify((row) => normalizeLegacyExchangeIdentityRow(row as Record<string, unknown>));
+      await tx.table("marketAlerts").toCollection().modify((row) => normalizeLegacyExchangeIdentityRow(row as Record<string, unknown>));
+    });
   }
 }
 
@@ -227,11 +195,12 @@ export async function exportDatabaseObject() {
 const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
 export async function importDatabaseObject(data: Record<string, unknown>) {
   validatePortableData(data);
+  const normalizedData = normalizePortableMarketIdentities(data);
 
   await db.transaction("rw", db.tables, async () => {
     for (const name of backupTableNames) await db.table(name).clear();
     for (const name of backupTableNames) {
-      const rows = data[name];
+      const rows = normalizedData[name];
       if (Array.isArray(rows) && rows.length) await db.table(name).bulkAdd(rows);
     }
   });

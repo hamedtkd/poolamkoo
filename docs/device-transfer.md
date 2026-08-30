@@ -38,3 +38,8 @@
 از v0.21 فرستنده نسخه ساختار Local Database را داخل Metadata انتقال اعلام می‌کند. گیرنده قبل از بازکردن Import بررسی می‌کند که داده از Schema جدیدتری نیامده باشد؛ اگر نسخه فرستنده جلوتر باشد، انتقال قبل از جایگزینی داده متوقف می‌شود و کاربر باید دستگاه قدیمی‌تر را به‌روزرسانی کند.
 
 Envelope رمزنگاری‌شده داخل WebRTC عمداً روی فرمت v1 باقی مانده تا مسیر انتقال مستقیم با نسخه‌های قبلی تا حد ممکن سازگار بماند. صحت کل متن انتقال همچنان با SHA-256 بیرونی و اصالت Payload رمزدار با AES-GCM بررسی می‌شود. این تصمیم مستقل از فایل Backup v2 است که برای ذخیره‌سازی بلندمدت Metadata بیشتری دارد.
+
+
+## Schema 7 market identity compatibility (v0.34)
+
+The transfer protocol/encrypted envelope remains unchanged. A sender still announces `schemaVersion` in the metadata frame, and the receiver rejects future schemas before import. When schema 6 or older payloads are accepted by a schema 7 client, legacy market-linked assets/watchlist/alerts that lack an explicit provider are normalized to Tindex before IndexedDB persistence. Explicit TSETMC identities remain unchanged.

@@ -56,3 +56,10 @@ Recovery Snapshotهای جدید نیز `schemaVersion` و `appVersion` دارن
 - **CSV کامل:** فایل محلی شامل جزئیات همان گزارش، از جمله مبلغ‌ها و نام/ارزش دارایی‌هاست. این گزینه برای نگه‌داری/تحلیل شخصی است و تراکنش خام، Backup payload، Recovery Snapshot یا Metadata دستگاه را Export نمی‌کند.
 
 Poolamkoo برای این قابلیت لینک اشتراک میزبانی‌شده، Upload خودکار یا دیتابیس گزارش سروری اضافه نمی‌کند. نام‌های متنی قبل از CSV در برابر Spreadsheet formula prefixهای خطرناک خنثی می‌شوند.
+
+
+## مهاجرت Schema 7 در v0.34
+
+این نسخه یک تغییر واقعی مدل داده دارد: دیده‌بان و هشدار بازار باید Provider را همراه `marketId` در هویت ماندگار خود حفظ کنند. به همین دلیل `LOCAL_DATABASE_SCHEMA_VERSION` از 6 به 7 می‌رود. Dexie نسخه 6 را در زنجیره نگه می‌دارد و هنگام Upgrade همان دیتابیس `poolyar-local` را in-place مهاجرت می‌دهد؛ دیتابیس جدیدی ساخته نمی‌شود.
+
+رکوردهای قدیمی که `marketId` دارند ولی Provider در آن‌ها ثبت نشده، به Tindex نسبت داده می‌شوند؛ چون این رکوردها متعلق به نسل قبل از اتصال مستقیم TSETMC هستند. Backup/Recovery/Device Transfer قدیمی نیز قبل از نوشتن به schema 7 با همین قاعده نرمال می‌شود. Backup envelope v1/v2، رمزنگاری، SHA-256 integrity و pre-restore Recovery Snapshot تغییری نکرده‌اند.

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/format";
 import { marketAlertKindLabel, marketAlertTransition } from "@/lib/market/alerts";
 import { freshMarketQuotes } from "@/lib/market/runtime";
+import { marketIdentityKey } from "@/lib/market/identity";
 import { marketQuoteForTarget } from "@/lib/market/valuation";
 import type { MarketAlert, MarketQuote, MoneyUnit } from "@/lib/types";
 
@@ -18,7 +19,7 @@ async function showNotification(alert: MarketAlert, quote: MarketQuote, unit: Mo
     body: notificationBody(alert, quote, unit),
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    tag: `poolamkoo-market-alert-${alert.id ?? alert.marketId}-${alert.kind}`,
+    tag: `poolamkoo-market-alert-${alert.id ?? marketIdentityKey(alert)}-${alert.kind}`,
   };
   if ("serviceWorker" in navigator) {
     try {
