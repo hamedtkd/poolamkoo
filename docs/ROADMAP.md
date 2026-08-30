@@ -249,8 +249,21 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Extend the production browser release fixture so the verified schema 6 profile must upgrade through schema 7 market identity and schema 8 opening-fund migration before the normal workspace/PWA smoke.
 - Keep provider priority, decision-safe market rules, zero-cost deployment boundaries and Background Push backlog unchanged.
 
+## v0.39 — Income correction & money-flow integrity ✅
+
+- Treat already executed plan money as a hard floor when correcting an incoming-money amount.
+- Rescale only the still-unexecuted remainder of plan cards; fully executed cards never grow just because the source income was increased.
+- Keep allocations synchronized to corrected plan totals with exact integer-Toman distribution.
+- Use linked investment buys as an additional execution floor when plan progress is stale.
+- Lock the income date after execution has started and reject future-dated new/edit income rows.
+- Create a Recovery Snapshot before every valid correction and revalidate live state inside one atomic Dexie write boundary.
+- Keep IndexedDB schema 8, backup/transfer formats, provider priority and Background Push backlog unchanged.
+
 ## Likely next phases
 
+- **v0.40 — Local data health & consistency audit:** detect cross-ledger inconsistencies locally and offer explicit Recovery-Snapshot-backed repair only where deterministic.
+- **v0.41 — Unified financial activity history:** combine income, fund movements and investment transactions into one factual local timeline without adding expense tracking.
+- **v0.42 — Reports & reconciliation upgrade:** expose recorded money-flow reconciliation across incoming money, plans, funds and investments without forecasting or buy/sell advice.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

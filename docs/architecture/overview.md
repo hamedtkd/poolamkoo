@@ -198,3 +198,12 @@ Archive is a reversible presentation state, not deletion. A new lifecycle guard 
 Schema 8 adds the `fundMovements` store while preserving the explicit schema 6 and 7 upgrade chain. During the 7→8 upgrade, each existing positive fund balance becomes one `opening` movement with source `migration`; zero-balance funds need no synthetic row. Older Backup/Recovery/Device Transfer payloads remain accepted when the new table is absent and are normalized the same way before persistence. Payloads that already contain movement rows are validated for fund identity, allowed source/type, non-negative chronological replay and final-balance agreement before replacement.
 
 The production browser release fixture starts from raw schema 6/native version 60 and now requires the same profile to reach schema 8/native version 80. It still proves the schema 7 provider-scoped market migration and additionally verifies that the legacy fund balance survives as exactly one migration opening movement.
+
+
+## Income correction boundary (v0.39)
+
+`lib/income-correction.ts` owns the rule that an incoming-money edit may change planning intent but may not rewrite money that has already been executed. The correction review combines recorded `PlanItem.executedToman` with linked investment buys, rejects any new income amount below that execution floor, and locks the income date after execution starts. This keeps the source date from moving behind already-recorded downstream activity.
+
+For a valid amount correction, only each plan item's still-unexecuted remainder participates in proportional rescaling. Executed amounts remain fixed floors. If every plan card is already complete and the income amount increases, the difference stays unplanned instead of silently extending completed cards. Allocation rows are then synchronized to the corrected plan totals using exact integer-Toman distribution.
+
+The editor creates a Recovery Snapshot before mutation, then re-reads and revalidates live income/plan/allocation/transaction state inside one Dexie transaction before writing. New and edited income dates also reject future dates. This release does not change IndexedDB schema 8 or any backup/transfer format.

@@ -10,7 +10,7 @@ export const newMoneySchema = z.object({
     .trim()
     .min(2, "عنوان حداقل دو حرف باشد.")
     .max(60, "عنوان نباید بیشتر از ۶۰ حرف باشد."),
-  date: z.date({ error: "تاریخ را انتخاب کن." }),
+  date: z.date({ error: "تاریخ را انتخاب کن." }).refine((date) => date.getTime() <= Date.now(), "تاریخ پول ورودی نمی‌تواند در آینده باشد."),
   smart: z.boolean({ error: "وضعیت پیشنهاد هوشمند معتبر نیست." }),
 });
 
@@ -112,7 +112,7 @@ export const incomeEditSchema = z.object({
     .trim()
     .min(2, "عنوان حداقل دو حرف باشد.")
     .max(60, "عنوان نباید بیشتر از ۶۰ حرف باشد."),
-  date: z.date({ error: "تاریخ را انتخاب کن." }),
+  date: z.date({ error: "تاریخ را انتخاب کن." }).refine((date) => date.getTime() <= Date.now(), "تاریخ پول ورودی نمی‌تواند در آینده باشد."),
 });
 export type IncomeEditFormValues = z.infer<typeof incomeEditSchema>;
 

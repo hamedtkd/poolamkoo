@@ -1,4 +1,5 @@
 # Poolamkoo — پولم‌کو
+> v0.39 note: Incoming-money corrections now preserve executed history. Amount edits cannot go below already executed money, only unexecuted plan amounts are rescaled, execution locks the income date, future dates are rejected, and every valid correction creates a local Recovery Snapshot. IndexedDB stays schema 8.
 > v0.38 note: Goal-fund balances now have an auditable local movement ledger. Manual deposits/withdrawals support date, note, edit/delete with chronological non-negative validation; plan/direct allocation and income-reversal flows use the same ledger. Existing balances migrate in place to one opening movement. IndexedDB is schema 8.
 > v0.36 note: Investment transactions can now be corrected in place with a recovery snapshot and chronological ledger validation. Backdated sells, edits, and deletes are rejected when they would make historical holdings negative; same-day buys are treated as available for same-day sells because Poolamkoo stores transaction dates, not intraday times. IndexedDB stays schema 7.
 > v0.35 note: The production browser release gate now seeds a real legacy schema-6 IndexedDB profile and verifies the in-place 6→7 migration, provider normalization, compound indexes, and same-market-id TSETMC/Tindex coexistence before running the normal workspace/PWA smoke. Schema remains 7.
@@ -60,6 +61,7 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 - Configurable life / safety / growth rule
 - Emergency-fund-aware smart allocation
 - Per-income overrides without changing the global rule
+- Correct incoming money safely without shrinking below already executed plan money
 - Create, edit, and delete plan cards
 - Record full or partial execution
 - Compare planned versus actual behavior

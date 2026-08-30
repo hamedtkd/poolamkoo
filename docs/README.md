@@ -38,6 +38,7 @@
 
 ## Release history
 
+- [v0.39.0 — Income correction & money-flow integrity](./releases/0.39.0.md)
 - [v0.38.0 — Fund movement ledger & correction safety](./releases/0.38.0.md)
 - [v0.37.0 — Safe asset archive lifecycle](./releases/0.37.0.md)
 - [v0.36.0 — Investment transaction correction & ledger integrity](./releases/0.36.0.md)
