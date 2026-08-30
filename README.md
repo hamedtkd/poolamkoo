@@ -1,5 +1,6 @@
 # Poolamkoo — پولم‌کو
-> v1.0.0-rc.3 note: RC3 remains unreleased until the full production gate is green. The tour now uses an exact target-linked SVG cutout, retries target resolution across layout frames, preserves valid geometry through transient layout changes, and runs browser smoke with explicit 1280×900 desktop and 425×800 mobile viewports. IndexedDB stays schema 8 and feature freeze remains in force.
+> v1.0.0 note: the first stable release promotes the accepted RC3 product boundary with no new feature family or persistence migration. Automated production checks and user-confirmed manual acceptance are complete; IndexedDB remains schema 8.
+> v1.0.0-rc.3 note: RC3 stabilized the product-tour spotlight with an exact target-linked SVG cutout and deterministic desktop/mobile browser smoke, then passed the full production gate before prerelease publication.
 > v1.0.0-rc.2 note: the first RC exposed a product-tour usability blocker: the dim overlay obscured the control being taught and desktop/mobile steps could point at hidden or unavailable targets. RC2 uses a true transparent spotlight, labels the exact page area, keeps every step attached to a visible control, and adds production-browser coverage for the guide. IndexedDB stays schema 8 and feature freeze remains in force.
 > v1.0.0-rc.1 note: the product is now under feature freeze for release-candidate validation. The automated RC gate reuses the full production release gate and adds version/schema/document alignment; IndexedDB stays schema 8, and real PWA install/update, Backup → Restore, old-tab upgrade, and responsive/theme checks remain explicit manual acceptance before v1.0.0 stable.
 > v0.43 note: v1.0 readiness hardening keeps public navigations network-only even after the workspace Service Worker is registered, makes “Later” suppress the same waiting PWA update during the current app session, and routes generic workspace failures to explicit Local Data Health/Data Safety flows instead of mutating IndexedDB from an error boundary. IndexedDB stays schema 8.
@@ -322,13 +323,13 @@ npm run check
 npm run build
 ```
 
-For a release candidate, run the production-browser gate too:
+For a stable release, run the full production and stable metadata gate:
 
 ```bash
-npm run check:release
+npm run check:stable
 ```
 
-`check:release` runs the normal quality suite, creates one production build, then opens that build in an isolated Chrome/Edge/Chromium profile and verifies the legacy schema 6 → current schema 8 database migration before Landing → Workspace, fresh onboarding/local bootstrap, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
+`check:stable` runs the complete `check:release` path first, then verifies v1.0.0 package/runtime/schema/release-document alignment. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
 
 ## PWA
 

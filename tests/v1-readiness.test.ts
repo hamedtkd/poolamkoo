@@ -50,5 +50,8 @@ test("v1 readiness audit and release note document the hardened boundaries", () 
   assert.equal(audit.includes("Ready for a v1.0 release-candidate pass"), true);
   assert.equal(audit.includes("Generic error recovery"), true);
   assert.equal(roadmap.includes("v0.43 — v1.0 readiness hardening ✅"), true);
-  assert.equal(roadmap.includes("v1.0.0-rc.3 — Product-tour masked spotlight stabilization"), true);
+  assert.equal(roadmap.includes("v1.0.0-rc.3 — Product-tour masked spotlight stabilization ✅"), true);
+  assert.equal(roadmap.includes("v1.0.0 — First stable release ✅"), true);
+  assert.equal(read("docs/releases/1.0.0.md").includes("First stable release"), true);
+  assert.equal(read("docs/audits/v1.0.0-acceptance.md").includes("PASS → آماده انتشار `v1.0.0` stable"), true);
 });

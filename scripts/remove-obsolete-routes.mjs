@@ -1,7 +1,7 @@
 import { access, rm } from "node:fs/promises";
 
 const workspaceEntry = "app/(workspace)/dashboard/page.tsx";
-const obsoletePaths = [
+const obsoleteRoutes = [
   "app/(app)",
   "app/page.tsx",
   "app/income",
@@ -17,6 +17,13 @@ const obsoletePaths = [
   "app/manifest.js",
   "app/manifest.webmanifest",
 ];
+const obsoleteSourcePaths = [
+  // v1.0 stable replaces the RC-only metadata gate. Extracting the stable source
+  // over an existing RC checkout does not delete removed files, so clean them before
+  // the test glob runs or stale RC assertions will incorrectly fail the stable gate.
+  "scripts/check-v1-rc.mjs",
+  "tests/v1-rc.test.ts",
+];
 const staleGeneratedTypePaths = [".next/types", ".next/dev/types"];
 
 async function exists(path) {
@@ -30,7 +37,7 @@ async function exists(path) {
 
 let removedRoutes = 0;
 if (await exists(workspaceEntry)) {
-  for (const path of obsoletePaths) {
+  for (const path of obsoleteRoutes) {
     if (!(await exists(path))) continue;
     await rm(path, { recursive: true, force: true });
     removedRoutes += 1;
@@ -38,6 +45,14 @@ if (await exists(workspaceEntry)) {
   }
 } else {
   console.log("Workspace route entry not found; obsolete-route cleanup skipped.");
+}
+
+let removedSourcePaths = 0;
+for (const path of obsoleteSourcePaths) {
+  if (!(await exists(path))) continue;
+  await rm(path, { recursive: true, force: true });
+  removedSourcePaths += 1;
+  console.log(`Removed obsolete source file: ${path}`);
 }
 
 let removedGeneratedTypes = 0;
@@ -48,6 +63,6 @@ for (const path of staleGeneratedTypePaths) {
   console.log(`Removed stale generated route types: ${path}`);
 }
 
-if (!removedRoutes && !removedGeneratedTypes) {
-  console.log("No obsolete routes or stale generated route types found.");
+if (!removedRoutes && !removedSourcePaths && !removedGeneratedTypes) {
+  console.log("No obsolete routes, source files, or stale generated route types found.");
 }

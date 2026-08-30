@@ -1,5 +1,6 @@
 # پولم‌کو
-> نکته v1.0.0-rc.3: RC3 تا وقتی Gate کامل Production سبز نشود منتشر نمی‌شود. راهنما حالا SVG cutout را دقیقاً به Target فعال وصل می‌کند، پیدا شدن Target را در چند Frame retry می‌کند، در تغییرات موقت Layout اندازه معتبر را از دست نمی‌دهد و Browser Smoke را با viewport صریح 1280×900 برای Desktop و 425×800 برای Mobile اجرا می‌کند. IndexedDB همچنان schema 8 است و Feature freeze ادامه دارد.
+> نکته v1.0.0: اولین نسخه Stable همان مرز محصول پذیرفته‌شده RC3 را بدون Feature Family جدید یا migration داده منتشر می‌کند. Gate کامل Production و Manual Acceptance تأییدشده‌اند و IndexedDB همچنان schema 8 است.
+> نکته v1.0.0-rc.3: RC3 راهنمای سریع را با SVG cutout دقیق، Target فعال و Browser Smoke قطعی Desktop/Mobile پایدار کرد و فقط بعد از سبز شدن Gate کامل Production به‌صورت Pre-release منتشر شد.
 > نکته v1.0.0-rc.2: در RC اول یک blocker کاربردپذیری در راهنمای سریع مشخص شد: Overlay خود آیتم آموزشی را تیره می‌کرد و بعضی مرحله‌ها روی Desktop/Mobile به هدف پنهان یا ناموجود اشاره می‌کردند. RC2 از Spotlight واقعاً شفاف استفاده می‌کند، محل دقیق بخش را روی کارت و کنار Highlight می‌نویسد، همه مرحله‌ها را به کنترل قابل‌دیدن وصل می‌کند و Browser Gate واقعی این مسیر را پوشش می‌دهد. IndexedDB همچنان schema 8 است و Feature freeze ادامه دارد.
 > نکته v1.0.0-rc.1: محصول وارد Feature freeze برای اعتبارسنجی Release Candidate شده است. Gate خودکار RC همان مسیر کامل Production را اجرا می‌کند و هم‌ترازی Version/Schema/Docs را هم می‌سنجد؛ IndexedDB همچنان schema 8 است و نصب/Update واقعی PWA، Backup → Restore، old-tab upgrade و مرور Responsive/Theme باید پیش از v1.0.0 stable به‌صورت دستی تأیید شوند.
 > نکته v0.43: سخت‌سازی آمادگی v1.0 باعث می‌شود Navigationهای عمومی حتی بعد از رجیسترشدن Service Worker فضای Workspace به‌صورت network-only بمانند، گزینه «بعداً» همان Worker منتظر را در همان Session دوباره نمایش ندهد، و خطای عمومی Workspace به‌جای دستکاری IndexedDB کاربر را به «سلامت داده محلی» و راهنمای Data Safety هدایت کند. IndexedDB همچنان schema 8 است.
@@ -280,13 +281,13 @@ npm run check
 npm run build
 ```
 
-برای Release Candidate، Browser Gate را هم اجرا کن:
+برای Release Stable، Gate کامل Production و metadata نهایی را اجرا کن:
 
 ```bash
-npm run check:release
+npm run check:stable
 ```
 
-`check:release` ابتدا Quality Gate معمول را اجرا می‌کند، یک Production Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای Landing → Workspace، آنبوردینگ/داده محلی، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
+`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه v1.0.0 را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
 
 
 ## تصویر محصول در لندینگ

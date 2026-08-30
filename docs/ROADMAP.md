@@ -311,18 +311,25 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Re-run the full RC gate and manual guide pass before continuing the remaining v1.0.0 stable acceptance matrix.
 - Full local `check:rc` later failed at the new Production Browser Smoke spotlight assertion, so RC2 is not a valid stable candidate even though its normal CI workflow passed.
 
-## v1.0.0-rc.3 — Product-tour masked spotlight stabilization 🚧
+## v1.0.0-rc.3 — Product-tour masked spotlight stabilization ✅
 
 - Keep one SVG mask with a real transparent cutout around the active guide target.
 - Bind the Spotlight and Overlay to the exact active `data-tour-target`, retry target resolution across layout frames and preserve valid geometry through transient scroll/resize changes.
 - Make Production Browser Smoke deterministic with explicit 1280×900 Desktop and 425×800 Mobile viewports instead of Chromium defaults.
 - Emit exact Target/Spotlight/Overlay/viewport diagnostics if the guide gate still fails.
 - Keep Feature freeze, IndexedDB schema 8, Backup/Recovery/Device Transfer contracts and provider boundaries unchanged.
-- Do not Commit/Tag/Release RC3 until `npm run check:rc` is fully green on the real local Production Browser Smoke.
+- RC3 passed the full local `npm run check:rc` gate, was tagged/published as a prerelease, and its manual acceptance scenarios were confirmed before stable promotion.
+
+## v1.0.0 — First stable release ✅
+
+- Promote the accepted RC3 runtime boundary without adding a new feature family.
+- Keep IndexedDB schema 8 and Backup/Recovery/Device Transfer contracts unchanged.
+- Require `npm run check:stable`, which executes the full production release gate before stable version/schema/docs validation.
+- Record the completed manual Desktop/Mobile tour, PWA install/update, Offline/Resume, Backup → Restore, old-tab upgrade and Responsive/Theme acceptance.
+- Publish `v1.0.0` as the first non-prerelease only after the stable gate remains green.
 
 ## Likely next phases
 
-- **v1.0.0 stable:** only after all automated and manual RC acceptance gates pass without a release blocker.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

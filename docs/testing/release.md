@@ -278,24 +278,37 @@ The migration checks below are automated inside `npm run check:release` using a 
 
 After the Workspace Service Worker is registered, the production browser smoke returns to `/` and verifies that the public Landing navigation is network-only and absent from Cache Storage. This specifically guards the root-scope Service Worker from turning public pages into offline Workspace cache entries.
 
-## 21. v1.0 release-candidate acceptance
+## 21. v1.0 release-candidate acceptance history
 
-برای Candidate فعال `v1.0.0-rc.3` ابتدا Gate خودکار Candidate را اجرا کن:
+برای Candidate نهایی `v1.0.0-rc.3` Gate خودکار زیر اجرا و سبز شد:
 
 ```bash
 npm install
 npm run check:rc
 ```
 
-`check:rc` ابتدا کل `check:release` را اجرا می‌کند؛ بنابراین Build یا Browser Smoke جدا و ضعیف‌تری برای RC وجود ندارد. بعد از سبز شدن آن، موارد زیر هنوز Manual acceptance هستند و برای stable باید واقعی تست شوند:
+`check:rc` ابتدا کل `check:release` را اجرا می‌کند؛ بنابراین Build یا Browser Smoke جدا و ضعیف‌تری برای RC وجود ندارد. بعد از سبز شدن آن، موارد زیر به‌صورت Manual acceptance روی Candidate نهایی بررسی و بدون blocker تأیید شدند:
 
-- [ ] Chromium desktop: نصب واقعی PWA، Deploy/Update، انتخاب «بعداً»، سپس Update صریح بدون Reload ناگهانی
-- [ ] mobile-class browser: نصب/launch، Offline route و Resume بدون از دست‌رفتن IndexedDB
-- [ ] Backup → Restore با داده غیرنمایشی؛ Preview معتبر و Recovery Snapshot قبل از replacement
-- [ ] old-tab upgrade روی همان Origin؛ blocked/versionchange امن و بدون نیاز به Clear Site Data
-- [ ] راهنمای سریع روی Desktop و 390px: Target داخل SVG Cutout کاملاً روشن بماند، Ring هم‌تراز باشد و هیچ مرحله‌ای بدون Highlight واقعی نماند
-- [ ] مرور 390px و desktop در Light/Dark برای Dashboard، Income، Funds، Investments، Reports و Settings
+- [x] Chromium desktop: نصب واقعی PWA، Deploy/Update، انتخاب «بعداً»، سپس Update صریح بدون Reload ناگهانی
+- [x] mobile-class browser: نصب/launch، Offline route و Resume بدون از دست‌رفتن IndexedDB
+- [x] Backup → Restore با داده غیرنمایشی؛ Preview معتبر و Recovery Snapshot قبل از replacement
+- [x] old-tab upgrade روی همان Origin؛ blocked/versionchange امن و بدون نیاز به Clear Site Data
+- [x] راهنمای سریع روی Desktop و 390px: Target داخل SVG Cutout کاملاً روشن بماند، Ring هم‌تراز باشد و هیچ مرحله‌ای بدون Highlight واقعی نماند
+- [x] مرور 390px و desktop در Light/Dark برای Dashboard، Income، Funds، Investments، Reports و Settings
 
 Browser Smoke RC3 علاوه بر Gateهای قبلی، viewport دسکتاپ را صریحاً روی `1280×900` و موبایل را روی `425×800` می‌گذارد، Tour را باز می‌کند، Spotlight/Overlay را به `data-tour-target` مرحله جاری تطبیق می‌دهد و Target را داخل SVG mask cutout و Ring را دور همان Target assert می‌کند. اگر resolve یا geometry پایدار نشود، وضعیت جداگانه Target/Spotlight/Overlay همراه viewport و media-query در خروجی چاپ می‌شود.
 
-اگر این Manual gateها blocker نداشتند، Candidate می‌تواند به `v1.0.0` stable ارتقا پیدا کند. در RC Feature جدید اضافه نکن؛ فقط blocker با reproduction روشن مجاز است.
+این Manual gateها بدون blocker تأیید شدند و Candidate برای promotion به `v1.0.0` stable پذیرفته شد. RC history فقط سابقه تصمیم Release است؛ Gate فعلی Stable در بخش بعدی آمده است.
+
+## 22. v1.0 stable promotion
+
+پس از سبز شدن RC3 و تأیید Manual Acceptance، نسخه Stable باید با Gate زیر ساخته شود:
+
+```bash
+npm install
+npm run check:stable
+```
+
+`check:stable` ابتدا کل `check:release` را اجرا می‌کند و سپس Version نهایی `1.0.0`، IndexedDB schema 8 و Release/Acceptance docs را بررسی می‌کند. این Gate Feature جدیدی را مجاز نمی‌کند؛ Stable promotion باید همان Runtime پذیرفته‌شده RC3 باشد.
+
+Manual Acceptance ثبت‌شده برای v1.0 شامل راهنمای سریع Desktop/Mobile، نصب و Update واقعی PWA، Offline/Resume موبایل، Backup → Restore، old-tab upgrade و مرور Responsive/Theme در Light/Dark است. نتیجه این سناریوها قبل از promotion به Stable تأیید شده است.

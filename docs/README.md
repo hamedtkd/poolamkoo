@@ -32,6 +32,7 @@
 - [Background Push backlog](./backlog/background-push.md)
 
 ## v1 readiness
+- [v1.0.0 stable acceptance record](./audits/v1.0.0-acceptance.md)
 - [v1.0.0-rc.3 acceptance matrix](./audits/v1-rc3-acceptance.md)
 - [v1.0.0-rc.2 acceptance matrix](./audits/v1-rc2-acceptance.md)
 - [v1.0.0-rc.1 acceptance matrix](./audits/v1-rc1-acceptance.md)
@@ -45,6 +46,7 @@
 
 ## Release history
 
+- [v1.0.0 — First stable release](./releases/1.0.0.md)
 - [v1.0.0-rc.3 — Product-tour masked spotlight stabilization](./releases/1.0.0-rc.3.md)
 - [v1.0.0-rc.2 — Product tour release-blocker fix](./releases/1.0.0-rc.2.md)
 - [v1.0.0-rc.1 — Release candidate validation](./releases/1.0.0-rc.1.md)

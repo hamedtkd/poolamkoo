@@ -258,3 +258,9 @@ Each step now carries an explicit page-area label, Desktop global search exposes
 RC2's full local Production Browser Smoke failed the new spotlight geometry assertion, so the four-rectangle shade implementation was not accepted as release-ready. RC3 replaces those independent shade regions with one viewport SVG mask. The dim layer is painted once, while a rounded black cutout in the mask makes the target area genuinely transparent. The target stays in its normal DOM and no ancestor z-index promotion is required.
 
 The tour links its Spotlight and Overlay to the exact active `data-tour-target`, retries target resolution across several animation frames, remeasures after `scrollIntoView`, and observes the resolved element with `ResizeObserver`. A transient missing target during scroll/resize no longer clears a previously valid measurement. The production browser gate also sets deterministic 1280×900 Desktop and 425×800 Mobile viewports, then verifies the exact target/ring/cutout triple and emits target/overlay/viewport diagnostics on failure. No persistence, market, backup or PWA contract changes; IndexedDB remains schema 8.
+
+## v1.0 stable boundary
+
+`v1.0.0` promotes the accepted RC3 runtime boundary rather than opening a new product phase. The product-tour mask/target contract, public/workspace PWA separation, schema 6→8 migration path, local data health boundaries, report reconciliation and local-first portability contracts are unchanged from the accepted candidate. IndexedDB remains schema 8.
+
+Stable release validation uses `npm run check:stable`: the complete production release gate runs first, followed by metadata checks that pin package/runtime version `1.0.0`, schema 8 and the final release/acceptance documentation. The manual acceptance record covers real Desktop/Mobile guide behavior, PWA install/update, mobile Offline/Resume, Backup → Restore, old-tab upgrade and responsive Light/Dark review.

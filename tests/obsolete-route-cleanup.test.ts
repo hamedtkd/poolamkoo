@@ -5,18 +5,24 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
-test("obsolete cleanup removes legacy root manifest left by full-source replacement", () => {
+test("obsolete cleanup removes legacy files left by full-source replacement", () => {
   const root = mkdtempSync(join(tmpdir(), "poolamkoo-obsolete-cleanup-"));
   try {
     const workspace = join(root, "app", "(workspace)", "dashboard");
     const publicDir = join(root, "public");
+    const scriptsDir = join(root, "scripts");
+    const testsDir = join(root, "tests");
     mkdirSync(workspace, { recursive: true });
     mkdirSync(publicDir, { recursive: true });
+    mkdirSync(scriptsDir, { recursive: true });
+    mkdirSync(testsDir, { recursive: true });
     mkdirSync(join(root, ".next", "types"), { recursive: true });
     writeFileSync(join(workspace, "page.tsx"), "export default function Page() { return null; }\n");
     writeFileSync(join(root, "app", "manifest.ts"), "export default function manifest() { return {}; }\n");
     writeFileSync(join(publicDir, "app.webmanifest"), '{"start_url":"/dashboard"}\n');
     writeFileSync(join(root, ".next", "types", "validator.ts"), "export {};\n");
+    writeFileSync(join(scriptsDir, "check-v1-rc.mjs"), "console.log('obsolete rc gate');\n");
+    writeFileSync(join(testsDir, "v1-rc.test.ts"), "throw new Error('obsolete rc test');\n");
 
     const result = spawnSync(process.execPath, [resolve("scripts/remove-obsolete-routes.mjs")], {
       cwd: root,
@@ -26,8 +32,12 @@ test("obsolete cleanup removes legacy root manifest left by full-source replacem
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(existsSync(join(root, "app", "manifest.ts")), false);
     assert.equal(existsSync(join(root, ".next", "types")), false);
+    assert.equal(existsSync(join(scriptsDir, "check-v1-rc.mjs")), false);
+    assert.equal(existsSync(join(testsDir, "v1-rc.test.ts")), false);
     assert.equal(existsSync(join(publicDir, "app.webmanifest")), true);
     assert.match(result.stdout, /Removed obsolete route: app\/manifest\.ts/);
+    assert.match(result.stdout, /Removed obsolete source file: scripts\/check-v1-rc\.mjs/);
+    assert.match(result.stdout, /Removed obsolete source file: tests\/v1-rc\.test\.ts/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
