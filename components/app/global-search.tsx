@@ -88,7 +88,7 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
 
   const normalized = normalizeSearchText(query);
   const quickItems = useMemo(() => {
-    const ids = new Set(["action:new-money", "nav:/reports", "nav:/settings"]);
+    const ids = new Set(["action:new-money", "nav:/activity", "nav:/reports", "nav:/settings"]);
     return items.filter((item) => ids.has(item.id));
   }, [items]);
   const results = useMemo(() => {
@@ -198,7 +198,7 @@ function SearchPanel({ query, onQueryChange, onInputKeyDown, items, searching, a
           className="h-12 pe-10"
         />
       </div>
-      <div className="sr-only" aria-live="polite">{searching ? (items.length ? `${items.length} نتیجه پیدا شد` : "نتیجه‌ای پیدا نشد") : "سه میانبر پیشنهادی"}</div>
+      <div className="sr-only" aria-live="polite">{searching ? (items.length ? `${items.length} نتیجه پیدا شد` : "نتیجه‌ای پیدا نشد") : `${items.length} میانبر پیشنهادی`}</div>
 
       <div className="mt-3 flex items-center justify-between type-caption text-muted-foreground">
         <span>{searching ? "نتایج" : "میانبرها"}</span>

@@ -214,3 +214,12 @@ The editor creates a Recovery Snapshot before mutation, then re-reads and revali
 `lib/data-health.ts` is a pure cross-ledger audit layer. It does not mutate IndexedDB and does not depend on network state. The audit checks referential integrity between Income/Allocation/Plan/Transaction rows, chronological Fund and Investment ledger invariants, archived open holdings, plan execution bounds, provider-scoped Watchlist identity, and exact duplicate alert conditions. Ambiguous historical problems are reported rather than guessed.
 
 `lib/data-health-store.ts` is the narrow mutation boundary for deterministic repair. It may resynchronize only denormalized values that have a single authoritative source: `fund.currentToman` from a valid Fund Movement replay and asset-plan `executedToman` from linked buy transactions. A Recovery Snapshot is created before repair, and the authoritative tables are re-read inside one Dexie transaction before writes. No schema bump, server persistence, telemetry, or automatic record deletion is introduced.
+
+
+## Unified financial activity boundary (v0.41)
+
+`lib/activity.ts` is a read-only projection over existing local source records. It merges `IncomeEvent`, `FundMovement` and `InvestmentTransaction` rows into one display timeline; it does not create a fourth financial ledger and does not write back into Dexie. Amount summaries are explicitly recorded-volume summaries, not an inferred bank/cash balance.
+
+The projection keeps each record's calendar `happenedAt` date authoritative. When several records share a day, `createdAt` is used only for deterministic display ordering because Poolamkoo does not persist a reliable intraday execution timestamp for all ledgers. Fund source (`manual`, plan, direct allocation, income reversal, opening/migration), investment plan linkage and notes remain visible. Historical activity resolves assets through `allAssets`, so an archived asset does not lose its name; missing references remain explicit as unknown entities instead of disappearing.
+
+The `/activity` workspace route has its own session-scoped date range plus category/search filters, remains covered by workspace `noindex` and `robots.txt` disallow rules, and uses `SensitiveValue` for financial amounts. No IndexedDB schema, backup/transfer format, market-provider priority, analytics boundary or Background Push behavior changes in this release.

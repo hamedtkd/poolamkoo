@@ -6,6 +6,7 @@ import {
   RiBarChartBoxLine,
   RiBookOpenLine,
   RiDashboardLine,
+  RiHistoryLine,
   RiInformationLine,
   RiMenu3Line,
   RiQuestionLine,
@@ -93,6 +94,7 @@ function MobileMenu({ open, onOpenChange, market, onNewMoney, onStartTour, resol
         </button>
 
         <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <SecondaryLink href="/activity" icon={<RiHistoryLine />} label="تاریخچه" description="رد پول‌های ثبت‌شده" onClick={close} className="col-span-2" />
           <SecondaryLink href="/reports" icon={<RiBarChartBoxLine />} label="گزارش‌ها" description="مرور تصمیم‌ها" onClick={close} />
           <SecondaryLink href="/settings" icon={<RiSettings3Line />} label="تنظیمات" description="ظاهر، قانون و داده" onClick={close} />
         </div>
@@ -117,8 +119,8 @@ function MobileMenu({ open, onOpenChange, market, onNewMoney, onStartTour, resol
   );
 }
 
-function SecondaryLink({ href, icon, label, description, onClick }: { href: string; icon: React.ReactNode; label: string; description: string; onClick: () => void }) {
-  return <Link href={href} onClick={onClick} className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card/72 p-3 text-start shadow-sm transition active:scale-[.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5">{icon}</span><span className="min-w-0"><span className="block type-label text-foreground">{label}</span><span className="mt-0.5 block type-caption text-muted-foreground">{description}</span></span></Link>;
+function SecondaryLink({ href, icon, label, description, onClick, className }: { href: string; icon: React.ReactNode; label: string; description: string; onClick: () => void; className?: string }) {
+  return <Link href={href} onClick={onClick} className={cn("flex min-h-20 items-center gap-3 rounded-2xl border bg-card/72 p-3 text-start shadow-sm transition active:scale-[.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5">{icon}</span><span className="min-w-0"><span className="block type-label text-foreground">{label}</span><span className="mt-0.5 block type-caption text-muted-foreground">{description}</span></span></Link>;
 }
 
 function Utility({ label, children }: { label: string; children: React.ReactNode }) {

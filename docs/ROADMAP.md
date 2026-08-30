@@ -268,9 +268,17 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep the audit completely local: no diagnostic upload, analytics event expansion, account requirement or hosted financial backend.
 - Keep IndexedDB schema 8, backup/transfer formats, provider priority and Background Push backlog unchanged.
 
+## v0.41 — Unified financial activity history ✅
+
+- Add one workspace Activity timeline derived only from persisted incoming money, Fund Movement rows and investment transactions.
+- Group by recorded calendar day and use creation time only as a deterministic same-day display order; do not invent an execution timestamp or imply causality that is not stored.
+- Preserve fund movement source labels, investment-plan linkage labels, notes, archived-asset identity and explicit missing-entity fallbacks.
+- Add independent date, category and normalized Persian search filters plus privacy-sensitive recorded-volume summaries.
+- Keep Activity local and read-only: no expense ledger, inferred cash account, server sync, telemetry expansion or schema migration.
+- Keep IndexedDB schema 8, backup/transfer formats, provider priority and Background Push backlog unchanged.
+
 ## Likely next phases
 
-- **v0.41 — Unified financial activity history:** combine income, fund movements and investment transactions into one factual local timeline without adding expense tracking.
 - **v0.42 — Reports & reconciliation upgrade:** expose recorded money-flow reconciliation across incoming money, plans, funds and investments without forecasting or buy/sell advice.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.

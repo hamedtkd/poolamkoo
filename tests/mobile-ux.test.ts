@@ -23,12 +23,13 @@ test("more sheet avoids repeating primary bottom-navigation destinations", () =>
   assert.match(mobileNavigation, /دسترسی سریع/);
   assert.match(mobileNavigation, /بخش‌های اصلی پایین صفحه هستند/);
   assert.doesNotMatch(mobileNavigation, /<MenuLink href="\/(income|funds|investments)"/);
+  assert.match(mobileNavigation, /href="\/activity"/);
   assert.match(mobileNavigation, /href="\/reports"/);
   assert.match(mobileNavigation, /href="\/settings"/);
 });
 
 test("global search starts compact instead of listing every route before typing", () => {
-  assert.match(globalSearch, /new Set\(\["action:new-money", "nav:\/reports", "nav:\/settings"\]\)/);
+  assert.match(globalSearch, /new Set\(\["action:new-money", "nav:\/activity", "nav:\/reports", "nav:\/settings"\]\)/);
   assert.match(globalSearch, /برای نتیجه دقیق‌تر شروع به تایپ کن/);
   assert.doesNotMatch(globalSearch, /items\.slice\(0, 9\)/);
 });

@@ -16,7 +16,7 @@ test("siteUrl accepts normal origins and falls back for invalid configuration", 
 });
 
 test("public sitemap contains only non-financial informational routes", () => {
-  for (const privateRoute of ["/dashboard", "/income", "/funds", "/investments", "/reports", "/settings"]) {
+  for (const privateRoute of ["/dashboard", "/income", "/funds", "/investments", "/activity", "/reports", "/settings"]) {
     assert.equal(PUBLIC_INDEX_ROUTES.includes(privateRoute as never), false);
   }
   assert.ok(PUBLIC_INDEX_ROUTES.includes("/privacy"));

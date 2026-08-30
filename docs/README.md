@@ -38,6 +38,7 @@
 
 ## Release history
 
+- [v0.41.0 — Unified financial activity history](./releases/0.41.0.md)
 - [v0.40.0 — Local data health & consistency audit](./releases/0.40.0.md)
 - [v0.39.0 — Income correction & money-flow integrity](./releases/0.39.0.md)
 - [v0.38.0 — Fund movement ledger & correction safety](./releases/0.38.0.md)

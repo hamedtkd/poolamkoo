@@ -6,7 +6,7 @@ import { dateInRange, emptyDateRange, type AppDateRange } from "@/lib/date-range
 
 const STORAGE_KEY = "poolamkoo:date-ranges";
 const CHANGE_EVENT = "poolamkoo:date-ranges-change";
-export type DateFilterScope = "dashboard" | "income" | "reports" | "investments";
+export type DateFilterScope = "dashboard" | "income" | "reports" | "investments" | "activity";
 
 type ScopedRanges = Record<DateFilterScope, AppDateRange>;
 
@@ -15,6 +15,7 @@ interface StoredRanges {
   income?: { from?: string | null; to?: string | null };
   reports?: { from?: string | null; to?: string | null };
   investments?: { from?: string | null; to?: string | null };
+  activity?: { from?: string | null; to?: string | null };
 }
 
 const defaultRanges = (): ScopedRanges => ({
@@ -22,6 +23,7 @@ const defaultRanges = (): ScopedRanges => ({
   income: emptyDateRange(),
   reports: emptyDateRange(),
   investments: emptyDateRange(),
+  activity: emptyDateRange(),
 });
 
 function toStoredRange(range: AppDateRange) {
@@ -67,6 +69,7 @@ function parseRanges(snapshot: string): ScopedRanges {
       income: fromStoredRange(parsed.income),
       reports: fromStoredRange(parsed.reports),
       investments: fromStoredRange(parsed.investments),
+      activity: fromStoredRange(parsed.activity),
     };
   } catch {
     return defaultRanges();
@@ -86,6 +89,7 @@ export function useAppDateFilter(data: ReturnTypeOfAppData) {
         income: toStoredRange(updated.income),
         reports: toStoredRange(updated.reports),
         investments: toStoredRange(updated.investments),
+        activity: toStoredRange(updated.activity),
       }));
     } catch {
       // Session storage can be unavailable in hardened browsers.
@@ -102,6 +106,7 @@ export function useAppDateFilter(data: ReturnTypeOfAppData) {
         allocations: data.allocations.filter((row) => incomeIds.has(row.incomeId)),
         planItems: data.planItems.filter((row) => incomeIds.has(row.incomeId)),
         transactions: data.transactions.filter((row) => dateInRange(row.happenedAt, range)),
+        fundMovements: data.fundMovements.filter((row) => dateInRange(row.happenedAt, range)),
         snapshots: data.snapshots.filter((row) => dateInRange(row.capturedAt, range)),
       };
     };
@@ -111,8 +116,9 @@ export function useAppDateFilter(data: ReturnTypeOfAppData) {
       income: build(ranges.income),
       reports: build(ranges.reports),
       investments: build(ranges.investments),
+      activity: build(ranges.activity),
     };
-  }, [data.allocations, data.incomes, data.planItems, data.snapshots, data.transactions, ranges]);
+  }, [data.allocations, data.fundMovements, data.incomes, data.planItems, data.snapshots, data.transactions, ranges]);
 
   return {
     ranges,
