@@ -32,6 +32,7 @@
 - [Background Push backlog](./backlog/background-push.md)
 
 ## v1 readiness
+- [v1.0.0-rc.1 acceptance matrix](./audits/v1-rc1-acceptance.md)
 - [v0.43 readiness audit](./audits/v1-readiness-v0.43.md)
 
 ## Data safety
@@ -42,6 +43,7 @@
 
 ## Release history
 
+- [v1.0.0-rc.1 — Release candidate validation](./releases/1.0.0-rc.1.md)
 - [v0.43.0 — v1.0 readiness hardening](./releases/0.43.0.md)
 - [v0.42.0 — Reports & reconciliation upgrade](./releases/0.42.0.md)
 - [v0.41.0 — Unified financial activity history](./releases/0.41.0.md)

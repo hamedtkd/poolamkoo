@@ -239,3 +239,9 @@ The installable app still needs a root Service Worker scope because `/dashboard`
 PWA update dismissal is also worker-specific for the active Workspace session. `usePwaUpdate` keeps the exact waiting `ServiceWorker` object that the user dismissed; focus/visibility update checks do not re-open the notice while that same worker is waiting, while a replacement worker becomes eligible again. `SKIP_WAITING` remains explicit user action and reload still waits for `controllerchange`.
 
 Generic Workspace render/runtime failures no longer call `repairLocalData`. A generic exception is not sufficient evidence of IndexedDB corruption. The error boundary offers retry and links to `Settings → Local Data Health` plus the public Data Safety guide. Deterministic repair remains isolated in `lib/data-health-store.ts`, where Recovery Snapshot and live transactional revalidation are mandatory. IndexedDB remains schema 8.
+
+## v1.0 release-candidate boundary (v1.0.0-rc.1)
+
+RC1 introduces no new financial model or persistence contract. It freezes the v0.43 product boundary and promotes the existing production release gate to the candidate acceptance path through `npm run check:rc`. The RC metadata guard keeps package/runtime version alignment explicit and refuses an accidental IndexedDB schema bump beyond 8.
+
+Real PWA install/update, mobile-class offline/resume, Backup → Restore and old-tab upgrade remain manual acceptance because the isolated Chromium smoke cannot prove platform install UX or a user's real multi-tab/device behavior. A failing manual scenario is a release blocker; a new feature request is not RC scope.

@@ -294,9 +294,17 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Remove generic IndexedDB repair from the Workspace error boundary and route recovery decisions through Settings → Local Data Health / Data Safety.
 - Extend structural and production-browser gates for these boundaries while keeping IndexedDB schema 8 and all portability formats unchanged.
 
+## v1.0.0-rc.1 — Release candidate validation 🚧
+
+- Freeze feature development and use the v0.43 readiness audit as the release baseline.
+- Run `npm run check:rc`, which executes the full Production release gate before validating RC version/schema/document alignment.
+- Keep IndexedDB schema 8 and Backup/Recovery/Device Transfer contracts unchanged.
+- Complete manual Chromium desktop PWA install/update, mobile-class PWA, Backup → Restore, old-tab upgrade and responsive/theme acceptance on the real Candidate.
+- Fix only reproducible release blockers. A non-blocking enhancement stays out of the RC.
+
 ## Likely next phases
 
-- **v1.0 release candidate:** run the full release gate plus manual cross-browser PWA install/update, Backup→Restore and old-tab upgrade checks; fix blockers only rather than opening a new feature family.
+- **v1.0.0 stable:** only after all automated and manual RC acceptance gates pass without a release blocker.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

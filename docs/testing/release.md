@@ -277,3 +277,22 @@ The migration checks below are automated inside `npm run check:release` using a 
 ### v0.43 public/PWA boundary
 
 After the Workspace Service Worker is registered, the production browser smoke returns to `/` and verifies that the public Landing navigation is network-only and absent from Cache Storage. This specifically guards the root-scope Service Worker from turning public pages into offline Workspace cache entries.
+
+## 21. v1.0 release-candidate acceptance
+
+برای `v1.0.0-rc.1` ابتدا Gate خودکار Candidate را اجرا کن:
+
+```bash
+npm install
+npm run check:rc
+```
+
+`check:rc` ابتدا کل `check:release` را اجرا می‌کند؛ بنابراین Build یا Browser Smoke جدا و ضعیف‌تری برای RC وجود ندارد. بعد از سبز شدن آن، موارد زیر هنوز Manual acceptance هستند و برای stable باید واقعی تست شوند:
+
+- [ ] Chromium desktop: نصب واقعی PWA، Deploy/Update، انتخاب «بعداً»، سپس Update صریح بدون Reload ناگهانی
+- [ ] mobile-class browser: نصب/launch، Offline route و Resume بدون از دست‌رفتن IndexedDB
+- [ ] Backup → Restore با داده غیرنمایشی؛ Preview معتبر و Recovery Snapshot قبل از replacement
+- [ ] old-tab upgrade روی همان Origin؛ blocked/versionchange امن و بدون نیاز به Clear Site Data
+- [ ] مرور 390px و desktop در Light/Dark برای Dashboard، Income، Funds، Investments، Reports و Settings
+
+اگر این Manual gateها blocker نداشتند، Candidate می‌تواند به `v1.0.0` stable ارتقا پیدا کند. در RC Feature جدید اضافه نکن؛ فقط blocker با reproduction روشن مجاز است.

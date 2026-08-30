@@ -1,18 +1,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { APP_VERSION, LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.ts";
+import { LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.ts";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
-test("v0.43 readiness hardening ships without a database schema bump", () => {
-  const pkg = JSON.parse(read("package.json")) as { version: string };
-  const lock = JSON.parse(read("package-lock.json")) as { version: string; packages: Record<string, { version?: string }> };
-  assert.equal(APP_VERSION, "0.43.0");
-  assert.equal(pkg.version, "0.43.0");
-  assert.equal(lock.version, "0.43.0");
-  assert.equal(lock.packages[""]?.version, "0.43.0");
+test("v0.43 readiness hardening remains the schema-8 baseline", () => {
+  const release = read("docs/releases/0.43.0.md");
   assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 8);
+  assert.equal(release.includes("schema 8"), true);
+  assert.equal(release.includes("network-only"), true);
 });
 
 test("generic workspace errors do not perform database repair", () => {
@@ -53,5 +50,5 @@ test("v1 readiness audit and release note document the hardened boundaries", () 
   assert.equal(audit.includes("Ready for a v1.0 release-candidate pass"), true);
   assert.equal(audit.includes("Generic error recovery"), true);
   assert.equal(roadmap.includes("v0.43 — v1.0 readiness hardening ✅"), true);
-  assert.equal(roadmap.includes("v1.0 release candidate"), true);
+  assert.equal(roadmap.includes("v1.0.0-rc.1 — Release candidate validation"), true);
 });

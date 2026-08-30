@@ -17,7 +17,7 @@ function textFiles(root: string): string[] {
 
 test("canonical repository identity is Poolamkoo", () => {
   assert.equal(packageJson.name, "poolamkoo");
-  assert.match(packageJson.version, /^0\.\d+\.\d+$/);
+  assert.match(packageJson.version, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/);
   assert.ok(readFileSync("lib/app-version.ts", "utf8").includes(`APP_VERSION = "${packageJson.version}"`));
   assert.match(readFileSync("lib/community.ts", "utf8"), /github\.com\/hamedtkd\/poolamkoo/);
   assert.ok(existsSync("public/logo-poolamkoo.svg"));
