@@ -1,6 +1,6 @@
 {
   "name": "poolamkoo",
-  "version": "0.32.0",
+  "version": "0.33.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "check:lines": "node scripts/check-file-lines.mjs",
     "check": "npm run clean:obsolete && npm run check:icons && npm run check:animations && npm run typecheck && npm run lint && npm test && npm run check:lines && npm run check:ui && npm run check:performance && npm run check:regressions",
     "check:ui": "node scripts/check-ui-architecture.mjs",

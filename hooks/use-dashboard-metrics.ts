@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { futureFocusPercent, portfolioPosition } from "@/lib/calculations";
+import { resolveAssetValuation } from "@/lib/market/valuation";
 import type { AllocationRule, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote } from "@/lib/types";
 
 export function useDashboardMetrics({ rule, incomes, funds, assets, transactions, quotes }: {
@@ -13,13 +14,19 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
   quotes: MarketQuote[];
 }) {
   return useMemo(() => {
-    const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
-    const positions = assets.map((asset) => ({
-      asset,
-      ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman ?? asset.manualPriceToman : asset.manualPriceToman),
-    }));
+    const positions = assets.map((asset) => {
+      const valuation = resolveAssetValuation(asset, quotes);
+      const position = portfolioPosition(asset, transactions, valuation.price);
+      return {
+        asset,
+        ...position,
+        priceSource: valuation.source,
+        pricingReliable: position.qty <= 0 || valuation.decisionReady,
+      };
+    });
     const portfolio = positions.reduce((sum, position) => sum + position.currentValue, 0);
     const investedCost = positions.reduce((sum, position) => sum + position.cost, 0);
+    const pricingIncomplete = positions.some((position) => position.qty > 0 && !position.pricingReliable);
     const pnl = portfolio - investedCost;
     const pnlPct = investedCost > 0 ? pnl / investedCost * 100 : 0;
     const monthStart = new Date();
@@ -33,6 +40,7 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
     return {
       positions,
       portfolio,
+      pricingIncomplete,
       pnl,
       pnlPct,
       monthIncome,

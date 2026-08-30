@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { RiAddLine, RiAlarmWarningLine, RiDeleteBin6Line, RiNotification3Line, RiPauseCircleLine, RiPlayCircleLine } from "react-icons/ri";
 import { ExchangeInstrumentPicker } from "@/components/investments/exchange-instrument-picker";
 import { MarketPushStatus } from "@/components/investments/market-push-status";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { db } from "@/lib/db";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { marketAlertConditionMet, marketAlertKindLabel, type MarketAlertTarget } from "@/lib/market/alerts";
+import { marketQuoteForTarget } from "@/lib/market/valuation";
 import type { AppSettings, MarketAlert, MarketInstrument, MarketQuote } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type { BackgroundPushControls } from "@/hooks/use-background-push";
@@ -23,7 +24,6 @@ export function MarketAlertsCard({ alerts, quotes, settings, backgroundPush, onC
   onCreateAlert: (target: MarketAlertTarget) => void;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const quoteMap = useMemo(() => new Map(quotes.map((quote) => [quote.symbol, quote])), [quotes]);
   const activeCount = alerts.filter((alert) => alert.enabled).length;
   const firedCount = alerts.filter((alert) => alert.enabled && !alert.armed).length;
 
@@ -40,7 +40,7 @@ export function MarketAlertsCard({ alerts, quotes, settings, backgroundPush, onC
     <CardContent className="space-y-4">
       {backgroundPush.featureEnabled && <MarketPushStatus push={backgroundPush} />}
       <div className="grid grid-cols-2 gap-2 sm:max-w-md"><Summary label="هشدار فعال" value={activeCount} /><Summary label="شرط برقرار" value={firedCount} tone={firedCount ? "attention" : undefined} /></div>
-      {alerts.length ? <div className="grid gap-3 lg:grid-cols-2">{alerts.map((alert) => <AlertRow key={alert.id ?? `${alert.marketId}-${alert.kind}-${alert.threshold}`} alert={alert} quote={quoteMap.get(alert.symbol)} settings={settings} />)}</div> : <div className="rounded-2xl border border-dashed p-7 text-center"><RiNotification3Line className="mx-auto size-7 text-muted-foreground" /><div className="mt-2 type-strong">هنوز هشداری نداری</div><p className="mt-1 type-caption text-muted-foreground">مثلاً برای عیار بگو اگر ۲٪ زیر NAV رفت یا قیمت از عدد مشخصی پایین‌تر آمد.</p></div>}
+      {alerts.length ? <div className="grid gap-3 lg:grid-cols-2">{alerts.map((alert) => <AlertRow key={alert.id ?? `${alert.marketId}-${alert.kind}-${alert.threshold}`} alert={alert} quote={marketQuoteForTarget(alert, quotes)} settings={settings} />)}</div> : <div className="rounded-2xl border border-dashed p-7 text-center"><RiNotification3Line className="mx-auto size-7 text-muted-foreground" /><div className="mt-2 type-strong">هنوز هشداری نداری</div><p className="mt-1 type-caption text-muted-foreground">مثلاً برای عیار بگو اگر ۲٪ زیر NAV رفت یا قیمت از عدد مشخصی پایین‌تر آمد.</p></div>}
     </CardContent>
     <Dialog open={pickerOpen} onOpenChange={setPickerOpen}><DialogContent><DialogHeader><DialogTitle>نماد هشدار</DialogTitle><DialogDescription>نماد یا صندوق را پیدا کن؛ لازم نیست قبلاً در دیده‌بان یا سبد باشد.</DialogDescription></DialogHeader><ExchangeInstrumentPicker settings={settings} onSelect={selectInstrument} onClear={() => undefined} /></DialogContent></Dialog>
   </Card>;

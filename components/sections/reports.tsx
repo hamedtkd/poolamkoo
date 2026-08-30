@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { RiArrowDownLine, RiArrowUpLine, RiFileList3Line, RiMoneyDollarCircleLine, RiSafe2Line, RiShareForwardLine } from "react-icons/ri";
+import { RiAlertLine, RiArrowDownLine, RiArrowUpLine, RiFileList3Line, RiMoneyDollarCircleLine, RiSafe2Line, RiShareForwardLine } from "react-icons/ri";
 import { DataTable, type DataTableFeatures } from "@/components/data-table";
 import { Reveal, RevealGrid } from "@/components/animation/reveal";
 import { AllocationDonut } from "@/components/charts/allocation-donut";
@@ -17,6 +17,7 @@ import { KpiIcon } from "@/components/ui/kpi-icon";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { useReportsData, type PerformanceRow, type PlanAdherenceRow } from "@/hooks/use-reports-data";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { valuationPriceSourceLabel } from "@/lib/market/valuation";
 import type { AppDateRange } from "@/lib/date-range";
 import type { AllocationEntry, AllocationRule, AppSettings, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -39,7 +40,7 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
 }) {
   const [exportOpen, setExportOpen] = useState(false);
   const report = useReportsData({ incomes, allocations, funds, assets, transactions, quotes, planItems, rule });
-  const { performance: perf, totalIncome, totals, funded, target, best, worst, monthly, overallPlan, planRows, decision } = report;
+  const { performance: perf, pricingIncomplete, totalIncome, totals, funded, target, best, worst, monthly, overallPlan, planRows, decision } = report;
   const planColumns: ColumnDef<DataTableFeatures, PlanAdherenceRow, unknown>[] = [
     { accessorKey: "title", header: "پول ورودی", cell: ({ row }) => <strong>{row.original.title}</strong> },
     { accessorKey: "planned", header: "برنامه", cell: ({ row }) => <SensitiveValue>{formatMoney(row.original.planned, settings.displayUnit)}</SensitiveValue> },
@@ -48,7 +49,7 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
   ];
   const columns: ColumnDef<DataTableFeatures, PerformanceRow, unknown>[] = [
     { accessorKey: "name", header: "دارایی", cell: ({ row }) => <strong>{row.original.name}</strong> },
-    { accessorKey: "value", header: () => <HelpLabel label="ارزش فعلی" help={HELP.value} />, cell: ({ row }) => <SensitiveValue>{formatMoney(row.original.value, settings.displayUnit)}</SensitiveValue> },
+    { accessorKey: "value", header: () => <HelpLabel label="ارزش فعلی" help={HELP.value} />, cell: ({ row }) => <PerformanceValue row={row.original} settings={settings} /> },
     { accessorKey: "target", header: () => <HelpLabel label="هدف" help={HELP.target} />, cell: ({ row }) => <SensitiveValue>{formatPercent(row.original.target, 0)}</SensitiveValue> },
     { accessorKey: "actual", header: () => <HelpLabel label="سهم فعلی" help={HELP.actual} />, cell: ({ row }) => <SensitiveValue>{formatPercent(row.original.actual, 1)}</SensitiveValue> },
     { id: "drift", header: () => <HelpLabel label="فاصله از هدف" help={HELP.drift} />, cell: ({ row }) => <DriftValue value={row.original.actual - row.original.target} /> },
@@ -61,9 +62,11 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
       <InsightCard icon={<RiMoneyDollarCircleLine />} label="کل پول ورودی" value={formatMoney(totalIncome, settings.displayUnit)} detail={`${new Intl.NumberFormat("fa-IR").format(incomes.length)} ورودی ثبت‌شده`} />
       <InsightCard icon={<RiFileList3Line />} iconTone={overallPlan.pct >= 80 ? "primary" : "neutral"} label="پایبندی به برنامه" help={HELP.adherence} value={formatPercent(overallPlan.pct, 0)} detail={`${formatMoney(overallPlan.executed, settings.displayUnit, true)} از ${formatMoney(overallPlan.planned, settings.displayUnit, true)}`} />
       <InsightCard icon={<RiSafe2Line />} label="پوشش صندوق‌ها" help={HELP.funds} value={formatPercent(target ? funded / target * 100 : 0, 0)} detail={`${formatMoney(funded, settings.displayUnit, true)} ذخیره شده`} />
-      <InsightCard icon={<RiArrowUpLine />} label="بیشترین بازده سبد" help={HELP.return} value={best ? `${best.name} ${signedPercent(best.pnlPct)}` : "—"} detail={best ? `سود/زیان باز شما: ${formatMoney(best.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive />
-      <InsightCard icon={<RiArrowDownLine />} iconTone={worst?.pnlPct !== undefined && worst.pnlPct < 0 ? "danger" : "neutral"} label="کمترین بازده سبد" help={HELP.return} value={worst ? `${worst.name} ${signedPercent(worst.pnlPct)}` : "—"} detail={worst ? `سود/زیان باز شما: ${formatMoney(worst.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive={worst?.pnlPct !== undefined ? worst.pnlPct >= 0 : undefined} />
+      <InsightCard icon={<RiArrowUpLine />} label="بیشترین بازده سبد" help={HELP.return} value={pricingIncomplete ? "نیاز به قیمت تازه" : best ? `${best.name} ${signedPercent(best.pnlPct)}` : "—"} detail={pricingIncomplete ? "رتبه‌بندی تا کامل‌شدن قیمت‌های قابل اتکا متوقف است" : best ? `سود/زیان باز شما: ${formatMoney(best.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive={pricingIncomplete ? undefined : true} />
+      <InsightCard icon={<RiArrowDownLine />} iconTone={!pricingIncomplete && worst?.pnlPct !== undefined && worst.pnlPct < 0 ? "danger" : "neutral"} label="کمترین بازده سبد" help={HELP.return} value={pricingIncomplete ? "نیاز به قیمت تازه" : worst ? `${worst.name} ${signedPercent(worst.pnlPct)}` : "—"} detail={pricingIncomplete ? "رتبه‌بندی تا کامل‌شدن قیمت‌های قابل اتکا متوقف است" : worst ? `سود/زیان باز شما: ${formatMoney(worst.pnl, settings.displayUnit, true)}` : "هنوز خرید واقعی کافی نیست"} positive={!pricingIncomplete && worst?.pnlPct !== undefined ? worst.pnlPct >= 0 : undefined} />
     </RevealGrid>
+
+    {pricingIncomplete && <Reveal step={7}><div className="flex gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/7 p-4 text-sm"><RiAlertLine className="mt-0.5 size-5 shrink-0 text-amber-600" /><div><div className="type-strong">بخشی از ارزش سبد با fallback نمایش داده می‌شود</div><p className="mt-1 type-caption leading-6 text-muted-foreground">Snapshot محلی یا بهای خرید می‌تواند برای تداوم نمایش باقی بماند، اما رتبه‌بندی بازده و تصمیم‌های خودکار سبد تا رسیدن قیمت تازه بازار یا قیمت دستی قابل اتکا متوقف می‌شوند.</p></div></div></Reveal>}
 
     <Reveal step={7}><DecisionInsightsCard snapshot={decision} unit={settings.displayUnit} /></Reveal>
 
@@ -87,11 +90,12 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, as
 function InsightCard({ icon, iconTone = "primary", label, help, value, detail, positive }: { icon: React.ReactNode; iconTone?: "primary" | "danger" | "neutral"; label: string; help?: string; value: string; detail: string; positive?: boolean }) {
   return <Card><CardContent className="p-4"><div className="flex justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground">{help ? <HelpLabel label={label} help={help} /> : label}</div><SensitiveValue className={cn("mt-2 text-lg type-strong", positive !== undefined && (positive ? "text-primary" : "text-destructive"))}>{value}</SensitiveValue><div className="mt-1 text-[10px] text-muted-foreground"><SensitiveValue>{detail}</SensitiveValue></div></div><KpiIcon tone={iconTone}>{icon}</KpiIcon></div></CardContent></Card>;
 }
+function PerformanceValue({ row, settings }: { row: PerformanceRow; settings: AppSettings }) { return <div><SensitiveValue>{formatMoney(row.value, settings.displayUnit)}</SensitiveValue><div className={cn("mt-1 text-[10px]", row.pricingReliable ? "text-muted-foreground" : "text-amber-700 dark:text-amber-300")}>{valuationPriceSourceLabel(row.priceSource)}</div></div>; }
 function ReturnValue({ row, settings }: { row: PerformanceRow; settings: AppSettings }) { return <div className={cn("type-strong", row.pnlPct >= 0 ? "text-primary" : "text-destructive")}><SensitiveValue>{signedPercent(row.pnlPct)}</SensitiveValue><div className="type-caption text-[10px]"><SensitiveValue>{formatMoney(row.pnl, settings.displayUnit, true)}</SensitiveValue></div></div>; }
 function DriftValue({ value }: { value: number }) { const label = value > 0.05 ? "بالاتر از هدف" : value < -0.05 ? "کمتر از هدف" : "روی هدف"; return <div><SensitiveValue className="type-strong">{signedPercent(value)}</SensitiveValue><div className="text-[10px] text-muted-foreground">{label}</div></div>; }
 function Legend({ label, value, color }: { label: string; value: number; color: string }) { return <div className="flex items-center justify-between rounded-xl bg-muted/50 p-3"><div className="flex items-center gap-2"><span className="size-2.5 rounded-full" style={{ backgroundColor: color }} /><span className="type-label">{label}</span></div><SensitiveValue className="type-strong">{formatPercent(value, 0)}</SensitiveValue></div>; }
 function Small({ label, value }: { label: string; value: string }) { return <div className="rounded-lg bg-muted/50 p-2"><SensitiveValue className="type-strong">{value}</SensitiveValue><div className="mt-1 text-[10px] text-muted-foreground">{label}</div></div>; }
-function PerformanceMobile({ row, settings }: { row: PerformanceRow; settings: AppSettings }) { const drift = row.actual - row.target; return <div className="p-4"><div className="flex items-start justify-between"><div><div className="type-strong">{row.name}</div><div className="mt-1 type-caption text-muted-foreground">ارزش <SensitiveValue>{formatMoney(row.value, settings.displayUnit)}</SensitiveValue></div></div><SensitiveValue className={cn("type-strong", row.pnlPct >= 0 ? "text-primary" : "text-destructive")}>{signedPercent(row.pnlPct)}</SensitiveValue></div><div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs"><Small label="هدف" value={formatPercent(row.target, 0)} /><Small label="سهم فعلی" value={formatPercent(row.actual, 1)} /><Small label="فاصله" value={signedPercent(drift)} /></div><div className="mt-2 type-caption text-muted-foreground">بازده از قیمت خرید واقعی شماست، نه تغییر روزانه بازار.</div></div>; }
+function PerformanceMobile({ row, settings }: { row: PerformanceRow; settings: AppSettings }) { const drift = row.actual - row.target; return <div className="p-4"><div className="flex items-start justify-between"><div><div className="type-strong">{row.name}</div><div className="mt-1 type-caption text-muted-foreground">ارزش <SensitiveValue>{formatMoney(row.value, settings.displayUnit)}</SensitiveValue> · {valuationPriceSourceLabel(row.priceSource)}</div></div><SensitiveValue className={cn("type-strong", row.pnlPct >= 0 ? "text-primary" : "text-destructive")}>{signedPercent(row.pnlPct)}</SensitiveValue></div><div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs"><Small label="هدف" value={formatPercent(row.target, 0)} /><Small label="سهم فعلی" value={formatPercent(row.actual, 1)} /><Small label="فاصله" value={signedPercent(drift)} /></div><div className="mt-2 type-caption text-muted-foreground">بازده از قیمت خرید واقعی شماست، نه تغییر روزانه بازار.</div></div>; }
 function allocationValue(total: number, value: number) { return total > 0 ? value / total * 100 : 0; }
 function allocationSegments(total: number, totals: { life: number; safety: number; growth: number }) { return [{ label: "زندگی", value: allocationValue(total, totals.life) }, { label: "امنیت", value: allocationValue(total, totals.safety) }, { label: "رشد", value: allocationValue(total, totals.growth) }]; }
 function signedPercent(value: number) { return `${value > 0 ? "+" : ""}${formatPercent(value)}`; }

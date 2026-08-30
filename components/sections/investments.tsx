@@ -107,6 +107,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
 
   const activeAsset = transactionTarget?.asset ?? null;
   const activePlan = transactionTarget?.planItem;
+  const activePosition = activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id) : undefined;
   function createAssetFromMarket(instrument: MarketInstrument) {
     setEditingAsset(null);
     setSeedInstrument(instrument);
@@ -127,7 +128,7 @@ export function InvestmentsSection({ settings, assets, transactions, quotes, sna
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />
     <MarketAlertDialog open={!!alertTarget} target={alertTarget} settings={settings} onOpenChange={(open) => !open && setAlertTarget(null)} />
-    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activeAsset ? (activeAsset.symbol ? portfolio.quoteMap.get(activeAsset.symbol)?.priceToman : undefined) ?? activeAsset.manualPriceToman : undefined} availableQty={activeAsset ? portfolio.positions.find((position) => position.asset.id === activeAsset.id)?.qty ?? 0 : 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />
+    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activePosition?.pricingReliable ? activePosition.price : activeAsset?.manualPriceToman} availableQty={activePosition?.qty ?? 0} settings={settings} planItem={activePlan} initialAmount={activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} />
     <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={deleteTransactionId !== null} onOpenChange={(open) => !open && setDeleteTransactionId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.deleteTitle}</AlertDialogTitle><AlertDialogDescription>{T.deleteDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction destructive onClick={() => void deleteTransaction()}>{T.delete}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;

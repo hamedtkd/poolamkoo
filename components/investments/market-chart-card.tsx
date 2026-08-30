@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { useMarketHistory } from "@/hooks/use-market-history";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { marketQuoteForTarget } from "@/lib/market/valuation";
 import type { AppSettings, Asset, MarketHistoryRange, MarketQuote, MarketSnapshot, MarketWatchItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +49,7 @@ export function MarketChartCard({ settings, snapshots, quotes, assets, watchlist
   const candles = history.candles;
   const first = candles[0];
   const last = candles.at(-1);
-  const currentQuote = quotes.find((quote) => quote.symbol === symbol);
+  const currentQuote = marketQuoteForTarget({ source: selectedMarketItem?.marketSource, marketId: selectedMarketItem?.marketId, symbol }, quotes);
   const chartVariant = selectedMarketItem?.marketId ? "candles" as const : "line" as const;
   const periodChange = first && last && first.close > 0 ? ((last.close - first.close) / first.close) * 100 : 0;
 

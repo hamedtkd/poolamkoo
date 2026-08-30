@@ -13,7 +13,7 @@ import {
   type DirectFundAllocation,
 } from "@/lib/direct-fund-allocation";
 import { dateToISO } from "@/lib/format";
-import { buildGrowthPlan, buildSafetyPlan } from "@/lib/planning";
+import { buildGrowthPlan, buildSafetyPlan, growthPlanPricingReady } from "@/lib/planning";
 import type { AllocationRule, AppSettings, Asset, BucketKey, GoalFund, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
 import { allocationRuleSchema, newMoneySchema, type AllocationRuleFormValues, type NewMoneyFormValues } from "@/lib/validation";
 
@@ -87,6 +87,7 @@ export function useNewMoney({ rule, settings, funds, assets, transactions, quote
   const eventRule = useMemo<AllocationRule>(() => ({ ...effectiveRule, lifePct: allocationValues.life, safetyPct: allocationValues.safety, growthPct: allocationValues.growth }), [allocationValues.growth, allocationValues.life, allocationValues.safety, effectiveRule]);
   const split = useMemo(() => splitIncome(remainingAmount, eventRule), [eventRule, remainingAmount]);
   const safetyPlan = useMemo(() => buildSafetyPlan(split.safety, fundsAfterDirect), [fundsAfterDirect, split.safety]);
+  const growthPricingReady = useMemo(() => growthPlanPricingReady(assets, transactions, quotes), [assets, quotes, transactions]);
   const growthPlan = useMemo(() => buildGrowthPlan(split.growth, assets, transactions, quotes), [assets, quotes, split.growth, transactions]);
   const smartChanged = effectiveRule.safetyPct !== activeRule.safetyPct;
   const allocationChanged = allocationValues.life !== effectiveRule.lifePct || allocationValues.safety !== effectiveRule.safetyPct || allocationValues.growth !== effectiveRule.growthPct;
@@ -159,7 +160,7 @@ export function useNewMoney({ rule, settings, funds, assets, transactions, quote
   }
 
   return {
-    form, values: { amount: watchedAmount, smart }, step, setStep, activeRule, effectiveRule, eventRule, split, safetyPlan, growthPlan,
+    form, values: { amount: watchedAmount, smart }, step, setStep, activeRule, effectiveRule, eventRule, split, safetyPlan, growthPlan, growthPricingReady,
     smartChanged, allocationValues, allocationChanged, updateAllocation, resetAllocation: () => allocationForm.reset(toFormRule(effectiveRule)), next, save,
     directFunds, directTotal, remainingAmount, directError, addDirectFund, updateDirectFund, removeDirectFund,
   };

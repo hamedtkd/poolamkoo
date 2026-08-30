@@ -85,8 +85,17 @@ export function freshMarketQuotes(quotes: readonly MarketQuote[]) {
 }
 
 export function marketQuoteForStorage(quote: MarketQuote): MarketQuote {
-  const { runtimeSource: _runtimeSource, snapshotCapturedAt: _snapshotCapturedAt, ...stored } = quote;
-  return stored;
+  return {
+    marketId: quote.marketId,
+    symbol: quote.symbol,
+    name: quote.name,
+    priceToman: quote.priceToman,
+    navToman: quote.navToman,
+    changePercent: quote.changePercent,
+    changeValueToman: quote.changeValueToman,
+    asOf: quote.asOf,
+    source: quote.source,
+  };
 }
 
 function newestSnapshots(cached: readonly MarketSnapshot[]) {
@@ -104,8 +113,11 @@ function asLiveQuote(quote: MarketQuote): MarketQuote {
 }
 
 function asSnapshotQuote(snapshot: MarketSnapshot): MarketQuote {
-  const { id: _id, capturedAt, ...quote } = snapshot;
-  return { ...marketQuoteForStorage(quote), runtimeSource: "snapshot", snapshotCapturedAt: capturedAt };
+  return {
+    ...marketQuoteForStorage(snapshot),
+    runtimeSource: "snapshot",
+    snapshotCapturedAt: snapshot.capturedAt,
+  };
 }
 
 function unique(values: readonly string[]) {

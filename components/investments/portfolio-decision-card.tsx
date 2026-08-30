@@ -22,15 +22,15 @@ export function PortfolioDecisionCard({ review, settings }: { review: PortfolioA
   }
 
   const visibleRows = [...review.rows].sort((a, b) => b.currentValue - a.currentValue || a.asset.name.localeCompare(b.asset.name, "fa"));
-  const aligned = review.targetsValid && review.underweightRows.length === 0 && review.overweightRows.length === 0;
+  const aligned = review.targetsValid && !review.pricingIncomplete && review.underweightRows.length === 0 && review.overweightRows.length === 0;
 
   return <Card>
     <CardHeader className="gap-2 sm:flex-row sm:items-start sm:justify-between">
       <div><CardTitle className="flex items-center gap-2"><RiCompass3Line className="text-primary" /> مرور ترکیب سبد</CardTitle><p className="mt-1 type-caption text-muted-foreground">مقایسه سهم فعلی با هدف‌هایی که خودت تعیین کرده‌ای؛ این بخش توصیه خرید یا فروش نیست.</p></div>
-      <Badge className={cn(aligned ? "text-primary" : "text-foreground")}>{aligned ? "نزدیک هدف" : "نیازمند مرور"}</Badge>
+      <Badge className={cn(aligned ? "text-primary" : "text-foreground")}>{review.pricingIncomplete ? "قیمت ناقص" : aligned ? "نزدیک هدف" : "نیازمند مرور"}</Badge>
     </CardHeader>
     <CardContent className="space-y-5">
-      {review.pricingIncomplete && <Notice icon={<RiAlertLine />} title="ارزش‌گذاری بعضی دارایی‌ها کامل نیست">برای حداقل یک داراییِ موجود، قیمت بازار یا قیمت دستی قابل اتکا نداریم و بهای خرید فقط به‌عنوان fallback نمایش داده می‌شود؛ درصدهای ترکیب را با احتیاط بخوان.</Notice>}
+      {review.pricingIncomplete && <Notice icon={<RiAlertLine />} title="اولویت پول جدید موقتاً متوقف است">برای حداقل یک داراییِ موجود، قیمت تازه بازار یا قیمت دستی قابل اتکا نداریم و ارزش از Snapshot محلی یا بهای خرید fallback می‌آید. درصدهای ترکیب برای مرور باقی می‌مانند، اما اولویت خودکار پول جدید تا کامل‌شدن قیمت‌ها نمایش داده نمی‌شود.</Notice>}
       {!review.targetsValid && <Notice icon={<RiInformationLine />} title={`جمع سهم هدف ${formatPercent(review.totalTargetPct, 0)} است`}>برای اینکه اولویتِ بررسی پول جدید معنی‌دار باشد، جمع سهم هدف دارایی‌ها باید ۱۰۰٪ باشد. تا آن زمان فقط وضعیت فعلی و فاصله‌ها را نشان می‌دهیم.</Notice>}
 
       <div className="space-y-3">

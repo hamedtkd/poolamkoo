@@ -101,7 +101,7 @@ export function IncomePlanPage({
       <TransactionDialog
         asset={asset}
         onClose={() => setPurchaseItem(null)}
-        suggestedPrice={asset?.symbol ? state.quoteMap.get(asset.symbol)?.priceToman ?? asset?.manualPriceToman : asset?.manualPriceToman}
+        suggestedPrice={asset?.id ? state.assetPriceMap.get(asset.id) ?? asset.manualPriceToman : asset?.manualPriceToman}
         availableQty={asset ? transactions.filter((tx) => tx.assetId === asset.id).reduce((qty, tx) => qty + (tx.type === "buy" ? tx.quantity : -tx.quantity), 0) : 0}
         settings={settings}
         planItem={purchaseItem}

@@ -2,6 +2,7 @@ import { formatPercent } from "./format.ts";
 import { formatPersianDate } from "./persian-date.ts";
 import { reportBucketLabel, type ReportDecisionSnapshot } from "./report-insights.ts";
 import type { AppDateRange } from "./date-range.ts";
+import { valuationPriceSourceLabel, type ValuationPriceSource } from "./market/valuation.ts";
 import type { MoneyUnit } from "./types.ts";
 
 export interface ReportExportPerformanceRow {
@@ -11,6 +12,8 @@ export interface ReportExportPerformanceRow {
   value: number;
   pnl: number;
   pnlPct: number;
+  priceSource?: ValuationPriceSource;
+  pricingReliable?: boolean;
 }
 
 export interface ReportExportInput {
@@ -58,14 +61,14 @@ export function buildReportShareText(input: ReportExportInput) {
 export function buildReportCsv(input: ReportExportInput) {
   const unitLabel = input.unit === "rial" ? "ریال" : "تومان";
   const rows: Array<Array<string | number>> = [
-    ["بخش", "شاخص", "نام", "مقدار", "واحد", "هدف درصد", "سهم فعلی درصد", "فاصله درصد"],
-    ["خلاصه", "بازه", formatReportRange(input.range), "", "", "", "", ""],
-    ["خلاصه", "کل پول ورودی", "", amountForUnit(input.decision.totalIncome, input.unit), unitLabel, "", "", ""],
-    ["خلاصه", "برنامه اجراشده", "", amountForUnit(input.decision.plan.executed, input.unit), unitLabel, "", input.decision.plan.pct, ""],
-    ["خلاصه", "برنامه باقی‌مانده", "", amountForUnit(input.decision.plan.remaining, input.unit), unitLabel, "", "", ""],
-    ["خلاصه", "ذخیره صندوق‌ها", "", amountForUnit(input.decision.funds.funded, input.unit), unitLabel, "", input.decision.funds.pct, ""],
-    ["خلاصه", "فاصله تا هدف صندوق‌ها", "", amountForUnit(input.decision.funds.remaining, input.unit), unitLabel, "", "", ""],
-    ["خلاصه", "پول تخصیص‌نیافته", "", amountForUnit(input.decision.unallocatedToman, input.unit), unitLabel, "", "", ""],
+    ["بخش", "شاخص", "نام", "مقدار", "واحد", "هدف درصد", "سهم فعلی درصد", "فاصله درصد", "منبع ارزش‌گذاری"],
+    ["خلاصه", "بازه", formatReportRange(input.range), "", "", "", "", "", ""],
+    ["خلاصه", "کل پول ورودی", "", amountForUnit(input.decision.totalIncome, input.unit), unitLabel, "", "", "", ""],
+    ["خلاصه", "برنامه اجراشده", "", amountForUnit(input.decision.plan.executed, input.unit), unitLabel, "", input.decision.plan.pct, "", ""],
+    ["خلاصه", "برنامه باقی‌مانده", "", amountForUnit(input.decision.plan.remaining, input.unit), unitLabel, "", "", "", ""],
+    ["خلاصه", "ذخیره صندوق‌ها", "", amountForUnit(input.decision.funds.funded, input.unit), unitLabel, "", input.decision.funds.pct, "", ""],
+    ["خلاصه", "فاصله تا هدف صندوق‌ها", "", amountForUnit(input.decision.funds.remaining, input.unit), unitLabel, "", "", "", ""],
+    ["خلاصه", "پول تخصیص‌نیافته", "", amountForUnit(input.decision.unallocatedToman, input.unit), unitLabel, "", "", "", ""],
   ];
 
   for (const bucket of input.decision.buckets) {
@@ -78,6 +81,7 @@ export function buildReportCsv(input: ReportExportInput) {
       bucket.targetPct,
       bucket.actualPct,
       bucket.driftPct,
+      "",
     ]);
   }
 
@@ -91,6 +95,7 @@ export function buildReportCsv(input: ReportExportInput) {
       asset.target,
       asset.actual,
       asset.actual - asset.target,
+      asset.priceSource ? valuationPriceSourceLabel(asset.priceSource) : "نامشخص",
     ]);
     rows.push([
       "سبد سرمایه‌گذاری",
@@ -101,6 +106,7 @@ export function buildReportCsv(input: ReportExportInput) {
       "",
       asset.pnlPct,
       "",
+      asset.priceSource ? valuationPriceSourceLabel(asset.priceSource) : "نامشخص",
     ]);
   }
 

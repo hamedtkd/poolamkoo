@@ -1,5 +1,6 @@
-import { portfolioPosition } from "@/lib/calculations";
-import type { Asset, GoalFund, InvestmentTransaction, MarketQuote } from "@/lib/types";
+import { portfolioPosition } from "./calculations.ts";
+import { resolveAssetValuation } from "./market/valuation.ts";
+import type { Asset, GoalFund, InvestmentTransaction, MarketQuote } from "./types.ts";
 
 export function buildSafetyPlan(amountToman: number, funds: GoalFund[]) {
   if (amountToman <= 0) return [] as Array<{ fund: GoalFund; amountToman: number }>;
@@ -44,18 +45,15 @@ export function buildSafetyPlan(amountToman: number, funds: GoalFund[]) {
   return result;
 }
 
+export function growthPlanPricingReady(assets: Asset[], transactions: InvestmentTransaction[], quotes: MarketQuote[]) {
+  return growthRows(assets, transactions, quotes).pricingReady;
+}
+
 export function buildGrowthPlan(amountToman: number, assets: Asset[], transactions: InvestmentTransaction[], quotes: MarketQuote[]) {
   if (amountToman <= 0) return [] as Array<{ asset: Asset; amountToman: number; normalizedTargetPct: number }>;
-  const targets = assets.filter((asset) => !asset.archived && asset.targetPct > 0);
-  const targetSum = targets.reduce((sum, asset) => sum + asset.targetPct, 0);
-  if (!targets.length || targetSum <= 0) return [] as Array<{ asset: Asset; amountToman: number; normalizedTargetPct: number }>;
+  const { rows, pricingReady, targetSum } = growthRows(assets, transactions, quotes);
+  if (!rows.length || targetSum <= 0 || !pricingReady) return [] as Array<{ asset: Asset; amountToman: number; normalizedTargetPct: number }>;
 
-  const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote.priceToman]));
-  const rows = targets.map((asset) => {
-    const price = asset.symbol ? quoteMap.get(asset.symbol) ?? asset.manualPriceToman : asset.manualPriceToman;
-    const position = portfolioPosition(asset, transactions, price);
-    return { asset, currentValue: position.currentValue, normalized: asset.targetPct / targetSum };
-  });
   const currentTotal = rows.reduce((sum, row) => sum + row.currentValue, 0);
   const futureTotal = currentTotal + amountToman;
   const withDeficit = rows.map((row) => ({ ...row, deficit: Math.max(0, futureTotal * row.normalized - row.currentValue) }));
@@ -66,4 +64,20 @@ export function buildGrowthPlan(amountToman: number, assets: Asset[], transactio
   const rounded = raw.map((value) => Math.max(0, Math.round(value)));
   if (rounded.length) rounded[rounded.length - 1] += Math.round(amountToman - rounded.reduce((sum, value) => sum + value, 0));
   return withDeficit.map((row, index) => ({ asset: row.asset, amountToman: rounded[index], normalizedTargetPct: row.normalized * 100 })).filter((row) => row.amountToman > 0);
+}
+
+function growthRows(assets: Asset[], transactions: InvestmentTransaction[], quotes: MarketQuote[]) {
+  const targets = assets.filter((asset) => !asset.archived && asset.targetPct > 0);
+  const targetSum = targets.reduce((sum, asset) => sum + asset.targetPct, 0);
+  const rows = targets.map((asset) => {
+    const valuation = resolveAssetValuation(asset, quotes);
+    const position = portfolioPosition(asset, transactions, valuation.price);
+    return {
+      asset,
+      currentValue: position.currentValue,
+      normalized: targetSum > 0 ? asset.targetPct / targetSum : 0,
+      decisionReady: position.qty <= 0 || valuation.decisionReady,
+    };
+  });
+  return { rows, targetSum, pricingReady: rows.every((row) => row.decisionReady) };
 }

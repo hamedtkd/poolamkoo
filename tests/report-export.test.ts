@@ -20,7 +20,7 @@ const input = {
   range: { from: new Date(2026, 7, 1), to: new Date(2026, 7, 27) },
   unit: "toman" as const,
   decision,
-  performance: [{ name: 'صندوق "الف,ب"', target: 40, actual: 44.5, value: 50_000_000, pnl: 4_000_000, pnlPct: 8.7 }],
+  performance: [{ name: 'صندوق "الف,ب"', target: 40, actual: 44.5, value: 50_000_000, pnl: 4_000_000, pnlPct: 8.7, priceSource: "live-market" as const, pricingReliable: true }],
 };
 
 test("share summary deliberately excludes financial amounts and asset names", () => {
@@ -52,4 +52,12 @@ test("report range labels and filenames stay deterministic", () => {
   assert.notEqual(formatReportRange(input.range), "همه زمان");
   assert.equal(formatReportRange({ from: null, to: null }), "همه زمان");
   assert.equal(reportExportFilename("csv", new Date(2026, 7, 27)), "poolamkoo-report-2026-08-27.csv");
+});
+
+
+test("detailed CSV exposes valuation provenance while share summary stays privacy-minimized", () => {
+  const report = { ...input, performance: [{ ...input.performance[0], priceSource: "snapshot-market" as const, pricingReliable: false }] };
+  assert.match(buildReportCsv(report), /منبع ارزش‌گذاری/);
+  assert.match(buildReportCsv(report), /Snapshot محلی/);
+  assert.doesNotMatch(buildReportShareText(report), /Snapshot محلی|صندوق "الف,ب"/);
 });

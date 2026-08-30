@@ -98,11 +98,14 @@ test("new-money gaps sort deterministically by missing target value", () => {
   assert.deepEqual(review.newMoneyPriorities.map((row) => row.asset.id), [1, 2]);
 });
 
-test("held position with cost-basis-only pricing marks review incomplete", () => {
+test("incomplete held pricing marks review incomplete and suppresses new-money priorities", () => {
   const review = buildPortfolioAllocation([
-    { asset: asset(1, "الف", 100), currentValue: 1000, hasHolding: true, pricingReliable: false },
+    { asset: asset(1, "الف", 70), currentValue: 300, hasHolding: true, pricingReliable: false },
+    { asset: asset(2, "ب", 30), currentValue: 700, hasHolding: true, pricingReliable: true },
   ]);
   assert.equal(review.pricingIncomplete, true);
+  assert.equal(review.rows[0]?.status, "underweight");
+  assert.equal(review.newMoneyPriorities.length, 0);
 });
 
 test("all allocation outputs remain finite even with invalid numeric inputs", () => {

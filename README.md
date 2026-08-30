@@ -1,4 +1,5 @@
 # Poolamkoo — پولم‌کو
+> v0.33 note: Provider-linked assets now keep source + market-id identity through portfolio, watchlist, alerts, planning and reports. Snapshot prices remain visible for continuity but cannot drive alert state, new-money priorities, automatic growth allocation, transaction price suggestions or best/worst ranking; detailed CSV exports now include valuation provenance.
 > v0.32 note: Partial market refreshes now keep fresh provider rows while filling only relevant missing quotes from the latest real local snapshots; snapshot provenance is visible across the app, coverage is explicit in Settings diagnostics, and snapshot-only quotes never trigger local market alerts.
 > v0.31 note: Settings now exposes live provider status for BrsApi/TSETMC/Tindex plus a privacy-safe copyable market diagnostic containing only operational health metadata—never prices, symbols, asset names, market IDs, amounts, raw upstream text, or provider secrets.
 > v0.30 note: Market requests now use provider health/failure classification, bounded TSETMC request budgets, parallel independent refreshes, safe user-facing errors, and explicit degraded-state metadata while preserving real local snapshots/manual prices and optional legacy Tindex fallback.
@@ -276,7 +277,7 @@ The README paths are ready for those generated files; after a verified capture i
 
 ## Market data
 
-For core gold/currency/crypto quotes, configure `BRS_API_KEY`. **New Tehran exchange links need no API key:** Poolamkoo searches and reads `cdn.tsetmc.com` through its own server routes. `TINDEX_API_TOKEN` remains optional in v0.31 and is retained only for legacy links, a slow emergency core fallback, and optional USD/gold online history. Provider failures are classified into stable health codes; upstream response bodies are never surfaced to users.
+For core gold/currency/crypto quotes, configure `BRS_API_KEY`. **New Tehran exchange links need no API key:** Poolamkoo searches and reads `cdn.tsetmc.com` through its own server routes. `TINDEX_API_TOKEN` remains optional in v0.33 and is retained only for legacy links, a slow emergency core fallback, and optional USD/gold online history. Provider failures are classified into stable health codes; upstream response bodies are never surfaced to users.
 
 TSETMC exchange prices are returned in rial and normalized to toman on the server. TSETMC current quotes use a short shared cache and daily history uses an hourly cache; BrsApi also uses a short server cache so multiple browsers do not multiply provider requests. If an external provider is unavailable, Poolamkoo never fabricates prices/history: real IndexedDB snapshots and then the user's manual fallback price remain available. Existing `source: tindex` records are preserved and can be re-linked to TSETMC at the user's convenience.
 

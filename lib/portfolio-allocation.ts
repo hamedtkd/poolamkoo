@@ -85,14 +85,15 @@ export function buildPortfolioAllocation(inputs: PortfolioAllocationInput[]): Po
 
   const underweightRows = rows.filter((row) => row.status === "underweight").sort(byGap);
   const overweightRows = rows.filter((row) => row.status === "overweight").sort((a, b) => a.gapValue - b.gapValue || byDrift(a, b));
-  const newMoneyPriorities = targetsValid && totalValue > 0 ? [...underweightRows] : [];
+  const pricingIncomplete = inputs.some((input) => Boolean(input.hasHolding) && input.pricingReliable === false);
+  const newMoneyPriorities = targetsValid && totalValue > 0 && !pricingIncomplete ? [...underweightRows] : [];
 
   return {
     rows,
     totalValue,
     totalTargetPct,
     targetsValid,
-    pricingIncomplete: inputs.some((input) => Boolean(input.hasHolding) && input.pricingReliable === false),
+    pricingIncomplete,
     underweightRows,
     overweightRows,
     largestDrifts: [...rows].sort(byDrift),

@@ -38,6 +38,7 @@
 
 ## Release history
 
+- [v0.33.0 — Portfolio quote identity & decision safety](./releases/0.33.0.md)
 - [v0.32.0 — Market fallback continuity & freshness](./releases/0.32.0.md)
 - [v0.31.0 — Market transparency & privacy-safe diagnostics](./releases/0.31.0.md)
 - [v0.30.0 — Market provider production reliability](./releases/0.30.0.md)

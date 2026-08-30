@@ -10,9 +10,9 @@ const watchlist: MarketWatchItem[] = [
 ];
 
 const quotes: MarketQuote[] = [
-  { symbol: "عیار", name: "عیار", priceToman: 97, navToman: 100, changePercent: 1.2, changeValueToman: 1, asOf: "2026-08-25", source: "tindex" },
-  { symbol: "سیمین", name: "سیمین", priceToman: 104, navToman: 100, changePercent: -2, changeValueToman: -2, asOf: "2026-08-25", source: "tindex" },
-  { symbol: "فولاد", name: "فولاد", priceToman: 80, changePercent: 0.4, changeValueToman: 1, asOf: "2026-08-25", source: "tindex" },
+  { marketId: "a", symbol: "عیار", name: "عیار", priceToman: 97, navToman: 100, changePercent: 1.2, changeValueToman: 1, asOf: "2026-08-25", source: "tindex" },
+  { marketId: "b", symbol: "سیمین", name: "سیمین", priceToman: 104, navToman: 100, changePercent: -2, changeValueToman: -2, asOf: "2026-08-25", source: "tindex" },
+  { marketId: "c", symbol: "فولاد", name: "فولاد", priceToman: 80, changePercent: 0.4, changeValueToman: 1, asOf: "2026-08-25", source: "tindex" },
 ];
 
 const assets: Asset[] = [{ id: 1, name: "عیار", kind: "fund", symbol: "عیار", marketId: "a", marketSource: "tindex", targetPct: 20, icon: "fund", archived: false, createdAt: "x", updatedAt: "x" }];
@@ -40,5 +40,18 @@ test("watchlist summary and NAV labels are decision oriented", () => {
 test("watchlist today summary does not treat snapshot fallback as a fresh gainer", () => {
   const snapshotQuotes = quotes.map((quote, index) => index === 0 ? { ...quote, runtimeSource: "snapshot" as const, snapshotCapturedAt: "2026-08-27T08:00:00.000Z" } : quote);
   const rows = marketWatchlistRows({ watchlist, quotes: snapshotQuotes, assets });
-  assert.equal(watchlistSummary(rows).gainers, 1);
+  const summary = watchlistSummary(rows);
+  assert.equal(summary.gainers, 1);
+  assert.equal(summary.discounts, 0);
+});
+
+
+test("watchlist quote lookup does not cross providers when ids and symbols collide", () => {
+  const collisionQuotes: MarketQuote[] = [
+    { ...quotes[0]!, source: "tsetmc", priceToman: 50 },
+    { ...quotes[0]!, source: "tindex", priceToman: 97 },
+  ];
+  const row = marketWatchlistRows({ watchlist: [watchlist[0]!], quotes: collisionQuotes, assets })[0];
+  assert.equal(row?.quote?.source, "tindex");
+  assert.equal(row?.quote?.priceToman, 97);
 });

@@ -48,7 +48,7 @@ function NewMoneyDialogSession(props: Props) {
       router.push(`/income/${incomeId}`);
     },
   });
-  const { form, values, step, setStep, activeRule, effectiveRule, split, safetyPlan, growthPlan, smartChanged, allocationValues, allocationChanged, updateAllocation, resetAllocation, next, save } = state;
+  const { form, values, step, setStep, activeRule, effectiveRule, split, safetyPlan, growthPlan, growthPricingReady, smartChanged, allocationValues, allocationChanged, updateAllocation, resetAllocation, next, save } = state;
 
   function openFundEditor(rowId?: string) {
     setFundTargetRow(rowId);
@@ -112,6 +112,7 @@ function NewMoneyDialogSession(props: Props) {
 
             <PlanList title="پیشنهاد برای بخش امنیت" items={safetyPlan.map((item) => ({ key: String(item.fund.id ?? item.fund.name), title: item.fund.name, subtitle: `${Math.round(Math.min(100, (item.fund.currentToman + item.amountToman) / Math.max(1, item.fund.targetToman) * 100))}٪ هدف`, amount: item.amountToman }))} settings={props.settings} />
             <PlanList title="پیشنهاد برای بخش رشد" items={growthPlan.map((item) => ({ key: String(item.asset.id ?? item.asset.name), title: item.asset.name, subtitle: `هدف ${formatPercent(item.normalizedTargetPct, 0)} از سبد رشد`, amount: item.amountToman }))} settings={props.settings} />
+            {split.growth > 0 && !growthPricingReady && <div className="mt-4 flex gap-2 rounded-xl border border-amber-500/25 bg-amber-500/7 p-3 text-xs leading-6 text-muted-foreground"><RiInformationLine className="mt-1 size-4 shrink-0 text-amber-600" />برای حداقل یک داراییِ موجود قیمت تازه بازار یا قیمت دستی قابل اتکا نداریم. بخش رشد ثبت می‌شود، اما پیشنهاد خودکار بین دارایی‌ها تا برگشت قیمت قابل اتکا متوقف می‌ماند.</div>}
             <div className="mt-6 grid grid-cols-2 gap-2"><Button type="button" variant="outline" onClick={() => setStep(1)}>ویرایش اطلاعات</Button><Button type="submit" disabled={Boolean(state.directError)}>ثبت و رفتن به اجرا <RiCheckLine /></Button></div>
           </form>
         )}

@@ -1,4 +1,5 @@
 import { premiumToNavPercent } from "./nav.ts";
+import { marketQuoteForTarget } from "./valuation.ts";
 import { normalizeSearchText } from "../search.ts";
 import type { Asset, MarketQuote, MarketWatchItem } from "../types.ts";
 
@@ -20,16 +21,15 @@ export function marketWatchlistRows({ watchlist, quotes, assets, query = "", fil
   filter?: WatchlistFilter;
   sort?: WatchlistSort;
 }) {
-  const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
-  const ownedMarketIds = new Set(assets.map((asset) => asset.marketId).filter(Boolean));
+  const ownedMarketKeys = new Set(assets.flatMap((asset) => asset.marketId && asset.marketSource ? [`${asset.marketSource}:${asset.marketId}`] : []));
   const normalizedQuery = normalizeSearchText(query);
   const rows: WatchlistRow[] = watchlist.map((item) => {
-    const quote = quoteMap.get(item.symbol);
+    const quote = marketQuoteForTarget({ source: item.source, marketId: item.marketId, symbol: item.symbol }, quotes);
     return {
       item,
       quote,
-      owned: ownedMarketIds.has(item.marketId),
-      premium: quote ? premiumToNavPercent(quote.priceToman, quote.navToman) : null,
+      owned: ownedMarketKeys.has(`${item.source}:${item.marketId}`),
+      premium: quote?.runtimeSource === "snapshot" ? null : quote ? premiumToNavPercent(quote.priceToman, quote.navToman) : null,
     };
   }).filter((row) => {
     if (normalizedQuery) {
@@ -64,10 +64,14 @@ export function navSignal(premium: number | null) {
 }
 
 function compareRows(a: WatchlistRow, b: WatchlistRow, sort: WatchlistSort) {
-  if (sort === "gain") return (b.quote?.changePercent ?? Number.NEGATIVE_INFINITY) - (a.quote?.changePercent ?? Number.NEGATIVE_INFINITY);
-  if (sort === "loss") return (a.quote?.changePercent ?? Number.POSITIVE_INFINITY) - (b.quote?.changePercent ?? Number.POSITIVE_INFINITY);
+  if (sort === "gain") return (freshChange(b) ?? Number.NEGATIVE_INFINITY) - (freshChange(a) ?? Number.NEGATIVE_INFINITY);
+  if (sort === "loss") return (freshChange(a) ?? Number.POSITIVE_INFINITY) - (freshChange(b) ?? Number.POSITIVE_INFINITY);
   if (sort === "discount") return (a.premium ?? Number.POSITIVE_INFINITY) - (b.premium ?? Number.POSITIVE_INFINITY);
   if (sort === "premium") return (b.premium ?? Number.NEGATIVE_INFINITY) - (a.premium ?? Number.NEGATIVE_INFINITY);
   if (sort === "symbol") return a.item.symbol.localeCompare(b.item.symbol, "fa");
   return b.item.updatedAt.localeCompare(a.item.updatedAt);
+}
+
+function freshChange(row: WatchlistRow) {
+  return row.quote?.runtimeSource === "snapshot" ? undefined : row.quote?.changePercent;
 }

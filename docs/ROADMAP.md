@@ -190,6 +190,17 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Evaluate local market alerts only against fresh runtime quotes; Snapshot fallback remains display/valuation continuity and cannot trigger or re-arm an alert.
 - Keep IndexedDB schema 6, backup/transfer formats, BrsApi → optional Tindex core priority, direct TSETMC exchange behavior and Background Push backlog unchanged.
 
+## v0.33 — Portfolio quote identity & decision safety ✅
+
+- Keep provider-linked exchange identity (`source + marketId`) through portfolio valuation, watchlist, alert evaluation, planning and reports instead of falling back to symbol-only maps downstream.
+- Treat fresh Provider quotes and explicit manual prices as decision-ready; keep local Snapshot and cost-basis fallback for display continuity without letting stale values drive automation.
+- Pause automatic new-money priority and growth distribution when a held position lacks decision-ready pricing, while still showing clearly-labelled fallback valuation for review.
+- Pause Reports best/worst ranking on incomplete pricing and include valuation provenance in the explicit detailed CSV; keep the share-safe summary amount/name-free.
+- Prevent Snapshot daily change/NAV from masquerading as today's mover signal, seeding alert thresholds, or pre-filling transaction/manual prices.
+- Make the release lint gate warning-free with `--max-warnings=0` and remove the v0.32 runtime warnings.
+- Add no new market provider until auth/schema, sustainable zero-cost terms and deployment behavior are verified end-to-end.
+- Keep IndexedDB schema 6, backup/transfer formats, BrsApi → optional Tindex core priority, direct TSETMC exchange behavior and Background Push backlog unchanged.
+
 ## Likely next phases
 
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.

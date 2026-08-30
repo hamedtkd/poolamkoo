@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { resolveAssetValuation } from "@/lib/market/valuation";
 import { incomePlanProgress } from "@/lib/plan-execution";
 import type { Asset, GoalFund, IncomeEvent, MarketQuote, PlanItem } from "@/lib/types";
 
@@ -17,6 +18,10 @@ export function useIncomePlan({ incomeId, incomes, planItems, assets, funds, quo
   const progress = useMemo(() => incomePlanProgress(items), [items]);
   const assetMap = useMemo(() => new Map(assets.filter((item) => item.id).map((item) => [item.id!, item])), [assets]);
   const fundMap = useMemo(() => new Map(funds.filter((item) => item.id).map((item) => [item.id!, item])), [funds]);
-  const quoteMap = useMemo(() => new Map(quotes.map((item) => [item.symbol, item])), [quotes]);
-  return { income, items, progress, assetMap, fundMap, quoteMap };
+  const assetPriceMap = useMemo(() => new Map(assets.flatMap((asset) => {
+    if (!asset.id) return [];
+    const valuation = resolveAssetValuation(asset, quotes);
+    return valuation.decisionReady && valuation.price ? [[asset.id, valuation.price] as const] : [];
+  })), [assets, quotes]);
+  return { income, items, progress, assetMap, fundMap, assetPriceMap };
 }

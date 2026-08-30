@@ -11,6 +11,7 @@ import { SensitiveValue } from "@/components/ui/sensitive-value";
 import type { PositionRow } from "@/hooks/use-investment-portfolio";
 import { assetKindLabel } from "@/lib/assets";
 import { formatMoney, formatNumber, formatPercent, toPersianDate } from "@/lib/format";
+import { valuationPriceSourceLabel } from "@/lib/market/valuation";
 import type { PortfolioAllocationRow } from "@/lib/portfolio-allocation";
 import type { AppSettings, Asset, InvestmentTransaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -59,7 +60,16 @@ export function PortfolioTables({ positions, allocationRows, transactions, asset
 }
 
 function PriceCell({ row, settings }: { row: PositionRow; settings: AppSettings }) {
-  return <div><SensitiveValue>{formatMoney(row.price, settings.displayUnit, true)}</SensitiveValue>{row.priceSource === "market" && row.quote ? <div className="mt-1 flex items-center gap-1"><Badge className="text-primary">بازار</Badge><MarketSourceLabel source={row.quote.source} compact snapshot={row.quote.runtimeSource === "snapshot"} snapshotAt={row.quote.snapshotCapturedAt} className="text-[9px] text-muted-foreground" /></div> : row.priceSource === "cost-basis" && row.qty > 0 ? <div className="mt-1 text-[9px] text-muted-foreground">fallback بهای خرید</div> : null}</div>;
+  return <div><SensitiveValue>{formatMoney(row.price, settings.displayUnit, true)}</SensitiveValue><PriceProvenance row={row} /></div>;
+}
+
+function PriceProvenance({ row }: { row: PositionRow }) {
+  if ((row.priceSource === "live-market" || row.priceSource === "snapshot-market") && row.quote) {
+    return <div className="mt-1 flex items-center gap-1"><Badge className={row.priceSource === "snapshot-market" ? "border-amber-500/35 bg-amber-500/10" : "text-primary"}>{row.priceSource === "snapshot-market" ? "Snapshot" : "بازار"}</Badge><MarketSourceLabel source={row.quote.source} compact snapshot={row.priceSource === "snapshot-market"} snapshotAt={row.quote.snapshotCapturedAt} className="text-[9px] text-muted-foreground" /></div>;
+  }
+  if (row.priceSource === "manual") return <div className="mt-1 text-[9px] text-muted-foreground">{valuationPriceSourceLabel(row.priceSource)}</div>;
+  if (row.priceSource === "cost-basis" && row.qty > 0) return <div className="mt-1 text-[9px] text-muted-foreground">{valuationPriceSourceLabel(row.priceSource)}</div>;
+  return null;
 }
 
 function AllocationCell({ row }: { row?: PortfolioAllocationRow }) {
@@ -68,7 +78,7 @@ function AllocationCell({ row }: { row?: PortfolioAllocationRow }) {
 }
 
 function AssetMobileCard({ row, allocation, settings, onTx, onEdit, onArchive }: { row: PositionRow; allocation?: PortfolioAllocationRow; settings: AppSettings; onTx: () => void; onEdit: () => void; onArchive: () => void }) {
-  return <div className="p-4"><div className="flex items-start justify-between gap-3"><div><div className="type-strong">{row.asset.name}</div><div className="mt-1 text-[10px] text-muted-foreground">مقدار {formatNumber(row.qty, 6)}</div></div><div className="text-end"><SensitiveValue className="type-strong">{formatMoney(row.currentValue, settings.displayUnit)}</SensitiveValue><div className={cn("mt-1 text-xs type-strong", row.returnPct >= 0 ? "text-primary" : "text-destructive")}>{row.returnPct >= 0 ? "+" : ""}{formatPercent(row.returnPct)}</div></div></div>{allocation && <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/40 p-3 text-[11px]"><span>سهم فعلی <b>{formatPercent(allocation.currentPct, 1)}</b> · هدف <b>{formatPercent(allocation.targetPct, 0)}</b></span><Badge>{allocationStatus[allocation.status]}</Badge></div>}<div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-muted/40 p-3 text-[11px]"><div><span className="text-muted-foreground">میانگین خرید</span><SensitiveValue className="mt-1 type-strong">{formatMoney(row.avgPrice, settings.displayUnit, true)}</SensitiveValue></div><div><span className="text-muted-foreground">قیمت فعلی</span><SensitiveValue className="mt-1 type-strong">{formatMoney(row.price, settings.displayUnit, true)}</SensitiveValue>{row.quote && <div className="mt-1 text-[9px] text-primary">بازار · <MarketSourceLabel source={row.quote.source} compact snapshot={row.quote.runtimeSource === "snapshot"} snapshotAt={row.quote.snapshotCapturedAt} /></div>}</div></div><div className="mt-3 flex flex-wrap gap-1"><Button size="sm" onClick={onTx}><RiExchangeLine /> خرید/فروش</Button><Button size="sm" variant="ghost" onClick={onEdit}><RiEditLine /> ویرایش</Button><Button size="sm" variant="ghost" className="text-destructive" onClick={onArchive}><RiDeleteBin6Line /> آرشیو</Button></div></div>;
+  return <div className="p-4"><div className="flex items-start justify-between gap-3"><div><div className="type-strong">{row.asset.name}</div><div className="mt-1 text-[10px] text-muted-foreground">مقدار {formatNumber(row.qty, 6)}</div></div><div className="text-end"><SensitiveValue className="type-strong">{formatMoney(row.currentValue, settings.displayUnit)}</SensitiveValue><div className={cn("mt-1 text-xs type-strong", row.returnPct >= 0 ? "text-primary" : "text-destructive")}>{row.returnPct >= 0 ? "+" : ""}{formatPercent(row.returnPct)}</div></div></div>{allocation && <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/40 p-3 text-[11px]"><span>سهم فعلی <b>{formatPercent(allocation.currentPct, 1)}</b> · هدف <b>{formatPercent(allocation.targetPct, 0)}</b></span><Badge>{allocationStatus[allocation.status]}</Badge></div>}<div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-muted/40 p-3 text-[11px]"><div><span className="text-muted-foreground">میانگین خرید</span><SensitiveValue className="mt-1 type-strong">{formatMoney(row.avgPrice, settings.displayUnit, true)}</SensitiveValue></div><div><span className="text-muted-foreground">قیمت فعلی</span><SensitiveValue className="mt-1 type-strong">{formatMoney(row.price, settings.displayUnit, true)}</SensitiveValue><PriceProvenance row={row} /></div></div><div className="mt-3 flex flex-wrap gap-1"><Button size="sm" onClick={onTx}><RiExchangeLine /> خرید/فروش</Button><Button size="sm" variant="ghost" onClick={onEdit}><RiEditLine /> ویرایش</Button><Button size="sm" variant="ghost" className="text-destructive" onClick={onArchive}><RiDeleteBin6Line /> آرشیو</Button></div></div>;
 }
 
 function TransactionMobileCard({ row, assets, settings, onDelete }: { row: InvestmentTransaction; assets: Asset[]; settings: AppSettings; onDelete: () => void }) {

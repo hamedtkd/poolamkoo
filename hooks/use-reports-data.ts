@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { portfolioPosition } from "@/lib/calculations";
 import { incomePlanProgress } from "@/lib/plan-execution";
+import { resolveAssetValuation, type ValuationPriceSource } from "@/lib/market/valuation";
 import { buildReportDecisionSnapshot } from "@/lib/report-insights";
 import type { AllocationEntry, AllocationRule, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
 
@@ -13,6 +14,8 @@ export interface PerformanceRow {
   value: number;
   pnl: number;
   pnlPct: number;
+  priceSource: ValuationPriceSource;
+  pricingReliable: boolean;
 }
 
 export interface PlanAdherenceRow {
@@ -35,11 +38,11 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
   rule?: AllocationRule;
 }) {
   return useMemo(() => {
-    const quoteMap = new Map(quotes.map((quote) => [quote.symbol, quote]));
-    const positions = assets.map((asset) => ({
-      asset,
-      ...portfolioPosition(asset, transactions, asset.symbol ? quoteMap.get(asset.symbol)?.priceToman ?? asset.manualPriceToman : asset.manualPriceToman),
-    }));
+    const positions = assets.map((asset) => {
+      const valuation = resolveAssetValuation(asset, quotes);
+      const position = portfolioPosition(asset, transactions, valuation.price);
+      return { asset, ...position, priceSource: valuation.source, pricingReliable: position.qty <= 0 || valuation.decisionReady };
+    });
     const portfolio = positions.reduce((sum, position) => sum + position.currentValue, 0);
     const performance: PerformanceRow[] = positions.map((position) => ({
       name: position.asset.name,
@@ -48,7 +51,10 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
       value: position.currentValue,
       pnl: position.unrealized,
       pnlPct: position.returnPct,
+      priceSource: position.priceSource,
+      pricingReliable: position.pricingReliable,
     }));
+    const pricingIncomplete = positions.some((position) => position.qty > 0 && !position.pricingReliable);
     const totalIncome = incomes.reduce((sum, income) => sum + income.amountToman, 0);
     const totals = {
       life: sumBucket(allocations, "life"),
@@ -57,7 +63,7 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
     };
     const funded = funds.reduce((sum, fund) => sum + fund.currentToman, 0);
     const target = funds.reduce((sum, fund) => sum + fund.targetToman, 0);
-    const invested = performance.filter((row) => row.value > 0 || Math.abs(row.pnl) > 0);
+    const invested = pricingIncomplete ? [] : performance.filter((row) => row.value > 0 || Math.abs(row.pnl) > 0);
     const best = [...invested].sort((a, b) => b.pnlPct - a.pnlPct)[0];
     const worst = [...invested].sort((a, b) => a.pnlPct - b.pnlPct)[0];
     const safePlanItems = planItems ?? [];
@@ -77,7 +83,7 @@ export function useReportsData({ incomes, allocations, funds, assets, transactio
       funded,
       fundTarget: target,
     });
-    return { performance, totalIncome, totals, funded, target, best, worst, monthly: buildMonthly(incomes, allocations), overallPlan, planRows, decision };
+    return { performance, pricingIncomplete, totalIncome, totals, funded, target, best, worst, monthly: buildMonthly(incomes, allocations), overallPlan, planRows, decision };
   }, [allocations, assets, funds, incomes, planItems, quotes, rule, transactions]);
 }
 

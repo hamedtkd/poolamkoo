@@ -150,3 +150,14 @@ The v0.30 health model is now surfaced in Settings through `components/settings/
 Snapshot provenance exists only as runtime metadata (`runtimeSource` / `snapshotCapturedAt`). Before a fresh quote is persisted, that metadata is stripped, so IndexedDB snapshots remain provider data plus their existing `capturedAt` field and backup/schema formats do not change. Settings may expose aggregate live/Snapshot counts and timestamps, but the privacy-safe diagnostic still has no quote, asset, symbol or market-id input.
 
 Local alerts deliberately filter out `runtimeSource: "snapshot"`. A partial refresh can therefore keep portfolio/watchlist valuation continuous without turning an old observed price into a new notification or re-arm event. UI source labels mark Snapshot fallback anywhere the mixed runtime quote is surfaced.
+
+
+## Provider-scoped valuation and decision freshness (v0.33)
+
+`lib/market/valuation.ts` is the downstream quote-selection boundary. A linked exchange asset/watch item/alert must match both provider and market id; symbol-only fallback is reserved for unlinked/core symbols. This prevents a legacy Tindex row and a direct TSETMC row with the same display symbol or numeric id from silently substituting for one another after the API/runtime merge.
+
+Valuation now distinguishes continuity from decision freshness. Fresh provider quotes and explicit manual prices are suitable inputs for automatic portfolio planning. Runtime Snapshot quotes and cost-basis fallback can keep current value visible, but they are marked incomplete for decision surfaces. Portfolio target gaps may still be inspected, while automatic new-money priorities, smart growth distribution and Reports best/worst ranking pause until held positions have decision-ready pricing. Transaction price suggestions and newly linked manual fallback values likewise never come from a Snapshot.
+
+Detailed local CSV export includes the valuation-source label so a user can audit which rows used fresh market, Snapshot, manual or cost-basis pricing. The privacy-minimized share text is unchanged. Local market alerts use the same provider-scoped lookup and filter Snapshot rows before evaluation. IndexedDB schema 6 and persisted MarketSnapshot shape remain unchanged.
+
+The release lint command also uses `--max-warnings=0`; warning-free source is part of the release contract instead of an advisory console state.

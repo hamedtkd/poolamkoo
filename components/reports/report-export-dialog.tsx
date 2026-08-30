@@ -73,7 +73,7 @@ export function ReportExportDialog({ open, onOpenChange, report }: {
 
           <section className="rounded-2xl border bg-card p-4">
             <h3 className="type-card-title">CSV کامل برای خودت</h3>
-            <p className="mt-1 type-caption leading-6 text-muted-foreground">شامل مبلغ‌های گزارش، وضعیت قانون پول و نام/ارزش دارایی‌های سبد است. تراکنش خام یا اطلاعات بکاپ داخل فایل نمی‌رود.</p>
+            <p className="mt-1 type-caption leading-6 text-muted-foreground">شامل مبلغ‌های گزارش، وضعیت قانون پول، نام/ارزش دارایی‌های سبد و منبع ارزش‌گذاری (بازار تازه، Snapshot، دستی یا fallback) است. تراکنش خام یا اطلاعات بکاپ داخل فایل نمی‌رود.</p>
             <Button type="button" variant="outline" className="mt-4 w-full" onClick={downloadCsv}><RiDownload2Line /> دانلود CSV</Button>
           </section>
         </div>
