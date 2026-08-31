@@ -346,7 +346,7 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep schema 8 and all financial, backup and provider contracts unchanged.
 - Bump the service-worker cache so installed PWAs receive the new identity assets.
 
-## v1.1.0 — Searchable settings architecture 🚧
+## v1.1.0 — Searchable settings architecture ✅
 
 - Replace the single long Settings card wall with a compact overview plus focused category routes.
 - Keep one central settings registry for category navigation, local Settings search and global search.
@@ -356,9 +356,23 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Add a Local-first custom theme color builder with live preview, Hex input, saved swatches and derived chart/ring tokens without changing schema 8.
 - Validate Desktop/Mobile category navigation, deep links, Back/Forward, custom-theme persistence and global search before stable release.
 
+
+## v1.1.1 — Investment queue UX & GitHub media 🚧
+
+- Replace the repeated pending-investment card wall with compact groups keyed by the originating incoming-money record.
+- Keep the newest group expanded, collapse older groups, and show only the four newest groups until the user explicitly asks for older plans.
+- Preserve exact PlanItem → Transaction linkage while surfacing per-group remaining value and execution progress.
+- Mark pending financial amounts as SensitiveValue so Privacy Mode covers the compact queue.
+- Add optimized English WebP product-presentation panels to the public GitHub README while keeping exact production screenshots as a separate evidence layer.
+- Keep Persian social-media presentation assets outside Git to avoid duplicating large binaries.
+- Give profit/gain and loss/decline fixed semantic green/red tokens instead of reusing the active brand palette, and make open P/L labels explicit.
+- Use Persian digits with baseline comma grouping for money amounts and MoneyInput so separators stay readable with the Mikhak font.
+- Replace the oversized conceptual landing hero with a compact cinematic hero grounded in a real demo-data product capture and reduced-motion-safe interaction.
+- Keep IndexedDB schema 8, Settings v1.1.0 architecture, quota hardening and all Local-first portability contracts unchanged.
+
 ## Likely next phases
 
-- **After v1.1.0 — Product evolution:** choose the next user-facing financial feature family from real public-launch usage and feedback.
+- **After v1.1.x — Product evolution:** choose the next user-facing financial feature family from real public-launch usage and feedback.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

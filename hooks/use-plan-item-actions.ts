@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { db } from "@/lib/db";
 import { createRecoverySnapshot } from "@/lib/recovery";
+import { formatMoney } from "@/lib/format";
 import { syncIncomeAllocationsFromPlan } from "@/lib/plan-execution";
 import type { Asset, GoalFund, IncomeEvent, PlanItem } from "@/lib/types";
 import type { QuickPlanFormValues } from "@/lib/validation";
@@ -35,7 +36,7 @@ export function usePlanItemActions({
     const available = Math.max(0, income.amountToman - currentTotal);
     const amount = Math.round(values.amount);
     if (amount > available) {
-      throw new Error(`حداکثر مبلغ آزاد برای این برنامه ${new Intl.NumberFormat("fa-IR").format(available)} تومان است.`);
+      throw new Error(`حداکثر مبلغ آزاد برای این برنامه ${formatMoney(available)} است.`);
     }
     const now = new Date().toISOString();
     await db.planItems.add({
@@ -59,10 +60,10 @@ export function usePlanItemActions({
     const maxAmount = Math.max(0, income.amountToman - otherTotal);
     const amount = Math.round(values.amount);
     if (amount > maxAmount) {
-      throw new Error(`حداکثر مبلغ قابل برنامه‌ریزی برای این کارت ${new Intl.NumberFormat("fa-IR").format(maxAmount)} تومان است.`);
+      throw new Error(`حداکثر مبلغ قابل برنامه‌ریزی برای این کارت ${formatMoney(maxAmount)} است.`);
     }
     if (amount < item.executedToman) {
-      throw new Error(`مبلغ برنامه نمی‌تواند از ${new Intl.NumberFormat("fa-IR").format(item.executedToman)} تومان اجراشده کمتر باشد.`);
+      throw new Error(`مبلغ برنامه نمی‌تواند از ${formatMoney(item.executedToman)} اجراشده کمتر باشد.`);
     }
     const lockedTarget = item.executedToman > 0;
     await db.planItems.update(item.id, {

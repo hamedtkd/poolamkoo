@@ -4,6 +4,7 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toLatinDigits } from "@/lib/persian-date";
+import { formatGroupedNumber } from "@/lib/format";
 
 export interface PriceInputProps extends Omit<React.ComponentProps<typeof Input>, "value" | "defaultValue" | "onChange" | "type"> {
   value?: number | null;
@@ -26,7 +27,7 @@ function clamp(value: number, min?: number, max?: number) {
 
 function formatValue(value: number | null, locale: Intl.LocalesArgument) {
   if (value === null) return "";
-  return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
+  return locale === "fa-IR" ? formatGroupedNumber(value) : new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
 }
 
 function countDigits(text: string) {

@@ -23,7 +23,7 @@ import { useInvestmentPortfolio } from "@/hooks/use-investment-portfolio";
 import { db } from "@/lib/db";
 import { createRecoverySnapshot } from "@/lib/recovery";
 import { toPersianUiError } from "@/lib/errors";
-import { formatMoney, formatPercent } from "@/lib/format";
+import { formatMoney, formatPercent, formatSignedMoney } from "@/lib/format";
 import { assetArchiveBlockers, portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { investmentLedgerErrorMessage, validateInvestmentLedger } from "@/lib/investment-ledger";
 import type { MarketAlertTarget } from "@/lib/market/alerts";
@@ -158,7 +158,7 @@ export function InvestmentsSection({ settings, assets, allAssets, archivedAssets
   }
   return <div className="space-y-5">
     <Reveal direction="down" step={1}><div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setHistoryImportOpen(true)}><RiFileUploadLine /> ورود سوابق CSV</Button><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div></Reveal>
-    <RevealGrid className="grid gap-3 sm:grid-cols-3" startStep={2} ><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl >= 0 ? "primary" : "danger"} label={T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatMoney(portfolio.totalPnl, settings.displayUnit)} accent={portfolio.totalPnl >= 0} /></RevealGrid>
+    <RevealGrid className="grid gap-3 sm:grid-cols-3" startStep={2} ><Kpi icon={<RiFundsLine />} label={T.value} help="ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت بازار." value={formatMoney(portfolio.totalValue, settings.displayUnit)} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl > 0 ? "profit" : portfolio.totalPnl < 0 ? "danger" : "neutral"} label={portfolio.totalPnl > 0 ? "سود باز" : portfolio.totalPnl < 0 ? "زیان باز" : T.pnl} help="سود یا زیان باز شما از قیمت خرید تا قیمت فعلی؛ این عدد تغییر روزانه بازار نیست." value={formatSignedMoney(portfolio.totalPnl, settings.displayUnit)} valueTone={portfolio.totalPnl > 0 ? "profit" : portfolio.totalPnl < 0 ? "loss" : undefined} /></RevealGrid>
     {!portfolio.allocation.targetsValid && <Reveal step={5}><div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">{T.targetWarning} {formatPercent(portfolio.targetTotal, 0)} {T.targetTail}</div></Reveal>}
     <Reveal step={5}><MarketWatchlistCard watchlist={watchlist} quotes={quotes} snapshots={visibleSnapshots ?? snapshots} assets={assets} settings={settings} onCreateAsset={createAssetFromMarket} onCreateAlert={setAlertTarget} /></Reveal>
     <Reveal step={6}><MarketAlertsCard alerts={marketAlerts} quotes={quotes} settings={settings} backgroundPush={backgroundPush} onCreateAlert={setAlertTarget} /></Reveal>
@@ -184,6 +184,6 @@ function archiveBlockerDescription(blockers: ReturnType<typeof assetArchiveBlock
   return fallback ?? "دارایی آماده آرشیو است.";
 }
 
-function Kpi({ icon, iconTone = "primary", label, value, help, accent }: { icon: React.ReactNode; iconTone?: "primary" | "danger" | "neutral"; label: string; value: string; help: string; accent?: boolean }) {
-  return <Card><CardContent className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground"><HelpLabel label={label} help={help} /></div><SensitiveValue className={cn("mt-2 type-section-title", accent !== undefined && (accent ? "text-primary" : "text-destructive"))}>{value}</SensitiveValue></div><KpiIcon tone={iconTone}>{icon}</KpiIcon></div></CardContent></Card>;
+function Kpi({ icon, iconTone = "primary", label, value, help, valueTone }: { icon: React.ReactNode; iconTone?: "primary" | "profit" | "danger" | "neutral"; label: string; value: string; help: string; valueTone?: "profit" | "loss" }) {
+  return <Card><CardContent className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="type-caption text-muted-foreground"><HelpLabel label={label} help={help} /></div><SensitiveValue className={cn("mt-2 type-section-title", valueTone === "profit" && "text-profit", valueTone === "loss" && "text-loss")}>{value}</SensitiveValue></div><KpiIcon tone={iconTone}>{icon}</KpiIcon></div></CardContent></Card>;
 }

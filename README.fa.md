@@ -1,3 +1,4 @@
+> نکته v1.1.1: صف خریدهای برنامه‌ریزی‌شده در سرمایه‌گذاری دیگر دیوار بلند کارت‌های تکراری نیست؛ آیتم‌ها بر اساس هر پول ورودی گروه‌بندی می‌شوند، جدیدترین گروه باز می‌ماند و برنامه‌های قدیمی‌تر پشت یک کنترل جمع‌وجور قرار می‌گیرند. برای GitHub هم یک ویترین تصویری انگلیسی از هویت تأییدشده و رفرنس‌های واقعی UI اضافه شده؛ schema 8 و قراردادهای مالی تغییری نکرده‌اند.
 > نکته v1.1.0: تنظیمات حالا دسته‌بندی و قابل جست‌وجو شده‌اند؛ جست‌وجوی داخل Settings و جست‌وجوی سراسری از یک registry مشترک استفاده می‌کنند و مستقیماً به بخش تنظیم موردنظر می‌روند. بخش ظاهر هم رنگ‌ساز سفارشی با Hex، Hue، پیش‌نمایش زنده و رنگ‌های ذخیره‌شده محلی دارد؛ schema 8 و قراردادهای مالی Local-first تغییری نکرده‌اند.
 > نکته v1.0.2: نشان جدید P/کیف پول در UI، favicon و PWA یکپارچه شده؛ هندسه SVG اصلی داخل برنامه با CSS mask از رنگ تم استفاده میکند، آیکن نصب بدون تایپوگرافی است و schema 8 / رفتار مالی تغییری نکرده است.
 # پولم‌کو
@@ -39,6 +40,27 @@
 [English](./README.md) · [مستندات](./docs/README.md) · [امنیت](./SECURITY.md) · [مجوز](./LICENSE)
 
 ---
+
+## ویترین تصویری محصول در GitHub
+
+برای صفحه عمومی GitHub، پنل‌های معرفی انگلیسی را به‌عنوان لایه Presentation نگه می‌داریم. این تصاویر از هویت بصری تأییدشده و رفرنس‌های واقعی UI ساخته شده‌اند، اما اسکرین‌شات pixel-perfect برنامه نیستند و همه عددهای مالی داخل آن‌ها نمونه‌اند. تصاویر دقیق Build واقعی در بخش بعدی باقی می‌مانند.
+
+<p align="center">
+  <img src="./docs/assets/showcase/poolamkoo-overview-en.webp" alt="ویترین معرفی Poolamkoo" width="1100" />
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="./docs/assets/showcase/income-planning-en.webp" alt="معرفی برنامه‌ریزی درآمد Poolamkoo" /></td>
+    <td width="50%"><img src="./docs/assets/showcase/funds-goals-en.webp" alt="معرفی صندوق‌ها و اهداف Poolamkoo" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./docs/assets/showcase/reports-insights-en.webp" alt="معرفی گزارش‌ها و بینش‌های Poolamkoo" /></td>
+    <td width="50%"><img src="./docs/assets/showcase/settings-themes-en.webp" alt="معرفی تنظیمات و تم‌های Poolamkoo" /></td>
+  </tr>
+</table>
+
+نسخه‌های فارسی Presentation برای انتشار شبکه‌های اجتماعی نگه داشته می‌شوند و برای جلوگیری از تکرار فایل‌های حجیم وارد Git نمی‌شوند. قرارداد رسانه در [docs/assets/showcase/README.md](./docs/assets/showcase/README.md) ثبت شده است.
 
 ## پولم‌کو چیست؟
 
@@ -290,19 +312,16 @@ npm run build
 npm run check:stable
 ```
 
-`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه Stable جاری (`v1.1.0`) و Guardrailهای Launch را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
+`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه Stable جاری (`v1.1.1`) و Guardrailهای Launch را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
 
 
 ## تصویر محصول در لندینگ
 
-Hero عمومی از دو فایل WebP تأییدشده داخل خود Repository استفاده می‌کند تا Light/Dark با ظاهر صفحه هماهنگ باشد. عددهای داخل این تصاویر صرفاً نمایشی هستند و از داده مالی کاربر خوانده نمی‌شوند.
+Hero عمومی حالا یک ترکیب سینمایی جمع‌وجور را دور **اسکرین‌شات واقعی موبایل Poolamkoo** می‌سازد. خود اسکرین‌شات از دیتای نمایشی ساخته شده و در هر دو حالت Light/Dark همان نمای واقعی محصول را نشان می‌دهد؛ بنابراین لندینگ برای معرفی قابلیت‌ها به تصویر مفهومی وابسته نیست.
 
-<table>
-  <tr>
-    <td width="50%"><img src="./public/landing/poolamkoo-finance-light.webp" alt="تصویر مفهومی روشن Poolamkoo" /></td>
-    <td width="50%"><img src="./public/landing/poolamkoo-finance-dark.webp" alt="تصویر مفهومی تاریک Poolamkoo" /></td>
-  </tr>
-</table>
+<p align="center"><img src="./public/landing/poolamkoo-income-mobile.webp" width="320" alt="نمای واقعی موبایل پولم‌کو در صفحه برنامه‌ریزی پول ورودی با داده نمایشی" /></p>
+
+این Capture از Profile عادی مرورگر یا داده مالی شخصی چیزی نمی‌خواند.
 
 ## اسکرین‌شات‌های محصول
 

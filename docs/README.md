@@ -47,6 +47,8 @@
 
 ## Release history
 
+- [v1.1.1 — Investment queue UX & GitHub showcase](./releases/1.1.1.md)
+
 - [v1.1.0 — Searchable settings architecture](./releases/1.1.0.md)
 
 - [v1.0.2 — Brand mark & PWA identity refresh](./releases/1.0.2.md)

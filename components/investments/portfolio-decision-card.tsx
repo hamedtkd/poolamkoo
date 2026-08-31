@@ -4,7 +4,7 @@ import { RiAlertLine, RiCompass3Line, RiInformationLine, RiScalesLine } from "re
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
-import { formatMoney, formatPercent } from "@/lib/format";
+import { formatMoney, formatPercent, formatSignedPercent } from "@/lib/format";
 import type { PortfolioAllocationReview, PortfolioAllocationRow } from "@/lib/portfolio-allocation";
 import type { AppSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,7 @@ function AllocationRow({ row }: { row: PortfolioAllocationRow }) {
       <div className="h-full rounded-full bg-primary/70" style={{ width: `${current}%` }} />
       {row.targetPct > 0 && <span className="absolute top-1/2 h-4 w-0.5 -translate-y-1/2 bg-foreground" style={{ insetInlineStart: `${target}%` }} aria-hidden="true" />}
     </div>
-    <div className="mt-2 type-caption text-muted-foreground">فاصله با هدف: {row.driftPct > 0 ? "+" : ""}{formatPercent(row.driftPct, 1)}</div>
+    <div className="mt-2 type-caption text-muted-foreground">فاصله با هدف: {formatSignedPercent(row.driftPct, 1)}</div>
   </div>;
 }
 

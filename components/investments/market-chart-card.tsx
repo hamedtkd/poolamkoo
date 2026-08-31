@@ -121,7 +121,7 @@ function Ohlc({ label, value, settings }: { label: string; value: number; settin
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "positive" | "negative" }) {
-  return <div className="min-w-36 rounded-xl border bg-background/55 px-3 py-2"><div className="text-[9px] text-muted-foreground">{label}</div><div className={cn("mt-0.5 text-xs type-strong", tone === "positive" && "text-primary", tone === "negative" && "text-destructive")}>{value}</div></div>;
+  return <div className="min-w-36 rounded-xl border bg-background/55 px-3 py-2"><div className="text-[9px] text-muted-foreground">{label}</div><div className={cn("mt-0.5 text-xs type-strong", tone === "positive" && "text-profit", tone === "negative" && "text-loss")}>{value}</div></div>;
 }
 
 function dedupeOptions(options: Array<{ value: string; label: string }>) {

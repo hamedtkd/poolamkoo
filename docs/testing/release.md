@@ -218,8 +218,8 @@ git push origin vX.Y.Z
 
 ## 18. Reports decision insights and landing media
 
-- [ ] Landing در Light تصویر `poolamkoo-finance-light.webp` و در Dark تصویر `poolamkoo-finance-dark.webp` را نشان دهد
-- [ ] تصویر Hero روی 390px و 1440px بدون بریدگی یا Overflow افقی نمایش داده شود
+- [ ] Landing تصویر واقعی `poolamkoo-income-mobile.webp` را داخل Hero سینمایی نمایش دهد و متن اصلی بدون وابستگی به Animation خوانا باشد
+- [ ] Hero روی 390px و 1440px بدون بریدگی، Scroll-jacking یا Overflow افقی نمایش داده شود
 - [ ] Landing همچنان بدون بازکردن/Seed کردن IndexedDB مالی قابل مشاهده باشد
 - [ ] Reports در بازه بدون داده، Donut یا سهم ۱۰۰٪ ساختگی از قانون پول نشان ندهد
 - [ ] Allocation ناقص با پیام صریح مشخص شود و «فاصله معتبر با قانون» از آن استنتاج نشود
@@ -342,3 +342,20 @@ Before tagging, manually verify Desktop and mobile-class Settings navigation, Pe
 ### v1.1.0 searchable Settings + custom theme
 
 Before tagging `v1.1.0`, verify Settings category navigation and normalized search on Desktop/Mobile, then open **عمومی و ظاهر → رنگ سفارشی** and confirm live preview, Hex input, saved swatches, cancel rollback and persistence after reload. Global search must deep-link to the same Settings registry. IndexedDB remains schema 8.
+
+
+## 26. v1.1.1 investment queue + GitHub media gate
+
+`v1.1.1` keeps schema 8 and the full Stable production gate. The UX regression target is a portfolio with several incoming-money records that each leave multiple Growth purchases unfinished: Investments must remain compact rather than rendering one large card per pending Asset/Income pair.
+
+### v1.1.1 manual acceptance
+
+- [ ] With at least five incoming-money records containing unfinished Growth asset plans, only the four newest income groups are initially visible.
+- [ ] The newest pending group starts expanded; older groups remain collapsed until explicitly opened.
+- [ ] Expanding a group shows compact Asset rows with remaining amount, progress and one `ثبت خرید` action.
+- [ ] `ثبت خرید` opens the Transaction dialog for the exact Asset + PlanItem and keeps the original Income/Plan linkage after save.
+- [ ] `نمایش برنامه‌های قدیمی‌تر` reveals the hidden groups and `نمایش کمتر` returns to the compact state.
+- [ ] Privacy Mode hides/obscures pending financial amounts through the same `data-sensitive` contract as other Workspace values.
+- [ ] Desktop and 390–430px mobile layouts do not create horizontal overflow or an excessively tall repeated-card wall.
+- [ ] GitHub renders all five files under `docs/assets/showcase/` from `README.md`; exact capture screenshots remain under `docs/assets/screenshots/`.
+- [ ] IndexedDB remains schema 8 and Backup/Recovery/Device Transfer behavior is unchanged.

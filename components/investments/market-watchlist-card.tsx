@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { db } from "@/lib/db";
-import { formatMoney, formatPercent } from "@/lib/format";
+import { formatMoney, formatSignedPercent } from "@/lib/format";
 import { type MarketAlertTarget } from "@/lib/market/alerts";
 import { marketWatchlistRows, navSignal, watchlistSummary, type WatchlistFilter, type WatchlistRow, type WatchlistSort } from "@/lib/market/watchlist";
 import { MARKET_IDENTITY_INDEX, marketIdentityKey, marketIdentityTuple } from "@/lib/market/identity";
@@ -76,9 +76,9 @@ function WatchCard({ row, settings, onDetail, onCreateAsset, onCreateAlert }: { 
     </div>
     <div className="mt-4 grid grid-cols-2 gap-3">
       <Metric label="قیمت بازار" value={quote ? formatMoney(quote.priceToman, settings.displayUnit, true) : "—"} />
-      <Metric label={quote?.runtimeSource === "snapshot" ? "تغییر Snapshot" : "تغییر روز"} value={quote?.runtimeSource === "snapshot" ? "تازه نیست" : quote ? `${quote.changePercent >= 0 ? "+" : ""}${formatPercent(quote.changePercent)}` : "—"} tone={quote && quote.runtimeSource !== "snapshot" ? (quote.changePercent >= 0 ? "positive" : "negative") : undefined} />
+      <Metric label={quote?.runtimeSource === "snapshot" ? "تغییر Snapshot" : "تغییر روز"} value={quote?.runtimeSource === "snapshot" ? "تازه نیست" : quote ? formatSignedPercent(quote.changePercent) : "—"} tone={quote && quote.runtimeSource !== "snapshot" ? (quote.changePercent >= 0 ? "positive" : "negative") : undefined} />
       <Metric label="NAV" value={quote?.navToman ? formatMoney(quote.navToman, settings.displayUnit, true) : "—"} />
-      <Metric label="فاصله از NAV" value={row.premium === null ? "—" : `${row.premium >= 0 ? "+" : ""}${formatPercent(row.premium)}`} tone={row.premium === null ? undefined : row.premium <= 0 ? "positive" : "negative"} />
+      <Metric label="فاصله از NAV" value={row.premium === null ? "—" : formatSignedPercent(row.premium)} tone={row.premium === null ? undefined : row.premium <= 0 ? "positive" : "negative"} />
     </div>
     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
       <MarketSourceLabel source={quote?.source ?? row.item.source} compact snapshot={quote?.runtimeSource === "snapshot"} snapshotAt={quote?.snapshotCapturedAt} className="text-[10px] text-muted-foreground" />
@@ -92,7 +92,7 @@ function WatchlistSummary({ total, gainers, discounts, premiums }: { total: numb
 }
 
 function SummaryMetric({ label, value, tone }: { label: string; value: number; tone?: "positive" | "negative" }) {
-  return <div className="rounded-xl border bg-background/55 px-3 py-2"><div className="text-[10px] text-muted-foreground">{label}</div><div className={cn("mt-0.5 type-strong", tone === "positive" && "text-primary", tone === "negative" && "text-destructive")}>{new Intl.NumberFormat("fa-IR").format(value)}</div></div>;
+  return <div className="rounded-xl border bg-background/55 px-3 py-2"><div className="text-[10px] text-muted-foreground">{label}</div><div className={cn("mt-0.5 type-strong", tone === "positive" && "text-profit", tone === "negative" && "text-loss")}>{new Intl.NumberFormat("fa-IR").format(value)}</div></div>;
 }
 
 function EmptyWatchlist({ onAdd }: { onAdd: () => void }) {
@@ -100,9 +100,9 @@ function EmptyWatchlist({ onAdd }: { onAdd: () => void }) {
 }
 
 function Metric({ label, value, tone }: { label: string; value: string; tone?: "positive" | "negative" }) {
-  return <div className="rounded-xl bg-background/65 p-3"><div className="text-[10px] text-muted-foreground">{label}</div><SensitiveValue className={cn("mt-1 type-strong", tone === "positive" && "text-primary", tone === "negative" && "text-destructive")}>{value}</SensitiveValue></div>;
+  return <div className="rounded-xl bg-background/65 p-3"><div className="text-[10px] text-muted-foreground">{label}</div><SensitiveValue className={cn("mt-1 type-strong", tone === "positive" && "text-profit", tone === "negative" && "text-loss")}>{value}</SensitiveValue></div>;
 }
 
 function NavBadge({ label, tone }: { label: string; tone: "positive" | "negative" | "neutral" }) {
-  return <Badge className={cn(tone === "positive" && "border-primary/25 bg-primary/8 text-primary", tone === "negative" && "border-destructive/25 bg-destructive/8 text-destructive", tone === "neutral" && "text-muted-foreground")}>{label}</Badge>;
+  return <Badge className={cn(tone === "positive" && "border-profit/25 bg-profit/10 text-profit", tone === "negative" && "border-loss/25 bg-loss/10 text-loss", tone === "neutral" && "text-muted-foreground")}>{label}</Badge>;
 }

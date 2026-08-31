@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
-import { formatMoney, toPersianDate } from "@/lib/format";
+import { formatSignedMoney, toPersianDate } from "@/lib/format";
 import { fundMovementCanEdit, sortFundMovements } from "@/lib/fund-ledger";
 import type { AppSettings, FundMovement, GoalFund } from "@/lib/types";
 
@@ -41,7 +41,7 @@ export function FundMovementHistoryCard({ funds, movements, settings, onEdit, on
                 <div className="mt-1 type-caption text-muted-foreground">{toPersianDate(movement.happenedAt)}{movement.note ? ` · ${movement.note}` : ""}</div>
               </div>
               <div className="flex shrink-0 items-center gap-1">
-                <SensitiveValue className={positive ? "type-strong" : "type-strong text-destructive"}>{positive ? "+" : "−"}{formatMoney(movement.amountToman, settings.displayUnit)}</SensitiveValue>
+                <SensitiveValue className={positive ? "type-strong" : "type-strong text-destructive"}>{formatSignedMoney(positive ? movement.amountToman : -movement.amountToman, settings.displayUnit)}</SensitiveValue>
                 {editable && <><Button size="icon" variant="ghost" className="size-8" aria-label="ویرایش گردش صندوق" onClick={() => onEdit(movement)}><RiEditLine /></Button><Button size="icon" variant="ghost" className="size-8 text-destructive" aria-label="حذف گردش صندوق" onClick={() => onDelete(movement)}><RiDeleteBin6Line /></Button></>}
               </div>
             </div>;

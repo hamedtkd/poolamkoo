@@ -49,7 +49,7 @@ export function LandingSections() {
         <SectionHeading eyebrow="گردش کار" title="از «پول وارد شد» تا «می‌دانم کجا رفت»" text="به‌جای اینکه فقط هزینه‌های گذشته را دسته‌بندی کنی، قبل از مصرف پول برایش مسیر تعریف می‌کنی و بعد اجرای واقعی را می‌سنجی." />
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {workflow.map(({ icon: Icon, title, text }, index) => (
-            <MotionReveal key={title} delay={index * 0.055} className="h-full">
+            <MotionReveal key={title} delay={index * 0.055} direction="up" className="h-full">
               <div className="h-full rounded-2xl border bg-card p-5 shadow-[0_8px_35px_rgba(0,0,0,.035)]">
                 <div className="mb-5 flex items-center justify-between"><div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-5" /></div><span className="text-xs font-[650] tabular-nums text-muted-foreground">۰{index + 1}</span></div>
                 <h3 className="type-card-title">{title}</h3>
@@ -62,7 +62,7 @@ export function LandingSections() {
 
       <section className="rounded-[30px] border bg-card/65 p-5 sm:p-8 lg:p-10">
         <div className="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-center">
-          <MotionReveal direction="right">
+          <MotionReveal direction="up">
             <div className="type-caption font-[650] text-primary">مالکیت داده</div>
             <h2 className="mt-2 type-page-title">داده مالی باید اول متعلق به خودت باشد.</h2>
             <p className="mt-4 text-sm leading-8 text-muted-foreground">پولم‌کو برای استفاده بدون Backend اجباری طراحی شده. داده اصلی روی دستگاه می‌ماند و ابزارهای بازیابی طوری ساخته شده‌اند که خودت درباره نگهداری و انتقالش تصمیم بگیری.</p>
@@ -75,7 +75,7 @@ export function LandingSections() {
           </MotionReveal>
           <div className="grid gap-3 sm:grid-cols-2">
             {features.slice(0, 4).map(({ icon: Icon, title, text }, index) => (
-              <MotionReveal key={title} direction={index % 2 === 0 ? "left" : "up"} delay={index * 0.055} className="h-full">
+              <MotionReveal key={title} delay={index * 0.055} direction="up" className="h-full">
                 <Feature icon={<Icon />} title={title} text={text} />
               </MotionReveal>
             ))}
@@ -87,7 +87,7 @@ export function LandingSections() {
         <SectionHeading eyebrow="امکانات" title="برای تصمیم مالی واقعی، نه فقط یک داشبورد زیبا" text="از ورود داده قدیمی تا بازار و گزارش، هر بخش باید یک تصمیم یا بازیابی واقعی را ساده‌تر کند." />
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {features.map(({ icon: Icon, title, text }, index) => (
-            <MotionReveal key={title} direction={index % 3 === 0 ? "right" : index % 3 === 2 ? "left" : "up"} delay={(index % 3) * 0.055} className="h-full">
+            <MotionReveal key={title} delay={(index % 3) * 0.055} direction="up" className="h-full">
               <Feature icon={<Icon />} title={title} text={text} />
             </MotionReveal>
           ))}
@@ -95,7 +95,7 @@ export function LandingSections() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <MotionReveal direction="right" className="h-full">
+        <MotionReveal direction="up" className="h-full">
         <div className="h-full rounded-[28px] border bg-primary p-6 text-primary-foreground sm:p-8">
           <RiGithubFill className="size-8" />
           <h2 className="mt-5 type-page-title">رایگان، متن‌باز و قابل بررسی</h2>
@@ -103,7 +103,7 @@ export function LandingSections() {
           <a href={COMMUNITY_LINKS.repository} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-primary-foreground px-4 text-sm font-[620] text-primary transition hover:brightness-95">GitHub پروژه <RiArrowLeftLine /></a>
         </div>
         </MotionReveal>
-        <MotionReveal direction="left" delay={0.06} className="h-full">
+        <MotionReveal direction="up" delay={0.06} className="h-full">
         <div className="h-full rounded-[28px] border bg-card p-6 sm:p-8">
           <div className="type-caption font-[650] text-primary">شفافیت</div>
           <h2 className="mt-2 type-page-title">Analytics بدون نگاه‌کردن به زندگی مالی تو</h2>
@@ -117,7 +117,7 @@ export function LandingSections() {
         <SectionHeading eyebrow="پرسش‌های رایج" title="قبل از واردکردن داده مالی، این‌ها را بدان" />
         <div className="mt-7 grid gap-3 md:grid-cols-2">
           {faq.map((item, index) => (
-            <MotionReveal key={item.q} direction={index % 2 === 0 ? "right" : "left"} delay={(index % 2) * 0.055}>
+            <MotionReveal key={item.q} delay={(index % 2) * 0.055} direction="up">
               <details className="group rounded-2xl border bg-card p-5 open:bg-accent/35">
                 <summary className="cursor-pointer list-none type-card-title marker:hidden">{item.q}</summary>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.a}</p>
@@ -146,7 +146,7 @@ export function LandingSections() {
 
 function SectionHeading({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
   return (
-    <MotionReveal direction="down">
+    <MotionReveal direction="up">
       <header className="max-w-3xl">
         <div className="type-caption font-[650] text-primary">{eyebrow}</div>
         <h2 className="mt-2 type-page-title">{title}</h2>

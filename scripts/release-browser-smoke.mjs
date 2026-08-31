@@ -270,8 +270,23 @@ async function verifyLegacySchemaMigration(client, origin) {
   await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
 }
 
-async function seedDemoData(client) {
-  const data = createPoolamkooMediaDemoData();
+function pendingQueueExpectation(data) {
+  const assetIds = new Set(data.assets.filter((asset) => asset.id).map((asset) => asset.id));
+  const rows = data.planItems.filter((item) =>
+    item.bucket === "growth" && item.targetType === "asset" && item.targetId &&
+    item.plannedToman > item.executedToman && assetIds.has(item.targetId),
+  );
+  const incomeById = new Map(data.incomes.map((income) => [income.id, income]));
+  const groupIds = [...new Set(rows.map((item) => item.incomeId))];
+  const newestIncome = groupIds
+    .map((id) => incomeById.get(id))
+    .filter(Boolean)
+    .sort((a, b) => b.happenedAt.localeCompare(a.happenedAt))[0];
+  const newestRows = newestIncome ? rows.filter((item) => item.incomeId === newestIncome.id).length : 0;
+  return { groups: groupIds.length, rows: rows.length, newestRows, newestTitle: newestIncome?.title ?? "" };
+}
+
+async function seedDemoData(client, data = createPoolamkooMediaDemoData()) {
   await evaluate(client, `(async () => {
     const data = ${JSON.stringify(data)};
     const db = await new Promise((resolve, reject) => {
@@ -369,7 +384,7 @@ async function main() {
     await client.call("Page.addScriptToEvaluateOnNewDocument", { source: `(() => { const RealDate=Date; const fixed=${JSON.stringify(POOLAMKOO_MEDIA_ANCHOR)}; class FixedDate extends RealDate { constructor(...args){ super(...(args.length?args:[fixed])); } static now(){ return new RealDate(fixed).getTime(); } } FixedDate.parse=RealDate.parse; FixedDate.UTC=RealDate.UTC; window.Date=FixedDate; })();` });
     await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
 
-    await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
+    await navigate(client, `${origin}/`, "پول می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal web root must remain the public landing page");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "public landing must not advertise the installable manifest");
     assert(await evaluate(client, "navigator.serviceWorker.getRegistrations().then((rows) => rows.length === 0)"), "public landing must not initialize a service worker in a fresh profile");
@@ -388,7 +403,7 @@ async function main() {
     await waitFor(client, `document.documentElement.classList.contains(${JSON.stringify(beforeTheme === "dark" ? "light" : "dark")})`, "public theme switch");
 
     await verifyLegacySchemaMigration(client, origin);
-    await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
+    await navigate(client, `${origin}/`, "پول می‌رسد");
     assert(await evaluate(client, "navigator.serviceWorker.getRegistrations().then((rows) => rows.length === 0)"), "migration fixture cleanup must restore a fresh public origin");
     await evaluate(client, "[...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان'))?.click(); true");
     await waitFor(client, "location.pathname === '/dashboard'", "landing-to-workspace navigation");
@@ -413,7 +428,9 @@ async function main() {
     await waitFor(client, "document.body?.innerText.includes('قانون پول فعلی')", "dashboard after onboarding skip");
     await waitFor(client, `(async () => { const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('poolyar-local');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)}); const value=await new Promise((resolve,reject)=>{const tx=db.transaction('settings','readonly');const r=tx.objectStore('settings').get('settings');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)}); db.close(); return value?.onboardingComplete === true; })()`, "persisted onboarding completion");
 
-    await seedDemoData(client);
+    const demoData = createPoolamkooMediaDemoData();
+    const pendingExpectation = pendingQueueExpectation(demoData);
+    await seedDemoData(client, demoData);
     await navigate(client, `${origin}/dashboard`, "قانون پول فعلی");
     assert(await evaluate(client, "document.body?.innerText.includes('صندوق اضطراری')"), "seeded local data must render on the dashboard");
     assert(await evaluate(client, `(() => {
@@ -458,6 +475,42 @@ async function main() {
     })()`), "shared dialog content must never render blank under normal motion preference");
     await evaluate(client, "document.querySelector('[role=dialog] button[aria-label=\"بستن پنجره\"]')?.click(); true");
     await waitFor(client, "document.querySelector('[role=dialog]') === null", "new-money dialog close");
+
+    await clientNavigate(client, "/investments", "سرمایه‌گذاری‌ها");
+    await waitFor(client, "document.querySelector('[data-pending-plan-purchases=true]') !== null", "compact pending investment queue");
+    const pendingQueueState = await evaluate(client, `(() => {
+      const root = document.querySelector('[data-pending-plan-purchases=true]');
+      if (!(root instanceof HTMLElement)) return null;
+      const groups = [...root.querySelectorAll('[data-pending-income-group=true]')];
+      const opened = groups.filter((node) => node instanceof HTMLDetailsElement && node.open);
+      const rows = [...root.querySelectorAll('[data-pending-purchase-row=true]')];
+      const openGroup = opened[0];
+      const openRows = openGroup ? [...openGroup.querySelectorAll('[data-pending-purchase-row=true]')] : [];
+      const openSummary = openGroup?.querySelector('summary')?.textContent ?? '';
+      return {
+        groups: groups.length, opened: opened.length, rows: rows.length, openRows: openRows.length,
+        height: root.getBoundingClientRect().height, openSummary,
+      };
+    })()`);
+    assert(Boolean(pendingQueueState) &&
+      pendingQueueState.groups === pendingExpectation.groups &&
+      pendingQueueState.opened === 1 &&
+      pendingQueueState.rows === pendingExpectation.rows &&
+      pendingQueueState.openRows === pendingExpectation.newestRows &&
+      pendingQueueState.openSummary.includes(pendingExpectation.newestTitle) &&
+      pendingQueueState.height < 760,
+    `pending investment purchases must group repeated asset cards by income and keep only the newest group open: ${JSON.stringify(pendingQueueState)} expected=${JSON.stringify(pendingExpectation)}`);
+    assert(await evaluate(client, `(() => {
+      const root = document.querySelector('[data-pending-plan-purchases=true]');
+      const openGroup = root?.querySelector('[data-pending-income-group=true][open]');
+      const button = [...(openGroup?.querySelectorAll('button') ?? [])].find((node) => node.textContent?.includes('ثبت خرید'));
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`), "compact pending queue must keep an actionable exact-plan purchase button");
+    await waitFor(client, "document.querySelector('[role=dialog]')?.textContent?.includes('این خرید به برنامه پول ورودی متصل است')", "planned purchase transaction dialog");
+    await evaluate(client, "document.querySelector('[role=dialog] button[aria-label=\"بستن پنجره\"]')?.click(); true");
+    await waitFor(client, "document.querySelector('[role=dialog]') === null", "planned purchase dialog close");
 
     await clientNavigate(client, "/reports", "گزارش‌ها و بینش‌ها");
     assert(await evaluate(client, "document.body?.innerText.includes('جمع‌بندی تصمیمی این بازه')"), "reports must render decision insights from local demo data");
@@ -554,7 +607,7 @@ async function main() {
     await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') === null", "mobile product tour close");
     await client.call("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 
-    await navigate(client, `${origin}/`, "پول جدید که می‌رسد");
+    await navigate(client, `${origin}/`, "پول می‌رسد");
     assert(await evaluate(client, "location.pathname === '/'"), "normal browser root must remain landing even after workspace PWA registration");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "returning to the public landing must remove workspace manifest metadata");
     assert(await evaluate(client, "Boolean(navigator.serviceWorker.controller)"), "public landing should remain under the existing root-scope worker after workspace registration");
@@ -562,7 +615,7 @@ async function main() {
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, product-tour spotlight clarity, dashboard/dialog visibility, categorized settings search/custom theme, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, product-tour spotlight clarity, dashboard/dialog visibility, compact investment purchase queue, categorized settings search/custom theme, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

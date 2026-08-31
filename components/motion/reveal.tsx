@@ -6,12 +6,13 @@ import { cn } from "@/lib/utils";
 export type MotionRevealDirection = "up" | "down" | "left" | "right" | "fade";
 
 const ease = [0.22, 1, 0.36, 1] as const;
+const spring = { type: "spring", stiffness: 92, damping: 18, mass: 0.62 } as const;
 const offsets: Record<MotionRevealDirection, { x: number; y: number }> = {
-  up: { x: 0, y: 22 },
+  up: { x: 0, y: 26 },
   down: { x: 0, y: -18 },
-  left: { x: 22, y: 0 },
-  right: { x: -22, y: 0 },
-  fade: { x: 0, y: 0 },
+  left: { x: 12, y: 20 },
+  right: { x: -12, y: 20 },
+  fade: { x: 0, y: 14 },
 };
 
 export function MotionReveal({
@@ -20,7 +21,7 @@ export function MotionReveal({
   delay = 0,
   direction = "up",
   hover = false,
-  amount = 0.22,
+  amount = 0.16,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -34,18 +35,25 @@ export function MotionReveal({
   const initial = reduced ? false : {
     x: offset.x,
     y: offset.y,
-    opacity: direction === "fade" ? 0.78 : 0.86,
-    filter: "blur(3px)",
+    opacity: 0.72,
+    scale: 0.982,
+    filter: "blur(7px)",
   };
 
   return (
     <motion.div
       className={cn("min-w-0", className)}
       initial={initial}
-      whileInView={{ x: 0, y: 0, opacity: 1, filter: "blur(0px)" }}
+      whileInView={{ x: 0, y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
       viewport={{ once: true, amount }}
       whileHover={!reduced && hover ? { y: -2 } : undefined}
-      transition={{ duration: reduced ? 0 : 0.48, delay: reduced ? 0 : delay, ease }}
+      transition={reduced ? { duration: 0 } : {
+        x: { ...spring, delay },
+        y: { ...spring, delay },
+        scale: { ...spring, delay },
+        opacity: { duration: 0.42, delay, ease },
+        filter: { duration: 0.46, delay, ease },
+      }}
     >
       {children}
     </motion.div>

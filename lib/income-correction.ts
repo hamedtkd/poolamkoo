@@ -1,5 +1,5 @@
 import type { AllocationEntry, BucketKey, IncomeEvent, InvestmentTransaction, PlanItem } from "./types.ts";
-
+import { formatMoney } from "./format.ts";
 export type IncomeCorrectionIssue = "amount_below_executed" | "date_locked_after_execution";
 
 export type IncomeCorrectionReview = {
@@ -161,5 +161,5 @@ export function reviewIncomeCorrection({
 
 export function incomeCorrectionIssueMessage(issue: IncomeCorrectionIssue, executedTotal: number) {
   if (issue === "date_locked_after_execution") return "بعد از شروع اجرای برنامه، تاریخ پول ورودی قابل جابه‌جایی نیست.";
-  return `مبلغ پول ورودی نمی‌تواند از ${new Intl.NumberFormat("fa-IR").format(executedTotal)} تومان اجراشده کمتر باشد.`;
+  return `مبلغ پول ورودی نمی‌تواند از ${formatMoney(executedTotal)} اجراشده کمتر باشد.`;
 }

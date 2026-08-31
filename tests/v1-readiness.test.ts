@@ -26,7 +26,7 @@ test("generic workspace errors do not perform database repair", () => {
 test("public routes stay outside the workspace runtime navigation cache", () => {
   const serviceWorker = read("public/sw.js");
   const releaseSmoke = read("scripts/release-browser-smoke.mjs");
-  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v70"'), true);
+  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v71"'), true);
   assert.equal(serviceWorker.includes("WORKSPACE_NAVIGATION_PREFIXES"), true);
   assert.equal(serviceWorker.includes("!isWorkspaceNavigation(url.pathname)"), true);
   assert.equal(releaseSmoke.includes("workspace service worker must not cache the public landing navigation"), true);

@@ -51,6 +51,8 @@ test("release smoke covers landing, dashboard/dialog visibility, reports and PWA
     "Product tour spotlight failed for",
     "desktop global search must have a real visible tour target",
     "shared dialog content must never render blank under normal motion preference",
+    "pending investment purchases must group repeated asset cards by income and keep only the newest group open",
+    "compact pending queue must keep an actionable exact-plan purchase button",
     "reports must expose privacy-safe export controls",
     "settings overview must expose categorized destinations instead of the old card wall",
     "settings search result must be actionable",
@@ -63,6 +65,8 @@ test("release smoke covers landing, dashboard/dialog visibility, reports and PWA
     "public landing must not advertise the installable manifest",
   ]) assert.ok(smoke.includes(contract), `missing browser smoke contract: ${contract}`);
   assert.equal(smoke.includes("پولم‌کو را برای خودت تنظیم کن"), false, "release smoke must not wait on the removed settings wall heading");
+  assert.match(smoke, /openGroup\?\.querySelector|openGroup = opened\[0\]/, "pending queue smoke must inspect rows inside the actually open details group");
+  assert.equal(smoke.includes("getClientRects().length > 0"), false, "pending queue smoke must not infer details visibility from getClientRects");
 });
 
 test("manual GitHub release smoke runs the same release gate", () => {

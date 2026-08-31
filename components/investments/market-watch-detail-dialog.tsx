@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { useMarketHistory } from "@/hooks/use-market-history";
-import { formatMoney, formatPercent } from "@/lib/format";
+import { formatMoney, formatSignedPercent } from "@/lib/format";
 import type { MarketAlertTarget } from "@/lib/market/alerts";
 import { navSignal, type WatchlistRow } from "@/lib/market/watchlist";
 import type { AppSettings, MarketHistoryRange, MarketInstrument, MarketSnapshot } from "@/lib/types";
@@ -37,9 +37,9 @@ export function MarketWatchDetailDialog({ row, snapshots, settings, onClose, onC
         </DialogHeader>
         <div className="grid gap-2 sm:grid-cols-4">
           <Metric label="قیمت بازار" value={quote ? formatMoney(quote.priceToman, settings.displayUnit, true) : "—"} />
-          <Metric label={quote?.runtimeSource === "snapshot" ? "تغییر Snapshot" : "تغییر امروز"} value={quote?.runtimeSource === "snapshot" ? "تازه نیست" : quote ? `${quote.changePercent >= 0 ? "+" : ""}${formatPercent(quote.changePercent)}` : "—"} tone={quote && quote.runtimeSource !== "snapshot" ? (quote.changePercent >= 0 ? "positive" : "negative") : undefined} />
+          <Metric label={quote?.runtimeSource === "snapshot" ? "تغییر Snapshot" : "تغییر امروز"} value={quote?.runtimeSource === "snapshot" ? "تازه نیست" : quote ? formatSignedPercent(quote.changePercent) : "—"} tone={quote && quote.runtimeSource !== "snapshot" ? (quote.changePercent >= 0 ? "positive" : "negative") : undefined} />
           <Metric label="NAV" value={quote?.navToman ? formatMoney(quote.navToman, settings.displayUnit, true) : "—"} />
-          <Metric label="فاصله از NAV" value={row.premium === null ? "—" : `${row.premium >= 0 ? "+" : ""}${formatPercent(row.premium)}`} tone={row.premium === null ? undefined : row.premium <= 0 ? "positive" : "negative"} />
+          <Metric label="فاصله از NAV" value={row.premium === null ? "—" : formatSignedPercent(row.premium)} tone={row.premium === null ? undefined : row.premium <= 0 ? "positive" : "negative"} />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <RangePicker value={range} onChange={setRange} />
@@ -57,9 +57,9 @@ function RangePicker({ value, onChange }: { value: MarketHistoryRange; onChange:
 }
 
 function Metric({ label, value, tone }: { label: string; value: string; tone?: "positive" | "negative" }) {
-  return <div className="rounded-xl border bg-muted/15 p-3"><div className="text-[10px] text-muted-foreground">{label}</div><SensitiveValue className={cn("mt-1 type-strong", tone === "positive" && "text-primary", tone === "negative" && "text-destructive")}>{value}</SensitiveValue></div>;
+  return <div className="rounded-xl border bg-muted/15 p-3"><div className="text-[10px] text-muted-foreground">{label}</div><SensitiveValue className={cn("mt-1 type-strong", tone === "positive" && "text-profit", tone === "negative" && "text-loss")}>{value}</SensitiveValue></div>;
 }
 
 function NavBadge({ label, tone }: { label: string; tone: "positive" | "negative" | "neutral" }) {
-  return <Badge className={cn(tone === "positive" && "border-primary/25 bg-primary/8 text-primary", tone === "negative" && "border-destructive/25 bg-destructive/8 text-destructive", tone === "neutral" && "text-muted-foreground")}>{label}</Badge>;
+  return <Badge className={cn(tone === "positive" && "border-profit/25 bg-profit/10 text-profit", tone === "negative" && "border-loss/25 bg-loss/10 text-loss", tone === "neutral" && "text-muted-foreground")}>{label}</Badge>;
 }

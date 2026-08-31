@@ -1,5 +1,5 @@
 import { sendNotification, setVapidDetails } from "web-push";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatSignedPercent } from "@/lib/format";
 import { marketAlertKindLabel, marketAlertObservedValue } from "@/lib/market/alerts";
 import { pushServerConfig } from "@/lib/push/config";
 import type { RemoteMarketAlert, WebPushSubscriptionData } from "@/lib/push/types";
@@ -16,7 +16,7 @@ function configureVapid() {
 }
 
 function percent(value: number) {
-  return `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(value)}٪`;
+  return formatSignedPercent(value, 2);
 }
 
 function thresholdText(alert: RemoteMarketAlert) {

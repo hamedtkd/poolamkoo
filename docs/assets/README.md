@@ -53,3 +53,7 @@ Workflow دستی `.github/workflows/product-media.yml` همان Capture را ر
 4. بعد از اتمام، Artifact با نام `poolamkoo-product-screenshots` را دانلود کن.
 
 برای نمایش تصاویر داخل README، خروجی تأییدشده را در همین مسیر Commit کن. Workflow عمداً خودش روی Repository Commit نمی‌زند.
+
+## پنل‌های Presentation برای GitHub
+
+پوشه `docs/assets/showcase/` شامل پنل‌های انگلیسی کم‌حجم WebP برای README عمومی است. این فایل‌ها از هویت تأییدشده و رفرنس‌های واقعی UI ساخته شده‌اند، اما جای اسکرین‌شات واقعی را نمی‌گیرند. عددهای داخل آن‌ها نمایشی‌اند. نسخه‌های فارسی Presentation برای شبکه‌های اجتماعی خارج از Git نگه داشته می‌شوند تا Repository با فایل‌های باینری تکراری سنگین نشود.

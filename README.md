@@ -1,3 +1,4 @@
+> v1.1.1 note: the investment purchase queue now groups unfinished suggestions by incoming-money record, keeps only the newest group expanded, hides older groups behind one compact control, and replaces the previous repeated-card wall with dense actionable rows. GitHub also gains a curated English product showcase built from approved visual identity and real UI references; schema 8 and all financial contracts remain unchanged.
 > v1.1.0 note: settings are now split into searchable categories; both Settings search and global search share one registry and deep-link to the exact settings area. Appearance also includes a local-first custom color builder with Hex/Hue controls, live preview, and saved swatches, while schema 8 and all local-first financial contracts remain unchanged.
 > v1.0.2 note: the new P/wallet brand mark now drives in-app, favicon and PWA identity; the exact owner-supplied SVG geometry follows the active theme through a CSS mask, launcher icons stay symbol-only, and schema 8 / financial behavior are unchanged.
 # Poolamkoo — پولم‌کو
@@ -39,6 +40,27 @@
 [فارسی](./README.fa.md) · [Documentation](./docs/README.md) · [Security](./SECURITY.md) · [License](./LICENSE)
 
 ---
+
+## Product showcase
+
+These curated English panels are the public GitHub presentation layer for Poolamkoo. They are based on the approved brand and real product-screen references, but they are promotional compositions rather than pixel-exact screenshots. All financial values are illustrative. The exact production UI remains visible in the screenshot section below.
+
+<p align="center">
+  <img src="./docs/assets/showcase/poolamkoo-overview-en.webp" alt="Poolamkoo personal finance product overview" width="1100" />
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="./docs/assets/showcase/income-planning-en.webp" alt="Poolamkoo income planning showcase" /></td>
+    <td width="50%"><img src="./docs/assets/showcase/funds-goals-en.webp" alt="Poolamkoo funds and goals showcase" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./docs/assets/showcase/reports-insights-en.webp" alt="Poolamkoo reports and insights showcase" /></td>
+    <td width="50%"><img src="./docs/assets/showcase/settings-themes-en.webp" alt="Poolamkoo settings and themes showcase" /></td>
+  </tr>
+</table>
+
+The repository keeps these English panels as the canonical GitHub showcase. Persian promotional variants are kept for social-media publishing rather than duplicated in Git history. See [the media contract](./docs/assets/showcase/README.md).
 
 ## What is Poolamkoo?
 
@@ -244,14 +266,11 @@ The public landing page normally runs at `http://localhost:3000`, while the loca
 
 ## Landing product visual
 
-The public hero uses two approved local WebP assets so the presentation follows Light/Dark appearance without reading user financial data. The numbers inside these promotional images are sample values.
+The public hero now uses a compact cinematic composition around a **real Poolamkoo mobile capture** generated from demo data. The product frame stays dark in either site appearance, so the screenshot is truthful instead of swapping to a conceptual illustration.
 
-<table>
-  <tr>
-    <td width="50%"><img src="./public/landing/poolamkoo-finance-light.webp" alt="Poolamkoo conceptual landing visual in light mode" /></td>
-    <td width="50%"><img src="./public/landing/poolamkoo-finance-dark.webp" alt="Poolamkoo conceptual landing visual in dark mode" /></td>
-  </tr>
-</table>
+<p align="center"><img src="./public/landing/poolamkoo-income-mobile.webp" width="320" alt="Real Poolamkoo mobile income-planning screen with demo data" /></p>
+
+The capture contains synthetic showcase data only; it does not read a normal browser profile or personal financial records.
 
 ## Product screenshots
 
@@ -332,7 +351,7 @@ For a stable release, run the full production and stable metadata gate:
 npm run check:stable
 ```
 
-`check:stable` runs the complete `check:release` path first, then verifies the current stable (`v1.1.0`) package/runtime/schema/release-document alignment plus public-launch quota guardrails. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
+`check:stable` runs the complete `check:release` path first, then verifies the current stable (`v1.1.1`) package/runtime/schema/release-document alignment plus public-launch quota guardrails. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
 
 ## PWA
 

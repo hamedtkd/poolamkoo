@@ -34,6 +34,8 @@
   --accent: oklch(.967 .001 286.375);
   --accent-foreground: oklch(.21 .006 285.885);
   --destructive: oklch(.577 .245 27.325);
+  --profit: #15803d;
+  --loss: #c62828;
   --border: oklch(.92 .004 286.32);
   --input: oklch(.92 .004 286.32);
   --ring: #b88a22;
@@ -64,6 +66,8 @@
   --accent: oklch(.274 .006 286.033);
   --accent-foreground: oklch(.985 0 0);
   --destructive: oklch(.704 .191 22.216);
+  --profit: #4ade80;
+  --loss: #f87171;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: #b58a24;
@@ -212,6 +216,8 @@ button, input, textarea { font: inherit; }
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-profit: var(--profit);
+  --color-loss: var(--loss);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -422,9 +428,32 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
 }
 .skip-link:focus { transform: translateY(0); outline: 2px solid var(--ring); outline-offset: 2px; }
 
+.cinematic-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 74%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 74%);
+}
+
+.cinematic-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+.cinematic-sheen {
+  background: radial-gradient(620px circle at var(--hero-x, 62%) var(--hero-y, 34%), color-mix(in oklab, white 10%, transparent), transparent 44%);
+}
+
 @keyframes landing-enter {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: .72; transform: translate3d(0, 18px, 0) scale(.982); filter: blur(7px); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+
+@keyframes landing-copy-enter {
+  from { opacity: .7; transform: translate3d(0, 14px, 0) scale(.988); filter: blur(6px); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
 }
 
 @keyframes landing-float {
@@ -438,10 +467,23 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
 }
 
 .landing-enter {
-  animation: landing-enter .58s cubic-bezier(.22, 1, .36, 1) both;
+  transform-origin: center bottom;
+  animation: landing-enter .62s cubic-bezier(.22, 1, .36, 1) both;
 }
 
-.landing-enter-delay { animation-delay: .08s; }
+.landing-enter-delay { animation-delay: .1s; }
+
+.landing-copy-step {
+  transform-origin: center bottom;
+  animation: landing-copy-enter .62s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.landing-copy-step-1 { animation-delay: .02s; }
+.landing-copy-step-2 { animation-delay: .07s; }
+.landing-copy-step-3 { animation-delay: .12s; }
+.landing-copy-step-4 { animation-delay: .17s; }
+.landing-copy-step-5 { animation-delay: .22s; }
+.landing-copy-step-6 { animation-delay: .27s; }
 
 .landing-visual-float {
   animation: landing-float 7s ease-in-out 1s infinite;
@@ -476,6 +518,7 @@ html.theme-transitioning[data-theme-motion="mobile"]::view-transition-group(root
 
 @media (prefers-reduced-motion: reduce) {
   .landing-enter,
+  .landing-copy-step,
   .landing-visual-float,
   .landing-orb {
     animation: none !important;

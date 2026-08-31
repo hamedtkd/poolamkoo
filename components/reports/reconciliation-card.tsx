@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiIcon } from "@/components/ui/kpi-icon";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
-import { formatMoney, formatPercent, toPersianDate } from "@/lib/format";
+import { formatMoney, formatPercent, formatSignedMoney, toPersianDate } from "@/lib/format";
 import type { IncomeReconciliationRow, ReportReconciliationSnapshot, ReconciliationStatus } from "@/lib/report-reconciliation";
 import type { MoneyUnit } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -30,8 +30,8 @@ export function ReconciliationCard({ snapshot, unit }: { snapshot: ReportReconci
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <FlowMetric icon={<RiMoneyDollarCircleLine />} label="پوشش تخصیص" value={formatPercent(snapshot.allocationCoveragePct, 0)} detail={gapDetail(snapshot.unallocatedToman, snapshot.overallocatedToman, "تخصیص", unit)} tone={snapshot.unallocatedToman > 1 || snapshot.overallocatedToman > 1 ? "danger" : "primary"} />
         <FlowMetric icon={<RiFileList3Line />} label="پوشش برنامه" value={formatPercent(snapshot.planningCoveragePct, 0)} detail={gapDetail(snapshot.unplannedToman, snapshot.overplannedToman, "برنامه", unit)} tone={snapshot.unplannedToman > 1 || snapshot.overplannedToman > 1 ? "danger" : "primary"} />
-        <FlowMetric icon={<RiFundsLine />} label="گردش صندوق" value={signedMoney(snapshot.funds.netMovement, unit)} detail={`واریز ${formatMoney(snapshot.funds.deposits, unit, true)} · برداشت ${formatMoney(snapshot.funds.withdrawals, unit, true)}`} />
-        <FlowMetric icon={<RiLineChartLine />} label="گردش سرمایه‌گذاری" value={signedMoney(snapshot.investments.netBuyFlow, unit)} detail={`خرید ${formatMoney(snapshot.investments.buys, unit, true)} · فروش ${formatMoney(snapshot.investments.sells, unit, true)}`} />
+        <FlowMetric icon={<RiFundsLine />} label="گردش صندوق" value={formatSignedMoney(snapshot.funds.netMovement, unit, true)} detail={`واریز ${formatMoney(snapshot.funds.deposits, unit, true)} · برداشت ${formatMoney(snapshot.funds.withdrawals, unit, true)}`} />
+        <FlowMetric icon={<RiLineChartLine />} label="گردش سرمایه‌گذاری" value={formatSignedMoney(snapshot.investments.netBuyFlow, unit, true)} detail={`خرید ${formatMoney(snapshot.investments.buys, unit, true)} · فروش ${formatMoney(snapshot.investments.sells, unit, true)}`} />
       </div>
 
       {snapshot.funds.opening > 0 && <div className="rounded-xl border border-dashed px-3 py-2 type-caption text-muted-foreground"><SensitiveValue>{formatMoney(snapshot.funds.opening, unit, true)}</SensitiveValue> موجودی آغازین صندوق در بازه دیده می‌شود؛ این عدد در «خالص گردش صندوق» حساب نشده تا پول تازه تلقی نشود.</div>}
@@ -58,4 +58,3 @@ function StatusBadge({ status }: { status: ReconciliationStatus }) {
 }
 function Small({ label, value }: { label: string; value: string }) { return <div className="rounded-lg bg-muted/50 p-2"><SensitiveValue className="type-strong">{value}</SensitiveValue><div className="mt-1 text-[10px] text-muted-foreground">{label}</div></div>; }
 function gapDetail(missing: number, over: number, label: string, unit: MoneyUnit) { if (missing <= 1 && over <= 1) return `${label} با مبنای قبلی تطبیق دارد`; const parts: string[] = []; if (missing > 1) parts.push(`${formatMoney(missing, unit, true)} هنوز ${label} نشده`); if (over > 1) parts.push(`${formatMoney(over, unit, true)} بیشتر از مبنا ثبت شده`); return parts.join(" · "); }
-function signedMoney(value: number, unit: MoneyUnit) { const prefix = value > 0 ? "+" : value < 0 ? "−" : ""; return `${prefix}${formatMoney(Math.abs(value), unit, true)}`; }

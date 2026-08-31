@@ -1,9 +1,21 @@
 import type { MoneyUnit } from "@/lib/types";
 
-const fa = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 2 });
+const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+function toPersianDigits(value: string) {
+  return value.replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)] ?? digit);
+}
+
+export function formatGroupedNumber(value: number, maxFractionDigits = 0) {
+  const safe = Number.isFinite(value) ? value : 0;
+  const formatted = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: maxFractionDigits,
+    useGrouping: true,
+  }).format(safe);
+  return toPersianDigits(formatted);
+}
 
 export function formatNumber(value: number, maxFractionDigits = 0) {
-  return new Intl.NumberFormat("fa-IR", { maximumFractionDigits: maxFractionDigits }).format(value || 0);
+  return formatGroupedNumber(value || 0, maxFractionDigits);
 }
 
 export function formatMoney(toman: number, unit: MoneyUnit = "toman", compact = false) {
@@ -17,11 +29,23 @@ export function formatMoney(toman: number, unit: MoneyUnit = "toman", compact = 
     });
     return `${formatter.format(value)} ${suffix}`;
   }
-  return `${fa.format(Math.round(value))} ${suffix}`;
+  return `${formatGroupedNumber(Math.round(value))} ${suffix}`;
+}
+
+export function formatSignedMoney(toman: number, unit: MoneyUnit = "toman", compact = false) {
+  if (toman === 0) return formatMoney(0, unit, compact);
+  const sign = toman > 0 ? "+" : "−";
+  return `${sign}${formatMoney(Math.abs(toman), unit, compact)}`;
 }
 
 export function formatPercent(value: number, digits = 1) {
-  return `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits: digits }).format(value)}٪`;
+  return `${formatGroupedNumber(value, digits)}٪`;
+}
+
+export function formatSignedPercent(value: number, digits = 1) {
+  if (value === 0) return formatPercent(0, digits);
+  const sign = value > 0 ? "+" : "−";
+  return `${sign}${formatPercent(Math.abs(value), digits)}`;
 }
 
 export function toPersianDate(date: string | Date) {
