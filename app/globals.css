@@ -158,6 +158,28 @@ body { margin: 0; min-height: 100vh; background: var(--background); color: var(-
 button, input, textarea { font: inherit; }
 ::selection { background: color-mix(in oklab, var(--primary) 22%, transparent); }
 
+.theme-hue-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border: 2px solid white;
+  background: transparent;
+  box-shadow: 0 1px 5px rgb(0 0 0 / 45%);
+}
+.theme-hue-range::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid white;
+  background: transparent;
+  box-shadow: 0 1px 5px rgb(0 0 0 / 45%);
+}
+.theme-hue-range:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
 /* Central typography system — tune these tokens/classes to restyle the entire product. */
 .type-display { font-size: clamp(1.8rem, 1.45rem + 1vw, 2.5rem); line-height: 1.22; font-weight: var(--type-weight-display); letter-spacing: -.025em; text-wrap: balance; }
 .type-page-title { font-size: clamp(1.5rem, 1.28rem + .7vw, 2.05rem); line-height: 1.3; font-weight: var(--type-weight-title); letter-spacing: -.02em; text-wrap: balance; }

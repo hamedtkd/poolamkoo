@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RiAddLine, RiFundsLine, RiSafe2Line, RiSearch2Line, RiWallet3Line } from "react-icons/ri";
 import { appNav } from "@/components/app/navigation";
+import { getSettingsCategoryLabel, settingsSearchItems } from "@/components/settings/settings-navigation-model";
 import { useAppRuntime } from "@/components/app/app-runtime";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
@@ -49,6 +50,17 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
         action: closeAndRoute(item.href),
       } satisfies SearchItem;
     });
+    const settingItems = settingsSearchItems.map((item) => {
+      const Icon = item.icon;
+      return {
+        id: `setting:${item.id}`,
+        title: item.title,
+        subtitle: `تنظیم · ${getSettingsCategoryLabel(item.categoryId)}`,
+        keywords: `${item.description} ${item.keywords} settings preference`,
+        icon: <Icon className="size-5" />,
+        action: closeAndRoute(item.href),
+      } satisfies SearchItem;
+    });
     const incomes = data.incomes.slice(0, 30).map((income) => ({
       id: `income:${income.id ?? income.createdAt}`,
       title: income.title,
@@ -83,7 +95,7 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
         onOpenChange(false);
         onNewMoney();
       },
-    }, ...navItems, ...incomes, ...funds, ...assets];
+    }, ...navItems, ...settingItems, ...incomes, ...funds, ...assets];
   }, [data.assets, data.funds, data.incomes, onNewMoney, onOpenChange, router]);
 
   const normalized = normalizeSearchText(query);
@@ -148,7 +160,7 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="px-4 pt-0">
           <DrawerTitle className="mb-1 text-start type-card-title">جست‌وجوی پولم‌کو</DrawerTitle>
-          <DrawerDescription className="mb-4">اسم یک بخش، پول ورودی، صندوق یا دارایی را بنویس.</DrawerDescription>
+          <DrawerDescription className="mb-4">اسم یک بخش، تنظیم، پول ورودی، صندوق یا دارایی را بنویس.</DrawerDescription>
           {panel}
         </DrawerContent>
       </Drawer>
@@ -160,7 +172,7 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
       <DialogContent className="sm:w-[min(100%,38rem)] sm:p-5">
         <DialogHeader className="mb-4">
           <DialogTitle>جست‌وجوی پولم‌کو</DialogTitle>
-          <DialogDescription>اسم یک بخش، پول ورودی، صندوق یا دارایی را بنویس.</DialogDescription>
+          <DialogDescription>اسم یک بخش، تنظیم، پول ورودی، صندوق یا دارایی را بنویس.</DialogDescription>
         </DialogHeader>
         {panel}
       </DialogContent>
@@ -194,7 +206,7 @@ function SearchPanel({ query, onQueryChange, onInputKeyDown, items, searching, a
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           onKeyDown={onInputKeyDown}
-          placeholder="مثلاً طلا، صندوق اضطراری یا گزارش‌ها..."
+          placeholder="مثلاً طلا، بکاپ، قانون پول یا گزارش‌ها..."
           className="h-12 pe-10"
         />
       </div>

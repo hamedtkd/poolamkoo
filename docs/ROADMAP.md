@@ -328,7 +328,7 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Record the completed manual Desktop/Mobile tour, PWA install/update, Offline/Resume, Backup → Restore, old-tab upgrade and Responsive/Theme acceptance.
 - Publish `v1.0.0` as the first non-prerelease only after the stable gate remains green.
 
-## v1.0.1 — Public launch & quota hardening 🚧
+## v1.0.1 — Public launch & quota hardening ✅
 
 - Increase the shared BrsApi core cache from 60s to 180s so the theoretical single-cache-key upstream ceiling drops from 1440 to about 480 requests/day.
 - Increase direct TSETMC quote/search cache windows while keeping one-hour history caching and bounded quote chunks.
@@ -339,16 +339,26 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep IndexedDB schema 8, Local-first ownership, backup/transfer formats, Provider priority and Background Push default-off unchanged.
 - Require the full `npm run check:stable` gate plus a manual Vercel Fluid Compute/Observability pre-launch check before tagging `v1.0.1`.
 
-## v1.0.2 — Brand mark & PWA identity refresh 🚧
+## v1.0.2 — Brand mark & PWA identity refresh ✅
 
 - Replace the legacy mark with the new P/wallet symbol across app navigation, favicon and installable PWA assets.
 - Use the owner-supplied symbol SVG geometry directly; recolor it in runtime through a CSS mask, keep launcher icons symbol-only, and use Persian text beside the mark in expanded UI.
 - Keep schema 8 and all financial, backup and provider contracts unchanged.
 - Bump the service-worker cache so installed PWAs receive the new identity assets.
 
+## v1.1.0 — Searchable settings architecture 🚧
+
+- Replace the single long Settings card wall with a compact overview plus focused category routes.
+- Keep one central settings registry for category navigation, local Settings search and global search.
+- Deep-link search results to the exact settings card/technical section and keep Persian normalization/keyboard search behavior.
+- Collapse provider/quota diagnostics behind an explicit technical-details affordance so daily settings stay readable.
+- Keep IndexedDB schema 8, Local-first ownership, Backup/Recovery/Device Transfer and market quota boundaries unchanged.
+- Add a Local-first custom theme color builder with live preview, Hex input, saved swatches and derived chart/ring tokens without changing schema 8.
+- Validate Desktop/Mobile category navigation, deep links, Back/Forward, custom-theme persistence and global search before stable release.
+
 ## Likely next phases
 
-- **v1.1.0 — Product evolution:** choose the next user-facing feature family only after public-launch usage and feedback provide evidence.
+- **After v1.1.0 — Product evolution:** choose the next user-facing financial feature family from real public-launch usage and feedback.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

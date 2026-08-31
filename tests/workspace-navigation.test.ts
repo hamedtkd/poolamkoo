@@ -41,7 +41,7 @@ test("workspace uses Tailwind stagger while Motion stays available for viewport 
 test("workspace cards stagger individually in one calm top-to-bottom direction", () => {
   assert.match(dashboardSource, /<Reveal direction="down" step=\{1\}>/);
   assert.match(dashboardSource, /<Reveal hover step=\{2\}/);
-  assert.match(settingsSource, /<RevealGrid[^>]*startStep=\{1\}/);
+  assert.match(settingsSource, /<SettingsOverview \/>/);
   assert.match(reportsSource, /<RevealGrid[^>]*startStep=\{2\}/);
   for (const source of [dashboardSource, settingsSource, reportsSource]) {
     assert.doesNotMatch(source, /direction="(?:left|right)"|flow="sides"/);

@@ -3,18 +3,30 @@
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/brand-logo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useSidebarState } from "@/hooks/use-sidebar-state";
+import { cn } from "@/lib/utils";
 
 export function FullAppSkeleton() {
   const pathname = usePathname();
+  const sidebar = useSidebarState();
+  const compactDesktop = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
+  const effectiveCollapsed = sidebar.collapsed || compactDesktop;
   return (
     <div className="app-mobile-safe-bottom min-h-svh md:pb-0">
-      <aside className="fixed inset-y-0 right-0 hidden w-16 border-l bg-background/92 backdrop-blur-xl md:flex md:flex-col xl:w-64">
-        <div className="flex h-16 items-center justify-center border-b px-2 xl:justify-between xl:px-3">
-          <div className="flex items-center gap-3"><BrandLogo className="h-9 w-10" /><div className="hidden space-y-1.5 xl:block"><Skeleton className="h-4 w-20" /><Skeleton className="h-2.5 w-24" /></div></div>
-          <Skeleton className="hidden size-10 rounded-xl xl:block" />
+      <aside className={cn(
+        "fixed inset-y-0 right-0 hidden border-l bg-background/92 backdrop-blur-xl transition-[width] duration-300 ease-out md:flex md:flex-col",
+        effectiveCollapsed ? "w-[64px]" : "w-64",
+      )}>
+        <div className={cn("flex h-16 items-center border-b px-2", effectiveCollapsed ? "justify-center" : "justify-between px-3")}>
+          <div className="flex items-center gap-3">
+            <BrandLogo className="h-9 w-10" />
+            {!effectiveCollapsed && <div className="space-y-1.5"><Skeleton className="h-4 w-20" /><Skeleton className="h-2.5 w-24" /></div>}
+          </div>
+          {!effectiveCollapsed && <Skeleton className="size-10 rounded-xl" />}
         </div>
-        <div className="border-b p-2 xl:p-3"><Skeleton className="mx-auto size-11 rounded-xl xl:w-full" /></div>
-        <div className="space-y-2 p-2 xl:p-3">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="mx-auto size-11 rounded-xl xl:w-full" />)}</div>
+        <div className={cn("border-b", effectiveCollapsed ? "p-2" : "p-3")}><Skeleton className={cn("mx-auto size-11 rounded-xl", !effectiveCollapsed && "w-full")} /></div>
+        <div className={cn("space-y-2", effectiveCollapsed ? "p-2" : "p-3")}>{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className={cn("mx-auto size-11 rounded-xl", !effectiveCollapsed && "w-full")} />)}</div>
       </aside>
 
       <header className="sticky top-0 z-20 border-b bg-background/92 px-3 py-2 backdrop-blur-xl md:hidden">
@@ -24,7 +36,7 @@ export function FullAppSkeleton() {
         </div>
       </header>
 
-      <main className="min-w-0 overflow-x-clip md:mr-16 xl:mr-64">
+      <main className={cn("min-w-0 overflow-x-clip transition-[margin] duration-300 ease-out", effectiveCollapsed ? "md:mr-[64px]" : "md:mr-64")}>
         <div className="mx-auto w-full max-w-[1920px] p-3 sm:p-5 lg:p-7 2xl:p-8">
           <TopbarSkeleton />
           <RouteSkeleton pathname={pathname} />

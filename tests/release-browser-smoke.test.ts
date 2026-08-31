@@ -52,12 +52,17 @@ test("release smoke covers landing, dashboard/dialog visibility, reports and PWA
     "desktop global search must have a real visible tour target",
     "shared dialog content must never render blank under normal motion preference",
     "reports must expose privacy-safe export controls",
+    "settings overview must expose categorized destinations instead of the old card wall",
+    "settings search result must be actionable",
+    "appearance settings must expose the custom theme color builder",
+    "custom theme dialog must expose accessible color controls and live-preview guidance",
     "drag-to-dismiss mobile drawer",
     "جمع‌بندی تصمیمی این بازه",
     "workspace service worker registration",
     "manifest start_url must be /dashboard",
     "public landing must not advertise the installable manifest",
   ]) assert.ok(smoke.includes(contract), `missing browser smoke contract: ${contract}`);
+  assert.equal(smoke.includes("پولم‌کو را برای خودت تنظیم کن"), false, "release smoke must not wait on the removed settings wall heading");
 });
 
 test("manual GitHub release smoke runs the same release gate", () => {

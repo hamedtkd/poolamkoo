@@ -330,3 +330,15 @@ Metadata guard فعلی Version `1.0.1`، IndexedDB schema 8، Release/Launch-re
 ## 24. v1.0.2 brand/PWA identity gate
 
 `v1.0.2` همان Gate کامل Stable را نگه میدارد و علاوه بر قراردادهای v1.0.1، یکپارچگی نشان جدید را pin میکند: SVG اصلی مالک پروژه باید بدون تغییر هندسه در سورس pin شود، UI باید همان فایل را با CSS mask و رنگ تم استفاده کند، favicon باید Light/Dark-safe بماند و PWA launcher icon باید بدون wordmark باشد، Service Worker روی `poolamkoo-v69` باشد و IndexedDB همچنان schema 8 بماند.
+
+
+## 25. v1.1.0 searchable-settings gate
+
+`v1.1.0` keeps the full Stable production gate and adds a Settings IA contract. The root `/settings` page must remain a compact overview, category routes must cover general/money/market/data/transfer/privacy/about, and both local Settings search and global search must consume the same deep-link registry. Market Provider/quota diagnostics stay privacy-safe and collapsed behind an explicit technical-details control. IndexedDB remains schema 8.
+
+Before tagging, manually verify Desktop and mobile-class Settings navigation, Persian search, global search → settings deep links, same-page anchors, Back/Forward navigation and the technical market-details disclosure.
+
+
+### v1.1.0 searchable Settings + custom theme
+
+Before tagging `v1.1.0`, verify Settings category navigation and normalized search on Desktop/Mobile, then open **عمومی و ظاهر → رنگ سفارشی** and confirm live preview, Hex input, saved swatches, cancel rollback and persistence after reload. Global search must deep-link to the same Settings registry. IndexedDB remains schema 8.

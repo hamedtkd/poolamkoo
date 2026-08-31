@@ -1,9 +1,5 @@
-"use client";
-
-import { SettingsSection } from "@/components/sections/settings";
-import { useAppRuntime } from "@/components/app/app-runtime";
+import { SettingsOverview } from "@/components/settings/settings-overview";
 
 export default function SettingsPage() {
-  const { data } = useAppRuntime();
-  return <SettingsSection settings={data.settings} rule={data.rule} />;
+  return <SettingsOverview />;
 }

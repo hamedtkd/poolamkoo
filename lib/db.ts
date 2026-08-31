@@ -95,6 +95,8 @@ export const defaultSettings: AppSettings = {
   id: "settings",
   displayUnit: "toman",
   palette: "amber",
+  customThemeColor: "#db2777",
+  savedThemeColors: [],
   darkMode: "system",
   onboardingComplete: false,
   guideComplete: false,

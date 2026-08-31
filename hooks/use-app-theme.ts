@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { useTheme } from "next-themes";
 import { db } from "@/lib/db";
+import { buildCustomThemeTokens, DEFAULT_CUSTOM_THEME_COLOR, normalizeHexColor, normalizeSavedThemeColors } from "@/lib/theme-color";
 import type { AppSettings, ThemePalette } from "@/lib/types";
 
 export type ThemeOrigin = { x: number; y: number };
@@ -11,13 +12,31 @@ type TransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => { finished: Promise<void> };
 };
 
+const customTokenNames = [
+  "--primary", "--primary-foreground", "--ring", "--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5", "--chart-canvas-up", "--glass-border",
+] as const;
+
+function clearCustomTheme(root: HTMLElement) {
+  for (const name of customTokenNames) root.style.removeProperty(name);
+}
+
+function applyPalette(palette: ThemePalette, customColor: string | undefined, dark: boolean) {
+  const root = document.documentElement;
+  clearCustomTheme(root);
+  root.dataset.palette = palette;
+  if (palette !== "custom") return;
+  const tokens = buildCustomThemeTokens(customColor || DEFAULT_CUSTOM_THEME_COLOR, dark);
+  for (const [name, value] of Object.entries(tokens)) root.style.setProperty(name, value);
+}
+
 export function useAppTheme(settings: AppSettings) {
   const { resolvedTheme, theme, setTheme } = useTheme();
   const transitioning = useRef(false);
+  const dark = resolvedTheme === "dark";
 
   useEffect(() => {
-    document.documentElement.dataset.palette = settings.palette;
-  }, [settings.palette]);
+    applyPalette(settings.palette, settings.customThemeColor, dark);
+  }, [dark, settings.customThemeColor, settings.palette]);
 
   useEffect(() => {
     if (!transitioning.current) setTheme(settings.darkMode);
@@ -39,8 +58,29 @@ export function useAppTheme(settings: AppSettings) {
   }
 
   async function setPalette(next: ThemePalette) {
-    document.documentElement.dataset.palette = next;
+    applyPalette(next, settings.customThemeColor, dark);
     await db.settings.update("settings", { palette: next, updatedAt: new Date().toISOString() });
+  }
+
+  function previewCustomColor(color: string) {
+    const normalized = normalizeHexColor(color);
+    if (normalized) applyPalette("custom", normalized, dark);
+  }
+
+  function restorePalette() {
+    applyPalette(settings.palette, settings.customThemeColor, dark);
+  }
+
+  async function setCustomPalette(color: string, savedColors?: readonly string[]) {
+    const customThemeColor = normalizeHexColor(color) ?? DEFAULT_CUSTOM_THEME_COLOR;
+    const savedThemeColors = normalizeSavedThemeColors(savedColors);
+    applyPalette("custom", customThemeColor, dark);
+    await db.settings.update("settings", {
+      palette: "custom",
+      customThemeColor,
+      savedThemeColors,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   async function toggleTheme(origin?: ThemeOrigin) {
@@ -55,6 +95,7 @@ export function useAppTheme(settings: AppSettings) {
       root.classList.remove("light", "dark");
       root.classList.add(next);
       root.style.colorScheme = next;
+      applyPalette(settings.palette, settings.customThemeColor, next === "dark");
       flushSync(() => setTheme(next));
     };
 
@@ -88,5 +129,5 @@ export function useAppTheme(settings: AppSettings) {
     void persistAppearance(next);
   }
 
-  return { resolvedTheme, theme, setAppearance, setPalette, toggleTheme };
+  return { resolvedTheme, theme, setAppearance, setPalette, setCustomPalette, previewCustomColor, restorePalette, toggleTheme };
 }

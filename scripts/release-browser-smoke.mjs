@@ -475,7 +475,54 @@ async function main() {
     await evaluate(client, "document.querySelector('[data-report-export-dialog=true]')?.closest('[data-dialog-content]')?.querySelector('button[aria-label=\"بستن پنجره\"]')?.click(); true");
     await waitFor(client, "document.querySelector('[data-report-export-dialog=true]') === null", "report export dialog close");
 
-    await clientNavigate(client, "/settings", "پولم‌کو را برای خودت تنظیم کن");
+    await clientNavigate(client, "/settings", "تنظیمات پولم‌کو");
+    assert(await evaluate(client, `(() => {
+      const text = document.body?.innerText ?? '';
+      return text.includes('عمومی و ظاهر') && text.includes('برنامه پول') && text.includes('داده و بکاپ') && text.includes('حریم خصوصی و نصب');
+    })()`), "settings overview must expose categorized destinations instead of the old card wall");
+
+    const settingsSearchWorked = await evaluate(client, `(() => {
+      const input = document.querySelector('input[aria-label="جست‌وجو در تنظیمات"]');
+      if (!(input instanceof HTMLInputElement)) return false;
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(input, 'بکاپ');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    })()`);
+    assert(settingsSearchWorked, "settings search input must be available on the categorized overview");
+    await waitFor(client, "document.querySelector('#settings-search-results')?.textContent?.includes('بکاپ و بازیابی')", "settings search result");
+    assert(await evaluate(client, `(() => {
+      const button = [...document.querySelectorAll('#settings-search-results button')].find((node) => node.textContent?.includes('بکاپ و بازیابی'));
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`), "settings search result must be actionable");
+    await waitFor(client, "location.pathname === '/settings/data' && location.hash === '#backup-restore'", "settings deep link to backup");
+    await waitFor(client, "document.body?.innerText.includes('داده و بکاپ')", "settings data category");
+
+    await clientNavigate(client, "/settings/general", "عمومی و ظاهر");
+    assert(await evaluate(client, `(() => {
+      const button = [...document.querySelectorAll('button')].find((node) => node.textContent?.trim() === 'سفارشی');
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`), "appearance settings must expose the custom theme color builder");
+    await waitFor(client, "document.querySelector('[role=dialog]')?.textContent?.includes('رنگ سفارشی')", "custom theme color dialog");
+    assert(await evaluate(client, `(() => {
+      const dialog = document.querySelector('[role=dialog]');
+      if (!(dialog instanceof HTMLElement)) return false;
+      const sv = dialog.querySelector('[role=slider][aria-label="اشباع و روشنایی رنگ"]');
+      const hue = dialog.querySelector('input[type=range][aria-label="Hue رنگ تم"]');
+      return sv?.hasAttribute('aria-valuenow') && hue instanceof HTMLInputElement && dialog.textContent?.includes('پیش‌نمایش زنده');
+    })()`), "custom theme dialog must expose accessible color controls and live-preview guidance");
+    await evaluate(client, `(() => {
+      const button = [...document.querySelectorAll('[role=dialog] button')].find((node) => node.textContent?.trim() === 'انصراف');
+      if (!(button instanceof HTMLButtonElement)) return false;
+      button.click();
+      return true;
+    })()`);
+    await waitFor(client, "document.querySelector('[role=dialog]') === null", "custom theme dialog cancel");
+
     await clientNavigate(client, "/reports", "گزارش‌ها و بینش‌ها");
     assert(await evaluate(client, "document.body?.innerText.includes('جمع‌بندی تصمیمی این بازه')"), "reports must remain visible after returning through client-side workspace navigation");
 
@@ -515,7 +562,7 @@ async function main() {
 
     const actionableRuntimeErrors = runtimeErrors.filter((message) => !/ResizeObserver loop|net::ERR_BLOCKED_BY_CLIENT/i.test(message));
     if (actionableRuntimeErrors.length) throw new Error(`Browser runtime errors during release smoke:\n${actionableRuntimeErrors.join("\n")}`);
-    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, product-tour spotlight clarity, dashboard/dialog visibility, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
+    console.log("Release browser smoke passed: schema 6→8 migration, landing media/theme → workspace, stagger motion, product-tour spotlight clarity, dashboard/dialog visibility, categorized settings search/custom theme, report export, mobile drag-to-dismiss, client-side route continuity, and network-only public PWA boundaries are healthy.");
   } catch (error) {
     if (serverOutput.trim()) console.error(`\nServer output:\n${serverOutput.trim()}`);
     if (browserOutput.trim()) console.error(`\nBrowser output:\n${browserOutput.trim()}`);

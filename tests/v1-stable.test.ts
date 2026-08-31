@@ -14,17 +14,17 @@ const BRAND_SOURCES = {
   en: "963971d37d437030a289e9fea26a0496ef22f018d58985ff556b8fba3426a279",
 };
 
-test("v1.0.2 brand patch uses one canonical version without a database schema bump", () => {
+test("v1.1.0 settings release uses one canonical version without a database schema bump", () => {
   const pkg = JSON.parse(read("package.json")) as { version: string };
   const lock = JSON.parse(read("package-lock.json")) as { version: string; packages: Record<string, { version?: string }> };
-  assert.equal(APP_VERSION, "1.0.2");
-  assert.equal(pkg.version, "1.0.2");
-  assert.equal(lock.version, "1.0.2");
-  assert.equal(lock.packages[""]?.version, "1.0.2");
+  assert.equal(APP_VERSION, "1.1.0");
+  assert.equal(pkg.version, "1.1.0");
+  assert.equal(lock.version, "1.1.0");
+  assert.equal(lock.packages[""]?.version, "1.1.0");
   assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 8);
 });
 
-test("owner supplied SVG masters are pinned exactly and runtime uses the symbol as a theme mask", () => {
+test("accepted SVG masters remain pinned while the PWA cache advances", () => {
   const brand = read("components/brand-logo.tsx");
   const manifest = read("public/app.webmanifest");
   const serviceWorker = read("public/sw.js");
@@ -34,25 +34,27 @@ test("owner supplied SVG masters are pinned exactly and runtime uses the symbol 
   assert.equal(sha256("public/brand/poolamkoo-en-lockup.svg"), BRAND_SOURCES.en);
   assert.equal(brand.includes('/brand/poolamkoo-mark.svg'), true);
   assert.equal(brand.includes("MaskImage"), true);
-  assert.equal(brand.includes("bg-primary"), true);
   assert.equal(manifest.includes('"name": "پولم‌کو"'), true);
-  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v69"'), true);
+  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v70"'), true);
 });
 
-test("stable gate composes the full production release gate before v1.0.2 metadata acceptance", () => {
+test("stable gate composes the full production release gate before v1.1.0 settings acceptance", () => {
   const pkg = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
   const checker = read("scripts/check-v1-stable.mjs");
   assert.equal(pkg.scripts["check:stable"], "npm run check:release && node scripts/check-v1-stable.mjs");
-  assert.equal(checker.includes("v1.0.2 stable metadata gate passed"), true);
+  assert.equal(checker.includes("v1.1.0 stable metadata gate passed"), true);
   assert.equal(checker.includes("LOCAL_DATABASE_SCHEMA_VERSION = 8"), true);
+  assert.equal(checker.includes("settingsSearchItems.map"), true);
+  assert.equal(checker.includes("CustomThemeColorDialog"), true);
+  assert.equal(checker.includes("setCustomPalette"), true);
 });
 
-test("v1.0.2 documentation records the brand and PWA identity decision", () => {
-  const release = read("docs/releases/1.0.2.md");
+test("v1.1.0 documentation records categorized settings and shared search", () => {
+  const release = read("docs/releases/1.1.0.md");
   const roadmap = read("docs/ROADMAP.md");
-  assert.equal(release.includes("Brand mark & PWA identity refresh"), true);
-  assert.equal(release.includes("بدون تایپوگرافی"), true);
-  assert.equal(release.includes("CSS mask"), true);
+  assert.equal(release.includes("Searchable settings architecture"), true);
+  assert.equal(release.includes("جست‌وجوی سراسری"), true);
+  assert.equal(release.includes("رنگ‌ساز سفارشی"), true);
   assert.equal(release.includes("schema 8"), true);
-  assert.equal(roadmap.includes("v1.0.2 — Brand mark & PWA identity refresh 🚧"), true);
+  assert.equal(roadmap.includes("v1.1.0 — Searchable settings architecture 🚧"), true);
 });

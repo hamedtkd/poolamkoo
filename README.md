@@ -1,3 +1,4 @@
+> v1.1.0 note: settings are now split into searchable categories; both Settings search and global search share one registry and deep-link to the exact settings area. Appearance also includes a local-first custom color builder with Hex/Hue controls, live preview, and saved swatches, while schema 8 and all local-first financial contracts remain unchanged.
 > v1.0.2 note: the new P/wallet brand mark now drives in-app, favicon and PWA identity; the exact owner-supplied SVG geometry follows the active theme through a CSS mask, launcher icons stay symbol-only, and schema 8 / financial behavior are unchanged.
 # Poolamkoo — پولم‌کو
 > v1.0.1 note: public-launch hardening lengthens core/TSETMC caches, honors Retry-After with quota cooldowns, and reuses same-target market requests for 30 seconds without changing schema 8 or the local-first product boundary.
@@ -331,7 +332,7 @@ For a stable release, run the full production and stable metadata gate:
 npm run check:stable
 ```
 
-`check:stable` runs the complete `check:release` path first, then verifies the current stable (`v1.0.2`) package/runtime/schema/release-document alignment plus public-launch quota guardrails. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
+`check:stable` runs the complete `check:release` path first, then verifies the current stable (`v1.1.0`) package/runtime/schema/release-document alignment plus public-launch quota guardrails. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
 
 ## PWA
 
