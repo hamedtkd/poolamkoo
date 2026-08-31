@@ -1,52 +1,26 @@
-> v1.1.1 note: the investment purchase queue now groups unfinished suggestions by incoming-money record, keeps only the newest group expanded, hides older groups behind one compact control, and replaces the previous repeated-card wall with dense actionable rows. GitHub also gains a curated English product showcase built from approved visual identity and real UI references; schema 8 and all financial contracts remain unchanged.
-> v1.1.0 note: settings are now split into searchable categories; both Settings search and global search share one registry and deep-link to the exact settings area. Appearance also includes a local-first custom color builder with Hex/Hue controls, live preview, and saved swatches, while schema 8 and all local-first financial contracts remain unchanged.
-> v1.0.2 note: the new P/wallet brand mark now drives in-app, favicon and PWA identity; the exact owner-supplied SVG geometry follows the active theme through a CSS mask, launcher icons stay symbol-only, and schema 8 / financial behavior are unchanged.
 # Poolamkoo — پولم‌کو
-> v1.0.1 note: public-launch hardening lengthens core/TSETMC caches, honors Retry-After with quota cooldowns, and reuses same-target market requests for 30 seconds without changing schema 8 or the local-first product boundary.
-> v1.0.0 note: the first stable release promotes the accepted RC3 product boundary with no new feature family or persistence migration. Automated production checks and user-confirmed manual acceptance are complete; IndexedDB remains schema 8.
-> v1.0.0-rc.3 note: RC3 stabilized the product-tour spotlight with an exact target-linked SVG cutout and deterministic desktop/mobile browser smoke, then passed the full production gate before prerelease publication.
-> v1.0.0-rc.2 note: the first RC exposed a product-tour usability blocker: the dim overlay obscured the control being taught and desktop/mobile steps could point at hidden or unavailable targets. RC2 uses a true transparent spotlight, labels the exact page area, keeps every step attached to a visible control, and adds production-browser coverage for the guide. IndexedDB stays schema 8 and feature freeze remains in force.
-> v1.0.0-rc.1 note: the product is now under feature freeze for release-candidate validation. The automated RC gate reuses the full production release gate and adds version/schema/document alignment; IndexedDB stays schema 8, and real PWA install/update, Backup → Restore, old-tab upgrade, and responsive/theme checks remain explicit manual acceptance before v1.0.0 stable.
-> v0.43 note: v1.0 readiness hardening keeps public navigations network-only even after the workspace Service Worker is registered, makes “Later” suppress the same waiting PWA update during the current app session, and routes generic workspace failures to explicit Local Data Health/Data Safety flows instead of mutating IndexedDB from an error boundary. IndexedDB stays schema 8.
-> v0.42 note: Reports now reconcile recorded incoming money → allocation → plan → execution, add factual in-range fund/investment flow summaries, and keep current portfolio state on the full ledger instead of shrinking it with the report date window. Detailed CSV includes aggregate reconciliation while share-safe text remains amount/name-free. IndexedDB stays schema 8.
-> v0.41 note: Workspace now has a unified local Activity timeline that merges recorded incoming money, fund movements and investment transactions without inventing expense data or cash balances. It supports date/category/search filters, preserves fund source and archived-asset identity, and keeps IndexedDB at schema 8.
-> v0.40 note: Settings now includes a fully local data-health audit for cross-ledger integrity. It detects orphan links, negative historical ledgers, stale fund/plan summary fields, archived open holdings and duplicate market identities; deterministic summary drift can be repaired only after a Recovery Snapshot. IndexedDB stays schema 8.
-> v0.39 note: Incoming-money corrections now preserve executed history. Amount edits cannot go below already executed money, only unexecuted plan amounts are rescaled, execution locks the income date, future dates are rejected, and every valid correction creates a local Recovery Snapshot. IndexedDB stays schema 8.
-> v0.38 note: Goal-fund balances now have an auditable local movement ledger. Manual deposits/withdrawals support date, note, edit/delete with chronological non-negative validation; plan/direct allocation and income-reversal flows use the same ledger. Existing balances migrate in place to one opening movement. IndexedDB is schema 8.
-> v0.36 note: Investment transactions can now be corrected in place with a recovery snapshot and chronological ledger validation. Backdated sells, edits, and deletes are rejected when they would make historical holdings negative; same-day buys are treated as available for same-day sells because Poolamkoo stores transaction dates, not intraday times. IndexedDB stays schema 7.
-> v0.35 note: The production browser release gate now seeds a real legacy schema-6 IndexedDB profile and verifies the in-place 6→7 migration, provider normalization, compound indexes, and same-market-id TSETMC/Tindex coexistence before running the normal workspace/PWA smoke. Schema remains 7.
-> v0.34 note: Persisted exchange identity now uses provider + market-id too. IndexedDB schema 7 migrates legacy Tindex-linked assets/watchlist/alerts safely, watchlist uniqueness is provider-scoped, and old backups are normalized before restore without changing backup formats.
-> v0.33 note: Provider-linked assets now keep source + market-id identity through portfolio, watchlist, alerts, planning and reports. Snapshot prices remain visible for continuity but cannot drive alert state, new-money priorities, automatic growth allocation, transaction price suggestions or best/worst ranking; detailed CSV exports now include valuation provenance.
-> v0.32 note: Partial market refreshes now keep fresh provider rows while filling only relevant missing quotes from the latest real local snapshots; snapshot provenance is visible across the app, coverage is explicit in Settings diagnostics, and snapshot-only quotes never trigger local market alerts.
-> v0.31 note: Settings now exposes live provider status for BrsApi/TSETMC/Tindex plus a privacy-safe copyable market diagnostic containing only operational health metadata—never prices, symbols, asset names, market IDs, amounts, raw upstream text, or provider secrets.
-> v0.30 note: Market requests now use provider health/failure classification, bounded TSETMC request budgets, parallel independent refreshes, safe user-facing errors, and explicit degraded-state metadata while preserving real local snapshots/manual prices and optional legacy Tindex fallback.
-> v0.29 note: Reports now has local CSV export plus a share-safe summary with no amounts/asset names; the mobile More/search surfaces are calmer, the drawer truly dismisses by dragging its handle down, and workspace card motion now follows one top-to-bottom direction.
-> v0.28.2 animation/tooling hotfix: Tailwind CSS v4 now imports `tailwindcss-animated` through its explicit `src/index.css` entry for Turbopack/Windows compatibility, shared modal bodies use transform-only CSS motion so they are never blank, and the market route lint regression is fixed.
-> v0.28.1 motion hotfix: `motion` is restored for code-split viewport/scroll reveals on the public Landing, while Workspace entrances remain per-item `tailwindcss-animated` staggers with no whole-route animation.
-> v0.28 note: new Tehran exchange links now use direct server-side TSETMC search/quotes/history without an API key; Tindex is optional legacy/emergency fallback with quota-protecting cache windows.
-> v0.27.4 runtime/motion hotfix: workspace entrance motion now uses `tailwindcss-animated` per item with ~55ms stagger instead of a Motion runtime/whole-route transition, while GitHub stats no longer has any Promise fetch/AbortSignal cleanup path.
-> v0.27.3 motion/runtime hotfix: GitHub stats no longer aborts a fetch during React cleanup, and workspace navigation now uses visible-at-every-frame route motion plus top-to-bottom item staggering with reduced-motion fallbacks.
-> v0.27.2 hotfix: Dashboard content and shared dialog bodies never start at `opacity: 0`; motion is now visibility-safe, and the production browser gate verifies normal-motion Dashboard and modal content.
-> v0.27.1 hotfix: workspace client-side navigation no longer wraps entire routes in exit/opacity animation, and the production browser gate now verifies Reports → Settings → Reports without a reload or blank content.
-> v0.27 note: the public Landing hero is redesigned around the approved Light/Dark product artwork, critical hero content no longer depends on Motion hydration, and the public header now has a local theme toggle with reduced-motion-safe transition.
-> v0.26.1 hotfix: full-source replacement now removes the obsolete root `app/manifest.ts` route so the public Landing cannot accidentally advertise the installable PWA; the production browser gate guards this exact regression.
-> v0.26 release note: a real production-browser smoke gate now verifies Landing → Workspace, fresh onboarding/local bootstrap, Reports decision insights and PWA boundaries from an isolated fake-data profile, without adding Playwright/Cypress.
-> v0.25 note: Reports now surface factual plan/allocation/fund follow-ups from recorded local data, and the public Landing hero uses approved local Light/Dark product visuals. Windows product-media capture also avoids the previous `spawn EINVAL` path.
-> v0.24.1 note: the v0.24 portfolio/PWA work is release-hardened, the canonical Latin project name is **Poolamkoo**, and privacy-safe product screenshot capture is available locally and in GitHub Actions.
-> v0.24 decision UX note: Investments now compares each real holding's current share with the user-defined target and keeps PWA installation/runtime inside workspace routes; normal `/` remains the public landing page.
 
-### A Persian-first, RTL, local-first PWA for incoming-money planning, goal funds, and personal investment tracking
+### A Persian-first, RTL, local-first PWA for planning incoming money, funds, and personal investing
 
-[فارسی](./README.fa.md) · [Documentation](./docs/README.md) · [Security](./SECURITY.md) · [License](./LICENSE)
+[فارسی](./README.fa.md) · [Docs](./docs/README.md) · [Security](./SECURITY.md) · [License](./LICENSE)
 
 ---
 
-## Product showcase
+## Release status
 
-These curated English panels are the public GitHub presentation layer for Poolamkoo. They are based on the approved brand and real product-screen references, but they are promotional compositions rather than pixel-exact screenshots. All financial values are illustrative. The exact production UI remains visible in the screenshot section below.
+- **Latest stable:** [`v1.1.1`](./docs/releases/1.1.1.md)
+- **Persistence contract:** IndexedDB **schema 8**
+- **Product boundary:** local-first, no mandatory account, privacy-safe analytics, workspace-only PWA
+- **Recent highlights:** compact investment purchase queue, semantic profit/loss colors, cleaner financial formatting, and a more polished landing experience
+
+Historical release notes are intentionally kept out of the README body so this page stays readable. The full release history lives under [`docs/releases/`](./docs/releases/).
+
+## GitHub product showcase
+
+These English presentation panels are the canonical GitHub showcase. They are built from Poolamkoo's approved visual identity and real product-screen references, but they are **presentation assets** rather than pixel-exact application screenshots. All financial values shown inside the panels are illustrative demo values.
 
 <p align="center">
-  <img src="./docs/assets/showcase/poolamkoo-overview-en.webp" alt="Poolamkoo personal finance product overview" width="1100" />
+  <img src="./docs/assets/showcase/poolamkoo-overview-en.webp" alt="Poolamkoo product showcase overview" width="1100" />
 </p>
 
 <table>
@@ -60,7 +34,7 @@ These curated English panels are the public GitHub presentation layer for Poolam
   </tr>
 </table>
 
-The repository keeps these English panels as the canonical GitHub showcase. Persian promotional variants are kept for social-media publishing rather than duplicated in Git history. See [the media contract](./docs/assets/showcase/README.md).
+For a Persian presentation version of the README, see [`README.fa.md`](./README.fa.md). Exact product captures from the real production UI remain under [`docs/assets/screenshots/`](./docs/assets/screenshots/).
 
 ## What is Poolamkoo?
 
