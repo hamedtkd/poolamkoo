@@ -17,7 +17,9 @@ const obsoleteRoutes = [
   "app/manifest.js",
   "app/manifest.webmanifest",
 ];
+const legacyLogoPath = ["public/logo-", "pool", "amco", ".svg"].join("");
 const obsoleteSourcePaths = [
+  legacyLogoPath,
   // v1.0 stable replaces the RC-only metadata gate. Extracting the stable source
   // over an existing RC checkout does not delete removed files, so clean them before
   // the test glob runs or stale RC assertions will incorrectly fail the stable gate.

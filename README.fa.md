@@ -1,3 +1,4 @@
+> نکته v1.0.2: نشان جدید P/کیف پول در UI، favicon و PWA یکپارچه شده؛ هندسه SVG اصلی داخل برنامه با CSS mask از رنگ تم استفاده میکند، آیکن نصب بدون تایپوگرافی است و schema 8 / رفتار مالی تغییری نکرده است.
 # پولم‌کو
 > نکته v1.0.1: Patch آماده‌سازی معرفی عمومی، cache نرخ‌های پایه و TSETMC را محافظه‌کارتر می‌کند، Retry-After/cooldown سهمیه و reuse سی‌ثانیه‌ای request را اضافه می‌کند و بدون تغییر schema 8 یا مدل Local-first مصرف Upstream را پایین می‌آورد.
 > نکته v1.0.0: اولین نسخه Stable همان مرز محصول پذیرفته‌شده RC3 را بدون Feature Family جدید یا migration داده منتشر می‌کند. Gate کامل Production و Manual Acceptance تأییدشده‌اند و IndexedDB همچنان schema 8 است.
@@ -288,7 +289,7 @@ npm run build
 npm run check:stable
 ```
 
-`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه Stable جاری (`v1.0.1`) و Guardrailهای Launch را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
+`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه Stable جاری (`v1.0.2`) و Guardrailهای Launch را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
 
 
 ## تصویر محصول در لندینگ

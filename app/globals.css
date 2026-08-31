@@ -150,10 +150,6 @@
 
 /* Official logo follows the active palette and appearance. */
 :root {
-  --logo-ink: var(--foreground);
-  --logo-gold: var(--primary);
-  --logo-gold-soft: var(--chart-1);
-  --logo-cutout: var(--background);
 }
 
 * { box-sizing: border-box; border-color: var(--border); }

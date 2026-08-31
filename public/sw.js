@@ -1,4 +1,4 @@
-const CACHE = "poolamkoo-v68";
+const CACHE = "poolamkoo-v69";
 const PRECACHE = ["/dashboard", "/offline", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/maskable-512.png", "/logo-poolamkoo.svg"];
 const WORKSPACE_NAVIGATION_PREFIXES = ["/dashboard", "/activity", "/income", "/funds", "/investments", "/reports", "/settings"];
 

@@ -325,3 +325,8 @@ npm run check:stable
 Metadata guard فعلی Version `1.0.1`، IndexedDB schema 8، Release/Launch-readiness docs و Guardrailهای quota را pin می‌کند. Unit/regression tests باید cacheهای 180s BrsApi، 120/600/3600s TSETMC، long-cache Tindex، `Retry-After` و warm-runtime cooldown و reuse سی‌ثانیه‌ای request مرورگر و `s-maxage=60` فقط برای market request بدون Target بورسی را ثابت نگه دارند.
 
 پیش از Tag، Vercel Fluid Compute باید روی deployment فعال تأیید شود. این مورد Manual است چون repository نمی‌تواند تنظیم حساب Hosting را اثبات کند. بعد از معرفی عمومی نیز Observability برای Function Invocations/Active CPU و diagnostic Provider برای 429/blocked باید بازبینی شود.
+
+
+## 24. v1.0.2 brand/PWA identity gate
+
+`v1.0.2` همان Gate کامل Stable را نگه میدارد و علاوه بر قراردادهای v1.0.1، یکپارچگی نشان جدید را pin میکند: SVG اصلی مالک پروژه باید بدون تغییر هندسه در سورس pin شود، UI باید همان فایل را با CSS mask و رنگ تم استفاده کند، favicon باید Light/Dark-safe بماند و PWA launcher icon باید بدون wordmark باشد، Service Worker روی `poolamkoo-v69` باشد و IndexedDB همچنان schema 8 بماند.

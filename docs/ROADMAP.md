@@ -339,6 +339,13 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Keep IndexedDB schema 8, Local-first ownership, backup/transfer formats, Provider priority and Background Push default-off unchanged.
 - Require the full `npm run check:stable` gate plus a manual Vercel Fluid Compute/Observability pre-launch check before tagging `v1.0.1`.
 
+## v1.0.2 — Brand mark & PWA identity refresh 🚧
+
+- Replace the legacy mark with the new P/wallet symbol across app navigation, favicon and installable PWA assets.
+- Use the owner-supplied symbol SVG geometry directly; recolor it in runtime through a CSS mask, keep launcher icons symbol-only, and use Persian text beside the mark in expanded UI.
+- Keep schema 8 and all financial, backup and provider contracts unchanged.
+- Bump the service-worker cache so installed PWAs receive the new identity assets.
+
 ## Likely next phases
 
 - **v1.1.0 — Product evolution:** choose the next user-facing feature family only after public-launch usage and feedback provide evidence.

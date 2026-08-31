@@ -47,6 +47,8 @@
 
 ## Release history
 
+- [v1.0.2 — Brand mark & PWA identity refresh](./releases/1.0.2.md)
+
 - [v1.0.1 — Public launch & quota hardening](./releases/1.0.1.md)
 - [v1.0.0 — First stable release](./releases/1.0.0.md)
 - [v1.0.0-rc.3 — Product-tour masked spotlight stabilization](./releases/1.0.0-rc.3.md)
