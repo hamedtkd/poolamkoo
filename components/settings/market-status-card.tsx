@@ -16,6 +16,7 @@ import {
   marketRuntimeStatus,
   marketSnapshotCoverageDetail,
 } from "@/lib/market/status";
+import { marketLaunchGuardrails } from "@/lib/market/quota";
 import { cn } from "@/lib/utils";
 
 export function MarketStatusCard() {
@@ -77,6 +78,12 @@ export function MarketStatusCard() {
       <div className="rounded-xl border bg-background/70 p-3 text-xs leading-6 text-muted-foreground">
         <div className="mb-1 flex items-center gap-2 type-strong text-foreground"><RiShieldCheckLine className="text-primary" /> مرز داده</div>
         وضعیت بالا فقط سلامت مسیرها، تعداد پاسخ‌ها و زمان تقریبی را نشان می‌دهد. متن Diagnostic شامل قیمت، نماد، نام دارایی، شناسه بازار، مبلغ مالی یا Secretهای Provider نیست.
+      </div>
+
+      <div className="rounded-xl border bg-background/70 p-3 text-xs leading-6 text-muted-foreground">
+        <div className="mb-1 type-strong text-foreground">محافظت Launch و سهمیه</div>
+        <ul className="space-y-1">{marketLaunchGuardrails().map((item) => <li key={item}>• {item}</li>)}</ul>
+        <p className="mt-2">این Guardrailها مصرف Upstream را کم می‌کنند؛ Cooldown حافظه‌ای best-effort است و جایگزین سقف رسمی Provider یا مانیتورینگ Hosting نیست.</p>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-2">

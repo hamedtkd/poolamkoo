@@ -103,11 +103,14 @@ export async function GET(request: NextRequest) {
   const quotes = mergeMarketQuotes({ fallback, primary, exchange });
   const configured = Boolean(brsKey || tindexToken || tsetmcIds.length);
   const health = summarizeMarketHealth([brsRun.health, tsetmcRun.health, tindexHealth]);
+  const cacheControl = tsetmcIds.length || tindexIds.length
+    ? "private, no-store"
+    : "public, max-age=0, s-maxage=60, stale-while-revalidate=300";
   return NextResponse.json({
     mode: quotes.length ? "live" : configured ? "unavailable" : "unconfigured",
     quotes,
     health,
     warning: warnings.length ? [...new Set(warnings)].join(" ") : undefined,
     fetchedAt: new Date().toISOString(),
-  });
+  }, { headers: { "Cache-Control": cacheControl } });
 }

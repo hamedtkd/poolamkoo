@@ -328,8 +328,20 @@ This roadmap prioritizes zero-cost, local-first product reliability before optio
 - Record the completed manual Desktop/Mobile tour, PWA install/update, Offline/Resume, Backup → Restore, old-tab upgrade and Responsive/Theme acceptance.
 - Publish `v1.0.0` as the first non-prerelease only after the stable gate remains green.
 
+## v1.0.1 — Public launch & quota hardening 🚧
+
+- Increase the shared BrsApi core cache from 60s to 180s so the theoretical single-cache-key upstream ceiling drops from 1440 to about 480 requests/day.
+- Increase direct TSETMC quote/search cache windows while keeping one-hour history caching and bounded quote chunks.
+- Honor Provider `Retry-After` where available and add best-effort warm-runtime cooldowns for rate-limit/blocked/unauthorized failures.
+- Reuse the same client market response for 30 seconds so rapid refreshes do not create redundant Function invocations.
+- Cache core-only `/api/market` responses at the CDN for 60 seconds while keeping target-bearing market queries private/no-store.
+- Surface quota/cache guardrails and active cooldown state in privacy-safe Settings diagnostics.
+- Keep IndexedDB schema 8, Local-first ownership, backup/transfer formats, Provider priority and Background Push default-off unchanged.
+- Require the full `npm run check:stable` gate plus a manual Vercel Fluid Compute/Observability pre-launch check before tagging `v1.0.1`.
+
 ## Likely next phases
 
+- **v1.1.0 — Product evolution:** choose the next user-facing feature family only after public-launch usage and feedback provide evidence.
 - **Later — Additional core-price adapters:** consider Gheymat.online or StreamData only after auth/schema, free-tier terms and deployment behavior are verified end-to-end; do not rely on stale Arzhaam market-API references.
 - **Later — Release ergonomics:** only add more browser coverage when a real regression justifies the maintenance cost.
 

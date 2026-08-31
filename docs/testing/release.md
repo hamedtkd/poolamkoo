@@ -312,3 +312,16 @@ npm run check:stable
 `check:stable` ابتدا کل `check:release` را اجرا می‌کند و سپس Version نهایی `1.0.0`، IndexedDB schema 8 و Release/Acceptance docs را بررسی می‌کند. این Gate Feature جدیدی را مجاز نمی‌کند؛ Stable promotion باید همان Runtime پذیرفته‌شده RC3 باشد.
 
 Manual Acceptance ثبت‌شده برای v1.0 شامل راهنمای سریع Desktop/Mobile، نصب و Update واقعی PWA، Offline/Resume موبایل، Backup → Restore، old-tab upgrade و مرور Responsive/Theme در Light/Dark است. نتیجه این سناریوها قبل از promotion به Stable تأیید شده است.
+
+## 23. v1.0.1 public-launch quota gate
+
+`v1.0.1` همچنان از همان Gate کامل Stable استفاده می‌کند:
+
+```bash
+npm install
+npm run check:stable
+```
+
+Metadata guard فعلی Version `1.0.1`، IndexedDB schema 8، Release/Launch-readiness docs و Guardrailهای quota را pin می‌کند. Unit/regression tests باید cacheهای 180s BrsApi، 120/600/3600s TSETMC، long-cache Tindex، `Retry-After` و warm-runtime cooldown و reuse سی‌ثانیه‌ای request مرورگر و `s-maxage=60` فقط برای market request بدون Target بورسی را ثابت نگه دارند.
+
+پیش از Tag، Vercel Fluid Compute باید روی deployment فعال تأیید شود. این مورد Manual است چون repository نمی‌تواند تنظیم حساب Hosting را اثبات کند. بعد از معرفی عمومی نیز Observability برای Function Invocations/Active CPU و diagnostic Provider برای 429/blocked باید بازبینی شود.

@@ -1,4 +1,5 @@
 # Poolamkoo — پولم‌کو
+> v1.0.1 note: public-launch hardening lengthens core/TSETMC caches, honors Retry-After with quota cooldowns, and reuses same-target market requests for 30 seconds without changing schema 8 or the local-first product boundary.
 > v1.0.0 note: the first stable release promotes the accepted RC3 product boundary with no new feature family or persistence migration. Automated production checks and user-confirmed manual acceptance are complete; IndexedDB remains schema 8.
 > v1.0.0-rc.3 note: RC3 stabilized the product-tour spotlight with an exact target-linked SVG cutout and deterministic desktop/mobile browser smoke, then passed the full production gate before prerelease publication.
 > v1.0.0-rc.2 note: the first RC exposed a product-tour usability blocker: the dim overlay obscured the control being taught and desktop/mobile steps could point at hidden or unavailable targets. RC2 uses a true transparent spotlight, labels the exact page area, keeps every step attached to a visible control, and adds production-browser coverage for the guide. IndexedDB stays schema 8 and feature freeze remains in force.
@@ -329,7 +330,7 @@ For a stable release, run the full production and stable metadata gate:
 npm run check:stable
 ```
 
-`check:stable` runs the complete `check:release` path first, then verifies v1.0.0 package/runtime/schema/release-document alignment. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
+`check:stable` runs the complete `check:release` path first, then verifies the current stable (`v1.0.1`) package/runtime/schema/release-document alignment plus public-launch quota guardrails. The production gate creates one build and opens it in an isolated Chrome/Edge/Chromium profile to verify the legacy schema 6 → current schema 8 migration before Landing → Workspace, fresh onboarding/local bootstrap, product-tour spotlight, Reports and PWA boundaries. No Playwright/Cypress dependency is required. If browser auto-detection fails, set `POOLAMKOO_BROWSER_PATH`.
 
 ## PWA
 

@@ -61,3 +61,13 @@ test("copied market diagnostics contain only operational metadata", () => {
     assert.equal(text.includes(forbidden), false);
   }
 });
+
+
+test("quota-guarded provider status exposes cooldown without financial identifiers", () => {
+  const detail = marketProviderActivityLabel({
+    provider: "tindex", status: "unavailable", configured: true, attempted: true,
+    failure: "rate_limited", guarded: true, cooldownUntil: "2026-08-30T16:20:00.000Z",
+  });
+  assert.match(detail, /محدودیت درخواست/);
+  assert.match(detail, /محافظ سهمیه/);
+});

@@ -1,4 +1,5 @@
 import type { MarketCandle, MarketHistoryRange, MarketInstrument, MarketQuote } from "@/lib/types";
+import { MARKET_CACHE_SECONDS, parseRetryAfterSeconds } from "./quota.ts";
 import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
 
 type TsetmcSearchRow = {
@@ -147,7 +148,7 @@ export class TsetmcProvider {
   async search(query: string): Promise<MarketInstrument[]> {
     const payload = await this.request<TsetmcSearchPayload>(
       `/Instrument/GetInstrumentSearch/${encodeURIComponent(query)}`,
-      300,
+      MARKET_CACHE_SECONDS.tsetmcSearch,
     );
     return parseTsetmcSearchPayload(payload);
   }
@@ -155,7 +156,7 @@ export class TsetmcProvider {
   async getQuote(marketId: string): Promise<MarketQuote | null> {
     const payload = await this.request<TsetmcQuotePayload>(
       `/ClosingPrice/GetClosingPriceInfo/${encodeURIComponent(marketId)}`,
-      45,
+      MARKET_CACHE_SECONDS.tsetmcQuote,
     );
     return parseTsetmcQuotePayload(payload, marketId);
   }
@@ -183,7 +184,7 @@ export class TsetmcProvider {
     const top = range === "1m" ? 45 : 110;
     const payload = await this.request<TsetmcHistoryPayload>(
       `/ClosingPrice/GetClosingPriceDailyList/${encodeURIComponent(marketId)}/${top}`,
-      3600,
+      MARKET_CACHE_SECONDS.tsetmcHistory,
     );
     return parseTsetmcHistoryPayload(payload).slice(range === "1m" ? -31 : -93);
   }
@@ -202,7 +203,7 @@ export class TsetmcProvider {
       throw classifyMarketProviderError("tsetmc", error);
     }
     const text = await response.text();
-    if (!response.ok) throw providerErrorFromStatus("tsetmc", response.status);
+    if (!response.ok) throw providerErrorFromStatus("tsetmc", response.status, parseRetryAfterSeconds(response.headers.get("retry-after")));
     if (!text) throw new MarketProviderError("tsetmc", "invalid_response");
     if (blockedBody(text)) throw new MarketProviderError("tsetmc", "blocked");
     try { return JSON.parse(text) as T; }

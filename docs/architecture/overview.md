@@ -264,3 +264,9 @@ The tour links its Spotlight and Overlay to the exact active `data-tour-target`,
 `v1.0.0` promotes the accepted RC3 runtime boundary rather than opening a new product phase. The product-tour mask/target contract, public/workspace PWA separation, schema 6→8 migration path, local data health boundaries, report reconciliation and local-first portability contracts are unchanged from the accepted candidate. IndexedDB remains schema 8.
 
 Stable release validation uses `npm run check:stable`: the complete production release gate runs first, followed by metadata checks that pin package/runtime version `1.0.0`, schema 8 and the final release/acceptance documentation. The manual acceptance record covers real Desktop/Mobile guide behavior, PWA install/update, mobile Offline/Resume, Backup → Restore, old-tab upgrade and responsive Light/Dark review.
+
+## v1.0.1 public-launch quota boundary
+
+`v1.0.1` keeps market data public and stateless but reduces the frequency at which upstream providers can be touched. BrsApi core quotes use a 180-second shared fetch cache; TSETMC current quotes/search use 120/600 seconds; Tindex remains a long-cache fallback/legacy path. The browser also reuses an identical target response for 30 seconds, so repeated refresh clicks do not immediately create another app-function request. Core-only `/api/market` responses are CDN-cacheable for 60 seconds, while requests carrying user-selected public market IDs stay private/no-store.
+
+Provider 429/blocked/unauthorized responses can create a best-effort cooldown in a warm server runtime. This state is operational only: it stores provider/failure/expiry, no quote, symbol, market identifier or financial record. Cold starts and parallel regions do not share this memory, so cache policy remains the primary quota guard. IndexedDB stays schema 8 and no persistence migration is introduced.

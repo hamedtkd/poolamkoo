@@ -68,6 +68,12 @@ export function marketProviderFailureLabel(failure?: MarketProviderFailureKind) 
 export function marketProviderActivityLabel(health?: MarketProviderHealth) {
   if (!health) return "پس از اولین refresh وضعیت این مسیر مشخص می‌شود.";
   if (!health.attempted) {
+    if (health.guarded) {
+      const until = formatCooldownUntil(health.cooldownUntil);
+      return until
+        ? `محافظ سهمیه درخواست جدید را تا ${until} متوقف کرده است.`
+        : "محافظ سهمیه موقتاً درخواست جدید به این Provider را متوقف کرده است.";
+    }
     return health.configured
       ? "این refresh به این Provider نیاز نداشت."
       : "برای استفاده از این Provider تنظیمات لازم موجود نیست.";
@@ -82,6 +88,10 @@ export function marketProviderActivityLabel(health?: MarketProviderHealth) {
   if (health.latencyMs !== undefined) parts.push(`${faNumber(health.latencyMs)} ms`);
   const failure = marketProviderFailureLabel(health.failure);
   if (failure) parts.push(failure);
+  if (health.guarded) {
+    const until = formatCooldownUntil(health.cooldownUntil);
+    parts.push(until ? `محافظ سهمیه تا ${until}` : "محافظ سهمیه فعال");
+  }
   return parts.length ? parts.join(" · ") : "در این refresh پاسخ Provider دریافت شد.";
 }
 
@@ -147,11 +157,20 @@ export function formatMarketDiagnostics({
       `requested:${item.requestedCount ?? "-"}`,
       `latency_ms:${item.latencyMs ?? "-"}`,
       `failure:${item.failure ?? "-"}`,
+      `guarded:${item.guarded ? "yes" : "no"}`,
+      `cooldown_until:${item.cooldownUntil ?? "-"}`,
     ].join(";"));
   }
 
   lines.push("privacy=financial-values-and-identifiers-excluded");
   return lines.join("\n");
+}
+
+function formatCooldownUntil(value?: string) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return undefined;
+  return new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 function faNumber(value: number) {

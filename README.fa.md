@@ -1,4 +1,5 @@
 # پولم‌کو
+> نکته v1.0.1: Patch آماده‌سازی معرفی عمومی، cache نرخ‌های پایه و TSETMC را محافظه‌کارتر می‌کند، Retry-After/cooldown سهمیه و reuse سی‌ثانیه‌ای request را اضافه می‌کند و بدون تغییر schema 8 یا مدل Local-first مصرف Upstream را پایین می‌آورد.
 > نکته v1.0.0: اولین نسخه Stable همان مرز محصول پذیرفته‌شده RC3 را بدون Feature Family جدید یا migration داده منتشر می‌کند. Gate کامل Production و Manual Acceptance تأییدشده‌اند و IndexedDB همچنان schema 8 است.
 > نکته v1.0.0-rc.3: RC3 راهنمای سریع را با SVG cutout دقیق، Target فعال و Browser Smoke قطعی Desktop/Mobile پایدار کرد و فقط بعد از سبز شدن Gate کامل Production به‌صورت Pre-release منتشر شد.
 > نکته v1.0.0-rc.2: در RC اول یک blocker کاربردپذیری در راهنمای سریع مشخص شد: Overlay خود آیتم آموزشی را تیره می‌کرد و بعضی مرحله‌ها روی Desktop/Mobile به هدف پنهان یا ناموجود اشاره می‌کردند. RC2 از Spotlight واقعاً شفاف استفاده می‌کند، محل دقیق بخش را روی کارت و کنار Highlight می‌نویسد، همه مرحله‌ها را به کنترل قابل‌دیدن وصل می‌کند و Browser Gate واقعی این مسیر را پوشش می‌دهد. IndexedDB همچنان schema 8 است و Feature freeze ادامه دارد.
@@ -287,7 +288,7 @@ npm run build
 npm run check:stable
 ```
 
-`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه v1.0.0 را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
+`check:stable` ابتدا کل مسیر `check:release` را اجرا می‌کند و بعد هم‌ترازی Version/Schema/Docs نسخه Stable جاری (`v1.0.1`) و Guardrailهای Launch را می‌سنجد. Gate Production یک Build می‌سازد و همان Build را در Profile موقت Chrome/Edge/Chromium برای migration واقعی schema 6→8، Landing → Workspace، آنبوردینگ/داده محلی، راهنمای سریع، Reports و مرزهای PWA تست می‌کند. Playwright/Cypress اضافه نشده است. اگر مرورگر خودکار پیدا نشد، `POOLAMKOO_BROWSER_PATH` را تنظیم کن.
 
 
 ## تصویر محصول در لندینگ

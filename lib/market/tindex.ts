@@ -1,4 +1,5 @@
 import type { MarketCandle, MarketHistoryRange, MarketInstrument, MarketQuote } from "../types";
+import { MARKET_CACHE_SECONDS, parseRetryAfterSeconds } from "./quota.ts";
 import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
 
 type TindexStockRow = {
@@ -172,11 +173,11 @@ export class TindexProvider {
   }
 
   async getFallbackQuotes(): Promise<MarketQuote[]> {
-    return parseTindexBoardsPayload(await this.request<TindexBoardsPayload>("/boards", 1800));
+    return parseTindexBoardsPayload(await this.request<TindexBoardsPayload>("/boards", MARKET_CACHE_SECONDS.tindexCoreFallback));
   }
 
   async getQuote(marketId: string): Promise<MarketQuote | null> {
-    const payload = await this.request<TindexOverviewPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/overview`, 3600);
+    const payload = await this.request<TindexOverviewPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/overview`, MARKET_CACHE_SECONDS.tindexLegacyQuote);
     const quote = parseTindexOverviewPayload(payload);
     return quote ? { ...quote, marketId } : null;
   }
@@ -198,13 +199,13 @@ export class TindexProvider {
 
   async getIndicatorCandles(slug: string, range: MarketHistoryRange): Promise<MarketCandle[]> {
     const params = new URLSearchParams({ range, interval: "daily" });
-    const payload = await this.request<TindexCandlesPayload>(`/indicators/${encodeURIComponent(slug)}/candles?${params}`, 3600);
+    const payload = await this.request<TindexCandlesPayload>(`/indicators/${encodeURIComponent(slug)}/candles?${params}`, MARKET_CACHE_SECONDS.tindexHistory);
     return parseTindexCandlesPayload(payload);
   }
 
   async getExchangeCandles(marketId: string, range: MarketHistoryRange): Promise<MarketCandle[]> {
     const params = new URLSearchParams({ range, interval: "daily" });
-    const payload = await this.request<TindexCandlesPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/candles?${params}`, 3600);
+    const payload = await this.request<TindexCandlesPayload>(`/stock-market/symbol/${encodeURIComponent(marketId)}/candles?${params}`, MARKET_CACHE_SECONDS.tindexHistory);
     return parseTindexCandlesPayload(payload);
   }
 
@@ -218,7 +219,7 @@ export class TindexProvider {
     } catch (error) {
       throw classifyMarketProviderError("tindex", error);
     }
-    if (!response.ok) throw providerErrorFromStatus("tindex", response.status);
+    if (!response.ok) throw providerErrorFromStatus("tindex", response.status, parseRetryAfterSeconds(response.headers.get("retry-after")));
     try {
       const payload = await response.json() as T | null;
       if (!payload) throw new MarketProviderError("tindex", "invalid_response");

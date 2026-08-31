@@ -1,5 +1,6 @@
 import type { MarketQuote } from "@/lib/types";
 import type { MarketDataProvider } from "@/lib/market/provider";
+import { MARKET_CACHE_SECONDS, parseRetryAfterSeconds } from "./quota.ts";
 import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
 
 type BrsMarketRow = {
@@ -51,13 +52,13 @@ export class BrsApiProvider implements MarketDataProvider {
     let response: Response;
     try {
       response = await fetch(`https://Api.BrsApi.ir/Market/Gold_Currency.php?key=${encodeURIComponent(this.apiKey)}`, {
-        next: { revalidate: 60 },
+        next: { revalidate: MARKET_CACHE_SECONDS.brsapiCoreQuotes },
         signal: AbortSignal.timeout(6_000),
       });
     } catch (error) {
       throw classifyMarketProviderError("brsapi", error);
     }
-    if (!response.ok) throw providerErrorFromStatus("brsapi", response.status);
+    if (!response.ok) throw providerErrorFromStatus("brsapi", response.status, parseRetryAfterSeconds(response.headers.get("retry-after")));
     let payload: BrsPayload;
     try {
       payload = await response.json() as BrsPayload;

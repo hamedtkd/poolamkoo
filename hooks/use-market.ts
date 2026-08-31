@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
 import { marketIdentityKey } from "@/lib/market/identity";
+import { MARKET_CLIENT_REUSE_MS } from "@/lib/market/quota";
 import type { MarketHealthSummary } from "@/lib/market/reliability";
 import {
   marketQuoteForStorage,
@@ -32,6 +33,7 @@ function targetKey(target: Pick<MarketTarget, "source" | "id">) {
   return marketIdentityKey({ source: target.source, marketId: target.id });
 }
 let inFlight: { key: string; promise: Promise<MarketResponse> } | null = null;
+let recentResponse: { key: string; at: number; data: MarketResponse } | null = null;
 
 function targetDescriptors(assets: Asset[], watchlist: MarketWatchItem[], alerts: MarketAlert[]) {
   const targets: MarketTarget[] = [];
@@ -65,16 +67,22 @@ function normalizeExchangeQuotes(quotes: MarketQuote[], targets: readonly Market
 
 async function requestMarket(targets: readonly MarketTarget[]) {
   const key = targets.map(targetKey).join(",");
+  if (recentResponse?.key === key && Date.now() - recentResponse.at < MARKET_CLIENT_REUSE_MS) {
+    return recentResponse.data;
+  }
   if (!inFlight || inFlight.key !== key) {
     const params = new URLSearchParams();
     for (const target of targets) params.append(target.source, target.id);
     const url = params.size ? `/api/market?${params}` : "/api/market";
-    const promise = fetch(url, { cache: "no-store" })
+    const init: RequestInit | undefined = params.size ? { cache: "no-store" } : undefined;
+    const promise = fetch(url, init)
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok && !Array.isArray(data.quotes)) throw new Error(data.warning || "market request failed");
         const result = data as MarketResponse;
-        return { ...result, quotes: normalizeExchangeQuotes(Array.isArray(result.quotes) ? result.quotes : [], targets) };
+        const normalized = { ...result, quotes: normalizeExchangeQuotes(Array.isArray(result.quotes) ? result.quotes : [], targets) };
+        recentResponse = { key, at: Date.now(), data: normalized };
+        return normalized;
       })
       .finally(() => { if (inFlight?.promise === promise) inFlight = null; });
     inFlight = { key, promise };

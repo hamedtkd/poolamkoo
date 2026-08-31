@@ -1,3 +1,8 @@
+import {
+  activeProviderCooldown,
+  recordProviderCooldown,
+} from "./quota.ts";
+
 export type MarketProviderId = "brsapi" | "tsetmc" | "tindex";
 export type MarketProviderFailureKind =
   | "timeout"
@@ -19,6 +24,8 @@ export interface MarketProviderHealth {
   requestedCount?: number;
   latencyMs?: number;
   failure?: MarketProviderFailureKind;
+  guarded?: boolean;
+  cooldownUntil?: string;
 }
 
 export interface MarketHealthSummary {
@@ -30,23 +37,25 @@ export class MarketProviderError extends Error {
   readonly provider: MarketProviderId;
   readonly failure: MarketProviderFailureKind;
   readonly status?: number;
+  readonly retryAfterSeconds?: number;
 
-  constructor(provider: MarketProviderId, failure: MarketProviderFailureKind, status?: number) {
+  constructor(provider: MarketProviderId, failure: MarketProviderFailureKind, status?: number, retryAfterSeconds?: number) {
     super(`${provider}:${failure}`);
     this.name = "MarketProviderError";
     this.provider = provider;
     this.failure = failure;
     this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
-export function providerErrorFromStatus(provider: MarketProviderId, status: number) {
-  if (status === 401) return new MarketProviderError(provider, "unauthorized", status);
-  if (status === 403) return new MarketProviderError(provider, provider === "tsetmc" ? "blocked" : "unauthorized", status);
-  if (status === 404) return new MarketProviderError(provider, "not_found", status);
-  if (status === 408 || status === 504) return new MarketProviderError(provider, "timeout", status);
-  if (status === 429) return new MarketProviderError(provider, "rate_limited", status);
-  return new MarketProviderError(provider, "upstream", status);
+export function providerErrorFromStatus(provider: MarketProviderId, status: number, retryAfterSeconds?: number) {
+  if (status === 401) return new MarketProviderError(provider, "unauthorized", status, retryAfterSeconds);
+  if (status === 403) return new MarketProviderError(provider, provider === "tsetmc" ? "blocked" : "unauthorized", status, retryAfterSeconds);
+  if (status === 404) return new MarketProviderError(provider, "not_found", status, retryAfterSeconds);
+  if (status === 408 || status === 504) return new MarketProviderError(provider, "timeout", status, retryAfterSeconds);
+  if (status === 429) return new MarketProviderError(provider, "rate_limited", status, retryAfterSeconds);
+  return new MarketProviderError(provider, "upstream", status, retryAfterSeconds);
 }
 
 export function classifyMarketProviderError(provider: MarketProviderId, error: unknown): MarketProviderError {
@@ -78,6 +87,22 @@ export async function runMarketProvider<T>({
   itemCount?: (value: T) => number;
 }): Promise<{ value?: T; health: MarketProviderHealth }> {
   if (!configured) return { health: providerIdle(provider, false) };
+  const cooldown = activeProviderCooldown(provider);
+  if (cooldown) {
+    return {
+      health: {
+        provider,
+        status: "unavailable",
+        configured: true,
+        attempted: false,
+        requestedCount,
+        failure: cooldown.failure,
+        guarded: true,
+        cooldownUntil: new Date(cooldown.until).toISOString(),
+      },
+    };
+  }
+
   const startedAt = Date.now();
   try {
     const value = await operation();
@@ -97,6 +122,7 @@ export async function runMarketProvider<T>({
     };
   } catch (error) {
     const classified = classifyMarketProviderError(provider, error);
+    const guarded = recordProviderCooldown(provider, classified.failure, classified.retryAfterSeconds);
     return {
       health: {
         provider,
@@ -106,6 +132,8 @@ export async function runMarketProvider<T>({
         requestedCount,
         latencyMs: Math.max(0, Date.now() - startedAt),
         failure: classified.failure,
+        guarded: Boolean(guarded),
+        cooldownUntil: guarded ? new Date(guarded.until).toISOString() : undefined,
       },
     };
   }
@@ -138,6 +166,8 @@ export function mergeProviderHealth(a: MarketProviderHealth, b: MarketProviderHe
     requestedCount: (a.requestedCount ?? 0) + (b.requestedCount ?? 0) || undefined,
     latencyMs: Math.max(a.latencyMs ?? 0, b.latencyMs ?? 0) || undefined,
     failure: a.failure ?? b.failure,
+    guarded: a.guarded || b.guarded || undefined,
+    cooldownUntil: [a.cooldownUntil, b.cooldownUntil].filter(Boolean).sort().at(-1),
   };
 }
 
@@ -163,7 +193,8 @@ export function marketProviderWarning(health: MarketProviderHealth, fallback?: s
     return fallback ?? `${PROVIDER_LABEL[health.provider]} فقط بخشی از داده تازه را برگرداند؛ آخرین Snapshot یا قیمت دستی برای بقیه حفظ می‌شود.`;
   }
   if (health.status === "unavailable") {
-    return `${PROVIDER_LABEL[health.provider]}: ${FAILURE_TEXT[health.failure ?? "upstream"]}`;
+    const guard = health.guarded ? " محافظ سهمیه موقتاً درخواست تازه را متوقف کرده است." : "";
+    return `${PROVIDER_LABEL[health.provider]}: ${FAILURE_TEXT[health.failure ?? "upstream"]}${guard}`;
   }
   if (health.status === "unconfigured") return fallback;
   return undefined;
