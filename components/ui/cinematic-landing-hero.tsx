@@ -61,7 +61,7 @@ export function CinematicLandingHero() {
             <RiSparkling2Line className="size-4 text-primary" /> برنامه‌ریزی قبل از خرج
           </div>
           <h1 className="landing-copy-step landing-copy-step-2 mt-5 max-w-[20ch] text-[clamp(1.95rem,1.55rem+1.2vw,3.05rem)] font-[780] leading-[1.18] tracking-[-.03em] text-balance">
-            پول می‌رسد؛ <span className="text-primary block py-2">قبل از خرج شدن</span> برایش تصمیم بگیر.
+            پول میرسه؛ <span className="text-primary block py-2">قبل از خرج شدن</span> براش تصمیم بگیر.
           </h1>
           <p className="landing-copy-step landing-copy-step-3 mt-5 max-w-xl text-sm leading-8 text-muted-foreground sm:text-base sm:leading-8">
             هر ورودی را بین زندگی، حاشیه امن و رشد تقسیم کن؛ بعد هم ببین برنامه‌ای که ساختی واقعاً چقدر اجرا شده.
