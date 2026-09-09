@@ -22,9 +22,12 @@ export function mergeMarketQuotes({
   exchange?: readonly MarketQuote[];
 }) {
   const result = new Map<string, MarketQuote>();
-  const key = (quote: MarketQuote) => quote.marketId && (quote.source === "tsetmc" || quote.source === "tindex")
-    ? `exchange:${marketIdentityKey({ source: quote.source, marketId: quote.marketId })}`
-    : quote.symbol;
+  const key = (quote: MarketQuote) => {
+    const exchangeSource = quote.marketSource ?? (quote.source === "tsetmc" || quote.source === "tindex" ? quote.source : undefined);
+    return quote.marketId && exchangeSource
+      ? `exchange:${marketIdentityKey({ source: exchangeSource, marketId: quote.marketId })}`
+      : quote.symbol;
+  };
   for (const quote of fallback) result.set(key(quote), quote);
   for (const quote of primary) result.set(key(quote), quote);
   for (const quote of exchange) result.set(key(quote), quote);

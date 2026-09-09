@@ -57,6 +57,20 @@ test("newest snapshot wins and exchange identity remains provider scoped", () =>
   assert.equal(marketQuoteKey(merged.quotes[0]!), "tsetmc:42");
 });
 
+
+
+test("a quote returned by another provider still replaces the snapshot for the linked exchange identity", () => {
+  const cached = [snapshot("فولاد", "tsetmc", 2_300, "2026-08-27T09:00:00.000Z", "111")];
+  const fresh = [{ ...quote("فولاد", "brsapi", 2_400, "111"), marketSource: "tsetmc" as const }];
+  const merged = mergeRuntimeMarketQuotes({ fresh, cached, targets: [{ source: "tsetmc", id: "111" }] });
+  assert.equal(merged.quotes.length, 1);
+  assert.equal(merged.quotes[0]?.priceToman, 2_400);
+  assert.equal(merged.quotes[0]?.source, "brsapi");
+  assert.equal(merged.quotes[0]?.marketSource, "tsetmc");
+  assert.equal(merged.quotes[0]?.runtimeSource, "live");
+  assert.equal(marketQuoteKey(merged.quotes[0]!), "tsetmc:111");
+});
+
 test("snapshot runtime metadata is never written back into persisted market snapshots", () => {
   const runtime = { ...quote("USD", "brsapi", 100), runtimeSource: "snapshot" as const, snapshotCapturedAt: "2026-08-27T09:00:00.000Z" };
   const stored = marketQuoteForStorage(runtime);

@@ -18,8 +18,9 @@ test("launch cache policy keeps BrsApi comfortably below the documented free dai
   assert.equal(MARKET_CACHE_SECONDS.tsetmcQuote, 120);
   assert.equal(MARKET_CACHE_SECONDS.tsetmcSearch, 600);
   assert.equal(MARKET_CACHE_SECONDS.tsetmcHistory, 3600);
-  assert.equal(MARKET_CACHE_SECONDS.tindexCoreFallback, 1800);
-  assert.equal(MARKET_CACHE_SECONDS.tindexLegacyQuote, 3600);
+  assert.equal(MARKET_CACHE_SECONDS.brsapiExchangeHistory, 300);
+  assert.equal(MARKET_CACHE_SECONDS.tindexCoreQuotes, 1800);
+  assert.equal(MARKET_CACHE_SECONDS.tindexExchangeQuote, 3600);
   assert.equal(MARKET_CLIENT_REUSE_MS, 30_000);
 });
 
@@ -66,8 +67,10 @@ test("provider implementations and client market hook consume the central quota 
   assert.equal(brs.includes("MARKET_CACHE_SECONDS.brsapiCoreQuotes"), true);
   assert.equal(tsetmc.includes("MARKET_CACHE_SECONDS.tsetmcQuote"), true);
   assert.equal(tsetmc.includes("MARKET_CACHE_SECONDS.tsetmcSearch"), true);
-  assert.equal(tindex.includes("MARKET_CACHE_SECONDS.tindexCoreFallback"), true);
+  assert.equal(tindex.includes("MARKET_CACHE_SECONDS.tindexCoreQuotes"), true);
   assert.equal(tindex.includes("slice(0, 1)"), true);
+  assert.equal(brs.includes("MARKET_CACHE_SECONDS.brsapiExchangeHistory"), true);
+  assert.equal(tindex.includes("requestDomainHeaders"), true);
   const route = read("app/api/market/route.ts");
   assert.equal(hook.includes("recentResponse"), true);
   assert.equal(hook.includes("MARKET_CLIENT_REUSE_MS"), true);

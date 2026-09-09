@@ -7,6 +7,7 @@ import { MARKET_CLIENT_REUSE_MS } from "@/lib/market/quota";
 import type { MarketHealthSummary } from "@/lib/market/reliability";
 import {
   marketQuoteForStorage,
+  marketQuoteKey,
   mergeRuntimeMarketQuotes,
   type MarketCoverage,
 } from "@/lib/market/runtime";
@@ -59,9 +60,11 @@ function targetDescriptors(assets: Asset[], watchlist: MarketWatchItem[], alerts
 function normalizeExchangeQuotes(quotes: MarketQuote[], targets: readonly MarketTarget[]) {
   const lookup = new Map(targets.map((target) => [targetKey(target), target]));
   return quotes.map((quote) => {
-    if (!quote.marketId || (quote.source !== "tsetmc" && quote.source !== "tindex")) return quote;
-    const target = lookup.get(marketIdentityKey({ source: quote.source, marketId: quote.marketId }));
-    return target ? { ...quote, symbol: target.symbol, name: target.name } : quote;
+    if (!quote.marketId) return quote;
+    const exchangeSource = quote.marketSource ?? (quote.source === "tsetmc" || quote.source === "tindex" ? quote.source : undefined);
+    if (!exchangeSource) return quote;
+    const target = lookup.get(marketIdentityKey({ source: exchangeSource, marketId: quote.marketId }));
+    return target ? { ...quote, marketSource: exchangeSource, symbol: target.symbol, name: target.name } : quote;
   });
 }
 
@@ -72,7 +75,7 @@ async function requestMarket(targets: readonly MarketTarget[]) {
   }
   if (!inFlight || inFlight.key !== key) {
     const params = new URLSearchParams();
-    for (const target of targets) params.append(target.source, target.id);
+    for (const target of targets) params.append("target", JSON.stringify(target));
     const url = params.size ? `/api/market?${params}` : "/api/market";
     const init: RequestInit | undefined = params.size ? { cache: "no-store" } : undefined;
     const promise = fetch(url, init)
@@ -94,9 +97,7 @@ async function latestCachedQuotes() {
   const rows = await db.marketSnapshots.orderBy("capturedAt").reverse().toArray();
   const latest = new Map<string, MarketSnapshot>();
   for (const row of rows) {
-    const key = row.marketId && (row.source === "tsetmc" || row.source === "tindex")
-      ? marketIdentityKey({ source: row.source, marketId: row.marketId })
-      : row.symbol;
+    const key = marketQuoteKey(row);
     if (!latest.has(key)) latest.set(key, row);
   }
   return [...latest.values()];

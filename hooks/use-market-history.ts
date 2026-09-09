@@ -52,7 +52,7 @@ async function requestHistory(
   const promise = fetch(`/api/market/history?${params}`)
     .then(async (response) => {
       const payload = await response.json().catch(() => ({})) as RemoteHistoryResponse;
-      const source: MarketSource = payload.source === "tsetmc" || payload.source === "tindex" ? payload.source : "local";
+      const source: MarketSource = payload.source === "tsetmc" || payload.source === "brsapi" || payload.source === "tindex" ? payload.source : "local";
       const state: HistoryState = {
         key,
         candles: Array.isArray(payload.candles) ? payload.candles : [],

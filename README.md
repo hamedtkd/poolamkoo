@@ -95,17 +95,17 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 
 ### Market data
 
-- BrsApi-first pricing for gold, currency, and crypto with short shared server caching; Tindex is only an optional core fallback
-- Direct server-side TSETMC search, quotes, and history for new Tehran Stock Exchange stocks and ETFs
-- Explicit TSETMC/Tindex/BrsApi source attribution wherever external quotes are displayed
+- Market data from TSETMC, BrsApi, and [Tindex](https://tindex.app); Tindex is also a Poolamkoo data-source sponsor
+- Server-side multi-source search, quotes, and history for Tehran Stock Exchange stocks and ETFs, with TSETMC requiring no API key
+- Explicit actual-provider attribution for external quotes without exposing internal provider ordering in end-user copy
 - One shared market store across the application
 - One initial fetch plus explicit manual refresh
 - Settings provider-health view with a privacy-safe copyable diagnostic that excludes prices, symbols, asset names, market IDs, amounts, raw upstream text, and secrets
 - Partial-refresh continuity: fresh quotes always win, while only missing core/requested exchange quotes can reuse their latest real local Snapshot
 - Snapshot provenance is visible on Dashboard, portfolio, watchlist and market details; local alerts wait for a fresh quote instead of evaluating a Snapshot fallback
 - Real snapshots stored locally
-- Real 1-month and 3-month TSETMC history for linked exchange assets; optional Tindex history for USD/18K gold
-- Line history for public indicators and real exchange candlesticks, with local snapshots as fallback
+- Real 1-month and 3-month history for linked exchange assets from available market sources, plus supported online indicator history
+- Line history for public indicators and real exchange candlesticks, with local real snapshots used only for display continuity
 - No fake historical market series
 - Market watchlist for tracking TSE stocks/ETFs before adding them to the portfolio
 - NAV and market-price premium/discount only when the active provider actually supplies NAV; the direct TSETMC price adapter does not invent missing NAV
@@ -288,9 +288,9 @@ The README paths are ready for those generated files; after a verified capture i
 
 ## Market data
 
-For core gold/currency/crypto quotes, configure `BRS_API_KEY`. **New Tehran exchange links need no API key:** Poolamkoo searches and reads `cdn.tsetmc.com` through its own server routes. `TINDEX_API_TOKEN` remains optional in v0.34 and is retained only for legacy links, a slow emergency core fallback, and optional USD/gold online history. Provider failures are classified into stable health codes; upstream response bodies are never surfaced to users.
+Poolamkoo receives market data from **TSETMC, BrsApi, and [Tindex](https://tindex.app)**. Tindex is one of the financial data sources and a sponsor of the project. **TSETMC exchange data does not require an API key.** `BRS_API_KEY` and `TINDEX_API_TOKEN` are server-only values and must never use a `NEXT_PUBLIC_` prefix. Provider failures are classified into stable health codes and upstream response bodies are never surfaced to users.
 
-TSETMC exchange prices are returned in rial and normalized to toman on the server. TSETMC current quotes use a short shared cache and daily history uses an hourly cache; BrsApi also uses a short server cache so multiple browsers do not multiply provider requests. If an external provider is unavailable, Poolamkoo never fabricates prices/history: real IndexedDB snapshots and then the user's manual fallback price remain available. Existing `source: tindex` records are preserved and can be re-linked to TSETMC at the user's convenience.
+Symbols are resolved through server routes. The TSETMC adapter uses the public `cdn.tsetmc.com` API, rial-denominated exchange prices are normalized to toman on the server, and BrsApi plus Tindex stay behind the same server boundary. `NEXT_PUBLIC_SITE_URL` is also used for the `Origin` and `Referer` headers sent to Tindex so the sponsored API plan can be associated with the deployed project domain. A temporary outage in one source no longer turns the whole market path into a dependency error. Other active sources can complete available data, while the latest real IndexedDB snapshot or the user's manual price preserves display continuity when no fresh quote is available. Poolamkoo does not fabricate prices or history.
 
 ## Privacy-first analytics
 

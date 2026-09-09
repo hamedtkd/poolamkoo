@@ -42,7 +42,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       <main id="public-main" className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">{children}</main>
       <footer className="border-t">
         <div className="mx-auto grid max-w-6xl gap-5 px-4 py-8 text-sm text-muted-foreground sm:px-6 md:grid-cols-[1fr_auto] md:items-center">
-          <div><div className="type-strong text-foreground">پولم‌کو رایگان و متن‌باز است.</div><p className="mt-1 leading-6">داده مالی اصلی در مرورگر خودت می‌ماند. برای استفاده جدی، بکاپ منظم را فراموش نکن.</p></div>
+          <div><div className="type-strong text-foreground">پولم‌کو رایگان و متن‌باز است.</div><p className="mt-1 leading-6">داده مالی اصلی در مرورگر خودت می‌ماند. <a href={COMMUNITY_LINKS.tindex} target="_blank" rel="noopener" className="underline decoration-dotted underline-offset-4 hover:text-foreground">Tindex، منبع داده و اسپانسر پروژه</a> است.</p></div>
           <div className="flex flex-wrap gap-2"><Link href="/privacy" className="rounded-lg px-2 py-1 hover:text-foreground">حریم خصوصی</Link><Link href="/analytics" className="rounded-lg px-2 py-1 hover:text-foreground">Analytics</Link><Link href="/security" className="rounded-lg px-2 py-1 hover:text-foreground">امنیت</Link><Link href="/license" className="rounded-lg px-2 py-1 hover:text-foreground">مجوز</Link><a href={COMMUNITY_LINKS.issues} target="_blank" rel="noreferrer" className="rounded-lg px-2 py-1 hover:text-foreground">گزارش مشکل</a><a href={COMMUNITY_LINKS.support} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 hover:text-foreground"><RiHeart3Line /> حمایت اختیاری</a></div>
         </div>
       </footer>

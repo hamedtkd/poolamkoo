@@ -1,16 +1,14 @@
 import type { MarketCandle, MarketHistoryRange, MarketInstrument, MarketQuote } from "@/lib/types";
+import { attachExchangeIdentity, normalizeExchangeSymbol, type ExchangeQuoteTarget } from "./exchange-target.ts";
 import { MARKET_CACHE_SECONDS, parseRetryAfterSeconds } from "./quota.ts";
 import { classifyMarketProviderError, MarketProviderError, providerErrorFromStatus } from "./reliability.ts";
-
 type TsetmcSearchRow = {
   insCode?: string | number;
   lVal18AFC?: string;
   lVal30?: string;
   flowTitle?: string;
 };
-
 type TsetmcSearchPayload = { instrumentSearch?: TsetmcSearchRow[] };
-
 type TsetmcClosingRow = {
   insCode?: string | number;
   dEven?: string | number;
@@ -24,10 +22,8 @@ type TsetmcClosingRow = {
   priceMin?: string | number | null;
   priceMax?: string | number | null;
 };
-
 type TsetmcQuotePayload = { closingPriceInfo?: TsetmcClosingRow };
 type TsetmcHistoryPayload = { closingPriceDaily?: TsetmcClosingRow[] };
-
 const BASE_URL = "https://cdn.tsetmc.com/api";
 const DEFAULT_REQUEST_TIMEOUT_MS = 3_500;
 const DEFAULT_REQUEST_BUDGET_MS = 8_000;
@@ -37,18 +33,15 @@ const REQUEST_HEADERS = {
   Referer: "https://www.tsetmc.com/",
   Origin: "https://www.tsetmc.com",
 };
-
 function finite(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
-
 function rialToToman(value: unknown) {
   const number = finite(value);
   return number === null ? null : number / 10;
 }
-
 function dateFromEven(value: unknown) {
   const digits = String(value ?? "").replace(/\D/g, "");
   if (digits.length !== 8) return null;
@@ -58,7 +51,6 @@ function dateFromEven(value: unknown) {
   if (year < 1990 || month < 1 || month > 12 || day < 1 || day > 31) return null;
   return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
 }
-
 function asOf(row: TsetmcClosingRow) {
   const day = dateFromEven(row.dEven);
   if (!day) return new Date().toISOString();
@@ -69,7 +61,6 @@ function asOf(row: TsetmcClosingRow) {
   const parsed = new Date(`${day}T${hour}:${minute}:${second}+03:30`);
   return Number.isNaN(parsed.getTime()) ? `${day}T00:00:00.000Z` : parsed.toISOString();
 }
-
 function safeChange(row: TsetmcClosingRow, lastRial: number) {
   const yesterday = finite(row.priceYesterday);
   const suppliedPercent = finite(row.priceChangePercent);
@@ -80,7 +71,6 @@ function safeChange(row: TsetmcClosingRow, lastRial: number) {
     : suppliedPercent ?? 0;
   return { changePercent: Number.isFinite(percent) ? percent : 0, changeValueToman: changeRial / 10 };
 }
-
 export function parseTsetmcSearchPayload(payload: TsetmcSearchPayload): MarketInstrument[] {
   const rows = Array.isArray(payload.instrumentSearch) ? payload.instrumentSearch : [];
   const result = new Map<string, MarketInstrument>();
@@ -94,7 +84,6 @@ export function parseTsetmcSearchPayload(payload: TsetmcSearchPayload): MarketIn
   }
   return [...result.values()];
 }
-
 export function parseTsetmcQuotePayload(
   payload: TsetmcQuotePayload,
   marketId: string,
@@ -116,7 +105,6 @@ export function parseTsetmcQuotePayload(
     source: "tsetmc",
   };
 }
-
 export function parseTsetmcHistoryPayload(payload: TsetmcHistoryPayload): MarketCandle[] {
   const rows = Array.isArray(payload.closingPriceDaily) ? payload.closingPriceDaily : [];
   return rows.flatMap((row) => {
@@ -129,22 +117,18 @@ export function parseTsetmcHistoryPayload(payload: TsetmcHistoryPayload): Market
     return [{ time, open, high, low, close }];
   }).sort((a, b) => a.time.localeCompare(b.time));
 }
-
 function blockedBody(text: string) {
   const normalized = text.toLowerCase();
   return normalized.includes("general error detected") || text.includes("مسدود") || text.includes("دسترسی شما");
 }
-
 export class TsetmcProvider {
   readonly id = "tsetmc";
   private readonly requestTimeoutMs: number;
   private readonly deadlineAt: number;
-
   constructor(options: { requestTimeoutMs?: number; budgetMs?: number } = {}) {
     this.requestTimeoutMs = Math.max(250, options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS);
     this.deadlineAt = Date.now() + Math.max(this.requestTimeoutMs, options.budgetMs ?? DEFAULT_REQUEST_BUDGET_MS);
   }
-
   async search(query: string): Promise<MarketInstrument[]> {
     const payload = await this.request<TsetmcSearchPayload>(
       `/Instrument/GetInstrumentSearch/${encodeURIComponent(query)}`,
@@ -152,15 +136,51 @@ export class TsetmcProvider {
     );
     return parseTsetmcSearchPayload(payload);
   }
-
-  async getQuote(marketId: string): Promise<MarketQuote | null> {
+  async getQuote(marketId: string, identity?: { symbol?: string; name?: string }): Promise<MarketQuote | null> {
     const payload = await this.request<TsetmcQuotePayload>(
       `/ClosingPrice/GetClosingPriceInfo/${encodeURIComponent(marketId)}`,
       MARKET_CACHE_SECONDS.tsetmcQuote,
     );
-    return parseTsetmcQuotePayload(payload, marketId);
+    return parseTsetmcQuotePayload(payload, marketId, identity);
   }
-
+  async getTargetQuote(target: ExchangeQuoteTarget): Promise<MarketQuote | null> {
+    let quote: MarketQuote | null = null;
+    if (target.source === "tsetmc" && /^\d+$/.test(target.id)) {
+      quote = await this.getQuote(target.id, { symbol: target.symbol, name: target.name });
+    } else {
+      const instruments = await this.search(target.symbol);
+      const normalized = normalizeExchangeSymbol(target.symbol);
+      const instrument = instruments.find((item) => normalizeExchangeSymbol(item.symbol) === normalized) ?? instruments[0];
+      if (!instrument) return null;
+      quote = await this.getQuote(instrument.id, { symbol: target.symbol, name: target.name });
+    }
+    return quote ? attachExchangeIdentity(quote, target) : null;
+  }
+  async getTargetQuotes(targets: readonly ExchangeQuoteTarget[]): Promise<MarketQuote[]> {
+    const unique = new Map(targets.map((target) => [`${target.source}:${target.id}`, target]));
+    const values = [...unique.values()].slice(0, 20);
+    const quotes: MarketQuote[] = [];
+    const failures: MarketProviderError[] = [];
+    for (let index = 0; index < values.length; index += 4) {
+      const chunk = values.slice(index, index + 4);
+      const rows = await Promise.all(chunk.map(async (target) => {
+        try { return await this.getTargetQuote(target); }
+        catch (error) {
+          failures.push(classifyMarketProviderError("tsetmc", error));
+          return null;
+        }
+      }));
+      quotes.push(...rows.filter((quote): quote is MarketQuote => Boolean(quote)));
+    }
+    if (!quotes.length && failures.length) throw failures[0];
+    return quotes;
+  }
+  async getCandlesBySymbol(symbol: string, range: MarketHistoryRange): Promise<MarketCandle[]> {
+    const instruments = await this.search(symbol);
+    const normalized = normalizeExchangeSymbol(symbol);
+    const instrument = instruments.find((item) => normalizeExchangeSymbol(item.symbol) === normalized) ?? instruments[0];
+    return instrument ? this.getCandles(instrument.id, range) : [];
+  }
   async getQuotes(marketIds: readonly string[]): Promise<MarketQuote[]> {
     const ids = [...new Set(marketIds.filter((id) => /^\d+$/.test(id)))].slice(0, 20);
     const quotes: MarketQuote[] = [];
@@ -179,7 +199,6 @@ export class TsetmcProvider {
     if (!quotes.length && failures.length) throw failures[0];
     return quotes;
   }
-
   async getCandles(marketId: string, range: MarketHistoryRange): Promise<MarketCandle[]> {
     const top = range === "1m" ? 45 : 110;
     const payload = await this.request<TsetmcHistoryPayload>(
@@ -188,7 +207,6 @@ export class TsetmcProvider {
     );
     return parseTsetmcHistoryPayload(payload).slice(range === "1m" ? -31 : -93);
   }
-
   private async request<T>(path: string, revalidate: number): Promise<T> {
     const remainingBudget = this.deadlineAt - Date.now();
     if (remainingBudget <= 0) throw new MarketProviderError("tsetmc", "timeout");

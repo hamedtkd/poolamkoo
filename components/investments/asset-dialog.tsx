@@ -111,7 +111,7 @@ export function AssetDialog({ open, onOpenChange, asset, settings, onSaved, init
 
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-h-[90vh] overflow-y-auto max-sm:bottom-0 max-sm:left-0 max-sm:top-auto max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-b-none max-sm:rounded-t-[28px]">
-      <DialogHeader><DialogTitle>{asset ? "ویرایش دارایی" : "دارایی جدید"}</DialogTitle><DialogDescription>دلار، طلا و رمزارز از BrsApi قیمت می‌گیرند. سهام و صندوق‌های قابل معامله هم می‌توانند به قیمت بازار بورس متصل شوند.</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle>{asset ? "ویرایش دارایی" : "دارایی جدید"}</DialogTitle><DialogDescription>داده بازار از TSETMC، BrsApi و Tindex دریافت می‌شود. سهام و صندوق‌های قابل معامله هم می‌توانند به قیمت واقعی بازار بورس متصل شوند.</DialogDescription></DialogHeader>
       <form onSubmit={save} className="space-y-4">
         <Field label="نام" error={form.formState.errors.name?.message}><Input {...form.register("name")} placeholder={kind === "stock" ? "مثلاً فولاد مبارکه" : kind === "fund" ? "مثلاً صندوق طلای عیار" : undefined} /></Field>
         <div className="grid grid-cols-2 gap-3">

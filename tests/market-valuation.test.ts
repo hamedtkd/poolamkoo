@@ -53,6 +53,14 @@ test("linked assets never cross-fill from another provider with the same id or s
   assert.equal(resolved.price, 900);
 });
 
+test("a secondary provider quote can satisfy the original linked exchange identity", () => {
+  const row = quote({ source: "brsapi", marketSource: "tsetmc", marketId: "123", priceToman: 1_050 });
+  const resolved = resolveAssetValuation(asset(), [row]);
+  assert.equal(resolved.source, "live-market");
+  assert.equal(resolved.price, 1_050);
+  assert.equal(resolved.quote?.source, "brsapi");
+});
+
 test("live market and explicit manual prices are decision-ready", () => {
   assert.equal(resolveAssetValuation(asset(), [quote()]).decisionReady, true);
   assert.equal(resolveAssetValuation(asset({ marketId: undefined, marketSource: undefined, manualPriceToman: 850 }), []).decisionReady, true);

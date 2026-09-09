@@ -2,11 +2,12 @@ import type { MarketProviderFailureKind, MarketProviderId } from "./reliability.
 
 export const MARKET_CACHE_SECONDS = {
   brsapiCoreQuotes: 180,
+  brsapiExchangeHistory: 300,
   tsetmcQuote: 120,
   tsetmcSearch: 600,
   tsetmcHistory: 3600,
-  tindexCoreFallback: 1800,
-  tindexLegacyQuote: 3600,
+  tindexCoreQuotes: 1800,
+  tindexExchangeQuote: 3600,
   tindexHistory: 3600,
 } as const;
 
@@ -69,9 +70,9 @@ export function resetProviderCooldownsForTests() {
 
 export function marketLaunchGuardrails() {
   return [
-    `BrsApi: کش مشترک ${MARKET_CACHE_SECONDS.brsapiCoreQuotes} ثانیه`,
+    `BrsApi: کش نرخ‌های پایه ${MARKET_CACHE_SECONDS.brsapiCoreQuotes} و بورس ${MARKET_CACHE_SECONDS.brsapiExchangeHistory} ثانیه`,
     `TSETMC: کش Quote/Search/History برابر ${MARKET_CACHE_SECONDS.tsetmcQuote}/${MARKET_CACHE_SECONDS.tsetmcSearch}/${MARKET_CACHE_SECONDS.tsetmcHistory} ثانیه`,
-    `Tindex: fallback/legacy با کش ${MARKET_CACHE_SECONDS.tindexCoreFallback}/${MARKET_CACHE_SECONDS.tindexLegacyQuote} ثانیه`,
+    `Tindex: کش نرخ‌های پایه/بورس ${MARKET_CACHE_SECONDS.tindexCoreQuotes}/${MARKET_CACHE_SECONDS.tindexExchangeQuote} ثانیه`,
     `Browser: reuse درخواست یکسان تا ${Math.round(MARKET_CLIENT_REUSE_MS / 1000)} ثانیه`,
     "429/blocked: cooldown محافظتی روی runtime گرم",
   ];

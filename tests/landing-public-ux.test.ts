@@ -13,7 +13,7 @@ const css = readFileSync("app/globals.css", "utf8");
 
 test("critical landing hero stays readable before animation hydration", () => {
   assert.match(hero, /CinematicLandingHero/);
-  assert.match(cinematic, /پول می‌رسد/);
+  assert.match(cinematic, /پول میرسه/);
   assert.match(cinematic, /initial=\{false\}/);
   assert.doesNotMatch(cinematic, /visibility:\s*hidden|gsap-reveal/);
   assert.match(visual, /data-landing-visual="product"/);

@@ -8,7 +8,7 @@ import type {
 } from "./reliability.ts";
 import type { MarketCoverage } from "./runtime.ts";
 
-export const MARKET_PROVIDER_ORDER = ["brsapi", "tsetmc", "tindex"] as const satisfies readonly MarketProviderId[];
+export const MARKET_PROVIDER_ORDER = ["tsetmc", "brsapi", "tindex"] as const satisfies readonly MarketProviderId[];
 
 type ProviderMeta = {
   name: string;
@@ -19,18 +19,18 @@ type ProviderMeta = {
 const PROVIDER_META: Record<MarketProviderId, ProviderMeta> = {
   brsapi: {
     name: "BrsApi",
-    role: "نرخ‌های پایه",
-    description: "منبع اصلی دلار، طلای ۱۸ عیار و رمزارزهای پایه",
+    role: "داده مالی",
+    description: "ارز، طلا، رمزارز و داده بورس برای پوشش چندمنبعی",
   },
   tsetmc: {
     name: "TSETMC",
     role: "بورس تهران",
-    description: "منبع اصلی سهام و ETF؛ بدون API Key",
+    description: "سهام و ETF با API عمومی و بدون API Key",
   },
   tindex: {
     name: "Tindex",
-    role: "پشتیبان اختیاری",
-    description: "فقط اتصال‌های قدیمی و fallback محدود نرخ‌های پایه",
+    role: "داده بازار",
+    description: "ارز، طلا، بورس و تاریخچه با توکن Server-side",
   },
 };
 
@@ -101,7 +101,7 @@ export function marketRuntimeStatus(mode?: string, health?: MarketHealthSummary,
   if (mode === "live" && coverage?.snapshot) return { label: "زنده + Snapshot", detail: "بخش تازه بازار به‌روز شد و مسیرهای ناموفق با آخرین Snapshot واقعی همان نمادها پر شده‌اند." };
   if (mode === "live" && health?.degraded) return { label: "زنده، با محدودیت", detail: "بخشی از منابع تازه پاسخ داده‌اند؛ برای داده‌های بدون Snapshot قیمت دستی یا حالت ناموجود حفظ می‌شود." };
   if (mode === "live") return { label: "بازار زنده", detail: "داده تازه از Providerهای موردنیاز دریافت شده است." };
-  if (mode === "unconfigured") return { label: "منبع اصلی تنظیم نشده", detail: "بورس مستقیم می‌تواند بدون کلید کار کند؛ نرخ‌های پایه به BrsApi یا fallback اختیاری نیاز دارند." };
+  if (mode === "unconfigured") return { label: "برخی منابع بازار تنظیم نشده‌اند", detail: "بخشی از داده بورس بدون کلید کار می‌کند؛ برای پوشش کامل‌تر بازار، کلیدهای BrsApi و Tindex را تنظیم کن." };
   if (mode === "unavailable") return { label: "بازار تازه در دسترس نیست", detail: "پولم‌کو داده ساختگی نمی‌سازد و به Snapshot واقعی یا قیمت دستی برمی‌گردد." };
   return { label: "وضعیت بازار آماده نیست", detail: "پس از اولین refresh وضعیت Providerها اینجا نمایش داده می‌شود." };
 }

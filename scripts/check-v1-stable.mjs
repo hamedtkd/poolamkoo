@@ -8,13 +8,14 @@ const BRAND_HASHES = {
   fa: "5f0335d3314e8495cb1ec497b28c30113635244e88d7352d287744b2abce5317",
   en: "963971d37d437030a289e9fea26a0496ef22f018d58985ff556b8fba3426a279",
 };
-const SHOWCASE = [
+const SHOWCASE_EN = [
   "docs/assets/showcase/poolamkoo-overview-en.webp",
   "docs/assets/showcase/income-planning-en.webp",
   "docs/assets/showcase/funds-goals-en.webp",
   "docs/assets/showcase/reports-insights-en.webp",
   "docs/assets/showcase/settings-themes-en.webp",
 ];
+const SHOWCASE_FA = SHOWCASE_EN.map((path) => path.replace("-en.webp", "-fa.webp"));
 
 async function read(path) { return readFile(path, "utf8"); }
 async function hash(path) { return createHash("sha256").update(await readFile(path)).digest("hex"); }
@@ -38,7 +39,7 @@ const [
   read("app/(workspace)/loading.tsx"), read("components/skeletons/page-skeleton.tsx"), read("components/investments/pending-plan-purchases.tsx"),
   read("README.md"), read("README.fa.md"), read("docs/assets/showcase/README.md"),
   hash("public/brand/poolamkoo-mark.svg"), hash("public/brand/poolamkoo-dark.svg"), hash("public/brand/poolamkoo-fa-lockup.svg"), hash("public/brand/poolamkoo-en-lockup.svg"),
-  Promise.all(SHOWCASE.map((path) => stat(path))),
+  Promise.all([...SHOWCASE_EN, ...SHOWCASE_FA].map((path) => stat(path))),
 ]);
 
 
@@ -58,11 +59,11 @@ const checks = [
   [releaseSource.includes("Investment queue UX & GitHub showcase") && releaseSource.includes("چهار گروه") && releaseSource.includes("SensitiveValue") && releaseSource.includes("schema 8") && releaseSource.includes("سبز") && releaseSource.includes("comma استاندارد") && releaseSource.includes("Composition سینمایی"), "release note must document compact purchases plus financial semantics, number grouping and landing polish"],
   [globalsSource.includes("--profit: #15803d") && globalsSource.includes("--profit: #4ade80") && globalsSource.includes("--loss: #c62828") && globalsSource.includes("--loss: #f87171") && formatSource.includes('new Intl.NumberFormat("en-US"') && formatSource.includes("formatSignedMoney") && priceInputSource.includes("formatGroupedNumber"), "profit/loss colors and Persian money grouping must remain semantic and palette-independent"],
   [dashboardSource.includes("سود باز") && dashboardSource.includes("زیان باز") && dashboardSource.includes("text-profit") && dashboardSource.includes("text-loss") && investmentsSource.includes("formatSignedMoney"), "dashboard and investments must label and color open profit/loss explicitly"],
-  [cinematicHeroSource.includes("پول می‌رسد") && cinematicHeroSource.includes("useReducedMotion") && cinematicHeroSource.includes("initial={false}") && landingVisualSource.includes("poolamkoo-income-mobile.webp") && landingVisualSource.includes('data-demo="true"'), "landing hero must stay readable, motion-safe and grounded in a real demo product capture"],
+  [cinematicHeroSource.includes("پول میرسه") && cinematicHeroSource.includes("useReducedMotion") && cinematicHeroSource.includes("initial={false}") && landingVisualSource.includes("poolamkoo-income-mobile.webp") && landingVisualSource.includes('data-demo="true"'), "landing hero must stay readable, motion-safe and grounded in a real demo product capture"],
   [roadmapSource.includes("v1.1.0 — Searchable settings architecture ✅") && roadmapSource.includes("v1.1.1 — Investment queue UX & GitHub media 🚧"), "roadmap must close v1.1.0 and track the v1.1.1 UX patch"],
   [pendingPlanSource.includes("groupByIncome") && pendingPlanSource.includes("MAX_VISIBLE_GROUPS = 4") && pendingPlanSource.includes("open={defaultOpen}") && pendingPlanSource.includes("showAll ? groups") && pendingPlanSource.includes("SensitiveValue") && pendingPlanSource.includes("onBuy(item, asset)"), "pending investment purchases must group by income, stay compact, preserve privacy and keep exact PlanItem actions"],
-  [SHOWCASE.every((path) => readmeSource.includes(`./${path}`)) && SHOWCASE.every((path) => readmeFaSource.includes(`./${path}`)), "both READMEs must render the canonical English GitHub showcase"],
-  [showcaseStats.every((entry) => entry.size > 50_000) && showcaseDocsSource.includes("promotional compositions") && showcaseDocsSource.includes("outside the repository"), "GitHub showcase assets must exist and remain explicitly separate from exact screenshots/Persian social assets"],
+  [SHOWCASE_EN.every((path) => readmeSource.includes(`./${path}`)) && SHOWCASE_FA.every((path) => readmeFaSource.includes(`./${path}`)), "each README must render its language-specific GitHub showcase"],
+  [showcaseStats.every((entry) => entry.size > 50_000) && showcaseDocsSource.includes("promotional presentation assets") && showcaseDocsSource.includes("localized presentation set used in `README.fa.md`"), "GitHub showcase assets must exist and remain explicitly separate from exact screenshots/Persian social assets"],
   [categoryRoutes.every((route) => settingsModelSource.includes(`/settings/${route}`)), "v1.1.0 settings registry must remain intact"],
   [settingsSearchSource.includes("settingsSearchItems") && settingsSearchSource.includes("normalizeSearchText") && settingsSearchSource.includes("router.push(item.href)"), "local Settings search must keep the shared normalized deep-link registry"],
   [globalSearchSource.includes("settingsSearchItems.map") && globalSearchSource.includes("تنظیم ·"), "global search must keep the same Settings registry"],
@@ -81,7 +82,7 @@ const checks = [
   [priorSettingsSource.includes("Searchable settings architecture") && priorSettingsSource.includes("رنگ‌ساز سفارشی") && priorBrandSource.includes("Brand mark & PWA identity refresh") && priorLaunchSource.includes("Public launch & quota hardening"), "v1.1.1 must preserve accepted v1.1.0 and v1.0.x boundaries"],
   [quotaSource.includes("brsapiCoreQuotes: 180") && quotaSource.includes("tsetmcQuote: 120") && quotaSource.includes("tsetmcSearch: 600") && quotaSource.includes("MARKET_CLIENT_REUSE_MS = 30_000"), "quota constants must keep launch-safe cache/reuse windows"],
   [reliabilitySource.includes("activeProviderCooldown") && reliabilitySource.includes("retryAfterSeconds") && reliabilitySource.includes("guarded: true"), "provider cooldowns must remain intact"],
-  [brsSource.includes("MARKET_CACHE_SECONDS.brsapiCoreQuotes") && tsetmcSource.includes("MARKET_CACHE_SECONDS.tsetmcQuote") && tindexSource.includes("MARKET_CACHE_SECONDS.tindexCoreFallback"), "providers must keep the central cache policy"],
+  [brsSource.includes("MARKET_CACHE_SECONDS.brsapiCoreQuotes") && tsetmcSource.includes("MARKET_CACHE_SECONDS.tsetmcQuote") && tindexSource.includes("MARKET_CACHE_SECONDS.tindexCoreQuotes"), "providers must keep the central cache policy"],
   [marketHookSource.includes("recentResponse") && marketHookSource.includes("MARKET_CLIENT_REUSE_MS"), "client market request reuse must remain intact"],
   [marketApiSource.includes("s-maxage=60") && marketApiSource.includes('"private, no-store"'), "market CDN/privacy cache boundary must remain intact"],
 ];

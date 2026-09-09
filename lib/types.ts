@@ -119,6 +119,7 @@ export interface MarketQuote {
   changeValueToman: number;
   asOf: string;
   source: MarketSource;
+  marketSource?: ExchangeMarketSource;
   runtimeSource?: "live" | "snapshot";
   snapshotCapturedAt?: string;
 }

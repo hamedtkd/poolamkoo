@@ -21,7 +21,10 @@ function positivePrice(value: number | undefined) {
 
 export function marketQuoteForTarget(target: MarketQuoteTarget, quotes: readonly MarketQuote[]) {
   if (target.source && target.marketId) {
-    return quotes.find((quote) => quote.source === target.source && quote.marketId === target.marketId);
+    return quotes.find((quote) => {
+      const exchangeSource = quote.marketSource ?? (quote.source === "tsetmc" || quote.source === "tindex" ? quote.source : undefined);
+      return exchangeSource === target.source && quote.marketId === target.marketId;
+    });
   }
   if (!target.symbol) return undefined;
   return quotes.find((quote) => quote.symbol === target.symbol && !quote.marketId)

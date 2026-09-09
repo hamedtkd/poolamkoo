@@ -18,9 +18,10 @@ export type MarketCoverage = {
 
 const CORE_RUNTIME_SYMBOLS: readonly MarketSymbol[] = ["USD", "IR_GOLD_18K", "BTC", "USDT"];
 
-export function marketQuoteKey(quote: Pick<MarketQuote, "marketId" | "source" | "symbol">) {
-  if (quote.marketId && (quote.source === "tsetmc" || quote.source === "tindex")) {
-    return marketIdentityKey({ source: quote.source, marketId: quote.marketId });
+export function marketQuoteKey(quote: Pick<MarketQuote, "marketId" | "marketSource" | "source" | "symbol">) {
+  const exchangeSource = quote.marketSource ?? (quote.source === "tsetmc" || quote.source === "tindex" ? quote.source : undefined);
+  if (quote.marketId && exchangeSource) {
+    return marketIdentityKey({ source: exchangeSource, marketId: quote.marketId });
   }
   return quote.symbol;
 }
@@ -96,6 +97,7 @@ export function marketQuoteForStorage(quote: MarketQuote): MarketQuote {
     changeValueToman: quote.changeValueToman,
     asOf: quote.asOf,
     source: quote.source,
+    marketSource: quote.marketSource,
   };
 }
 

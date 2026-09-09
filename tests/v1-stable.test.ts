@@ -6,13 +6,14 @@ import { APP_VERSION, LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.t
 
 const read = (path: string) => readFileSync(path, "utf8");
 const sha256 = (path: string) => createHash("sha256").update(readFileSync(path)).digest("hex");
-const SHOWCASE = [
+const SHOWCASE_EN = [
   "docs/assets/showcase/poolamkoo-overview-en.webp",
   "docs/assets/showcase/income-planning-en.webp",
   "docs/assets/showcase/funds-goals-en.webp",
   "docs/assets/showcase/reports-insights-en.webp",
   "docs/assets/showcase/settings-themes-en.webp",
 ];
+const SHOWCASE_FA = SHOWCASE_EN.map((path) => path.replace("-en.webp", "-fa.webp"));
 
 const BRAND_SOURCES = {
   mark: "fabbfff77baacc3480ada96e505980b1ea879385eda10c034ce6e151fc0c9d4b",
@@ -46,13 +47,16 @@ test("GitHub showcase uses optimized English panels while exact screenshots rema
   const readme = read("README.md");
   const readmeFa = read("README.fa.md");
   const docs = read("docs/assets/showcase/README.md");
-  for (const path of SHOWCASE) {
+  for (const path of SHOWCASE_EN) {
     assert.equal(statSync(path).size > 50_000, true);
     assert.equal(readme.includes(`./${path}`), true);
+  }
+  for (const path of SHOWCASE_FA) {
+    assert.equal(statSync(path).size > 50_000, true);
     assert.equal(readmeFa.includes(`./${path}`), true);
   }
-  assert.equal(readme.includes("promotional compositions rather than pixel-exact screenshots"), true);
-  assert.equal(docs.includes("Persian presentation variants are intentionally kept outside the repository"), true);
+  assert.equal(readme.includes("Exact product captures from the real production UI remain under"), true);
+  assert.equal(docs.includes("Persian panels") && docs.includes("localized presentation set used in `README.fa.md`"), true);
   assert.equal(readme.includes("./docs/assets/screenshots/dashboard-light-desktop.png"), true);
 });
 

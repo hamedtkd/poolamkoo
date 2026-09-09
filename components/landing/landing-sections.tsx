@@ -31,7 +31,7 @@ const features = [
   { icon: RiLockPasswordLine, title: "بکاپ رمزنگاری‌شده", text: "فایل بکاپ با AES-GCM رمز می‌شود. Recovery Snapshot هم قبل از تغییرات حساس یک راه برگشت محلی می‌دهد." },
   { icon: RiSmartphoneLine, title: "انتقال مستقیم دستگاه", text: "برای جابه‌جایی بین موبایل و دسکتاپ، انتقال WebRTC رمزنگاری‌شده داری و فایل بکاپ همیشه fallback باقی می‌ماند." },
   { icon: RiFundsLine, title: "سبد سرمایه‌گذاری واقعی", text: "خرید و فروش، Cost Basis، موجودی قدیمی، قیمت دستی و اتصال به داده بازار در یک مدل واحد قرار می‌گیرند." },
-  { icon: RiExchangeLine, title: "داده بازار بدون جعل", text: "BrsApi برای نرخ‌های عمومی و TSETMC مستقیم برای بورس استفاده می‌شوند؛ Tindex فقط fallback اختیاری است و وقتی داده واقعی در دسترس نیست، برنامه تاریخچه ساختگی تولید نمی‌کند." },
+  { icon: RiExchangeLine, title: "داده بازار بدون جعل", text: "داده بازار از TSETMC، BrsApi و Tindex دریافت می‌شود؛ اگر یک منبع موقتاً پاسخ ندهد، برنامه از منبع فعال دیگر استفاده می‌کند و تاریخچه ساختگی تولید نمی‌کند." },
   { icon: RiArchiveLine, title: "واردکردن تاریخچه", text: "CSV فارسی یا انگلیسی، تاریخ شمسی یا میلادی و اعتبارسنجی فروش و رکورد تکراری برای انتقال داده‌های گذشته پشتیبانی می‌شود." },
 ] as const;
 
@@ -92,6 +92,19 @@ export function LandingSections() {
             </MotionReveal>
           ))}
         </div>
+      </section>
+
+      <section className="rounded-[26px] border bg-card/70 p-5 sm:p-7">
+        <MotionReveal direction="up">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-3xl">
+              <div className="type-caption font-[650] text-primary">منابع داده بازار</div>
+              <h2 className="mt-1 type-card-title">داده‌ها از TSETMC، BrsApi و Tindex دریافت می‌شوند.</h2>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">Tindex یکی از منابع داده مالی و اسپانسر پروژه پولم‌کو است.</p>
+            </div>
+            <a href={COMMUNITY_LINKS.tindex} target="_blank" rel="noopener" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border bg-background px-4 text-sm font-[620] transition hover:bg-accent">مشاهده Tindex <RiArrowLeftLine /></a>
+          </div>
+        </MotionReveal>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">

@@ -384,7 +384,7 @@ async function main() {
     await client.call("Page.addScriptToEvaluateOnNewDocument", { source: `(() => { const RealDate=Date; const fixed=${JSON.stringify(POOLAMKOO_MEDIA_ANCHOR)}; class FixedDate extends RealDate { constructor(...args){ super(...(args.length?args:[fixed])); } static now(){ return new RealDate(fixed).getTime(); } } FixedDate.parse=RealDate.parse; FixedDate.UTC=RealDate.UTC; window.Date=FixedDate; })();` });
     await client.call("Storage.clearDataForOrigin", { origin, storageTypes: "all" });
 
-    await navigate(client, `${origin}/`, "پول می‌رسد");
+    await navigate(client, `${origin}/`, "پول میرسه");
     assert(await evaluate(client, "location.pathname === '/'"), "normal web root must remain the public landing page");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "public landing must not advertise the installable manifest");
     assert(await evaluate(client, "navigator.serviceWorker.getRegistrations().then((rows) => rows.length === 0)"), "public landing must not initialize a service worker in a fresh profile");
@@ -403,7 +403,7 @@ async function main() {
     await waitFor(client, `document.documentElement.classList.contains(${JSON.stringify(beforeTheme === "dark" ? "light" : "dark")})`, "public theme switch");
 
     await verifyLegacySchemaMigration(client, origin);
-    await navigate(client, `${origin}/`, "پول می‌رسد");
+    await navigate(client, `${origin}/`, "پول میرسه");
     assert(await evaluate(client, "navigator.serviceWorker.getRegistrations().then((rows) => rows.length === 0)"), "migration fixture cleanup must restore a fresh public origin");
     await evaluate(client, "[...document.querySelectorAll('a')].find((node) => node.getAttribute('href') === '/dashboard' && node.textContent?.includes('شروع رایگان'))?.click(); true");
     await waitFor(client, "location.pathname === '/dashboard'", "landing-to-workspace navigation");
@@ -607,7 +607,7 @@ async function main() {
     await waitFor(client, "document.querySelector('[data-tour-spotlight=true]') === null", "mobile product tour close");
     await client.call("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 
-    await navigate(client, `${origin}/`, "پول می‌رسد");
+    await navigate(client, `${origin}/`, "پول میرسه");
     assert(await evaluate(client, "location.pathname === '/'"), "normal browser root must remain landing even after workspace PWA registration");
     assert(await evaluate(client, "document.querySelector('link[rel=manifest]') === null"), "returning to the public landing must remove workspace manifest metadata");
     assert(await evaluate(client, "Boolean(navigator.serviceWorker.controller)"), "public landing should remain under the existing root-scope worker after workspace registration");
