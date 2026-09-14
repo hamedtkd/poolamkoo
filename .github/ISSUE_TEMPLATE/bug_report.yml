@@ -1,0 +1,101 @@
+name: گزارش باگ
+description: یک مشکل قابل بازتولید در Poolamkoo را گزارش کنید
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ممنون که برای بهتر شدن Poolamkoo وقت می‌گذارید.
+
+        لطفاً Backup، API Key، Token، Secret، اطلاعات مالی واقعی یا داده شخصی را در Issue عمومی قرار ندهید.
+        برای مشکلات امنیتی از مسیر Security مخزن استفاده کنید.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: شرح مشکل
+      description: چه اتفاقی افتاد و انتظار داشتید چه اتفاقی بیفتد؟
+      placeholder: مشکل را کوتاه و واضح توضیح دهید.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: مراحل بازتولید
+      description: مراحلی را بنویسید که مشکل را ایجاد می‌کنند.
+      placeholder: |
+        1. وارد صفحه ... شوید
+        2. روی ... بزنید
+        3. مقدار ... را وارد کنید
+        4. مشکل مشاهده می‌شود
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: رفتار مورد انتظار
+      description: انتظار داشتید برنامه چه رفتاری داشته باشد؟
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: بخش مرتبط
+      options:
+        - پول ورودی و برنامه‌ریزی
+        - سرمایه‌گذاری
+        - صندوق‌ها و اهداف
+        - بازار و قیمت‌ها
+        - گزارش‌ها
+        - Backup / Restore / Recovery
+        - انتقال بین دستگاه‌ها
+        - تنظیمات و ظاهر
+        - PWA / Offline
+        - Landing / صفحات عمومی
+        - سایر
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: نسخه Poolamkoo
+      placeholder: مثال: v1.2.0 یا commit SHA
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: مرورگر
+      placeholder: مثال: Chrome 140
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: سیستم‌عامل
+      placeholder: مثال: Windows 11 / Android / macOS / Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: اطلاعات تکمیلی
+      description: در صورت نیاز Screenshot، خطای Console یا Diagnostic غیرحساس اضافه کنید.
+      placeholder: هیچ اطلاعات مالی واقعی، Token، Backup یا Secret قرار ندهید.
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: حریم خصوصی و ایمنی داده
+      options:
+        - label: تأیید می‌کنم که این Issue شامل Backup، Secret، Token، API Key یا اطلاعات مالی و شخصی واقعی نیست.
+          required: true
+        - label: اگر مشکل امنیتی است، آن را در Issue عمومی منتشر نکرده‌ام.
+          required: true

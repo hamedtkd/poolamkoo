@@ -1,0 +1,81 @@
+name: پیشنهاد قابلیت
+description: یک قابلیت جدید یا بهبود تجربه کاربری برای Poolamkoo پیشنهاد دهید
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ممنون که برای بهتر شدن Poolamkoo پیشنهاد می‌دهید.
+
+        لطفاً ابتدا مسئله کاربر را توضیح دهید و سپس راه‌حل پیشنهادی را بنویسید.
+        از قرار دادن اطلاعات مالی واقعی یا داده شخصی در Issue خودداری کنید.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: مسئله کاربر
+      description: چه مشکلی وجود دارد و این قابلیت قرار است چه چیزی را بهتر کند؟
+      placeholder: مسئله را از دید کاربر توضیح دهید.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: بخش مرتبط
+      options:
+        - پول ورودی و برنامه‌ریزی
+        - سرمایه‌گذاری
+        - صندوق‌ها و اهداف
+        - بازار و قیمت‌ها
+        - گزارش‌ها
+        - Backup / Restore / Recovery
+        - انتقال بین دستگاه‌ها
+        - تنظیمات و ظاهر
+        - PWA / Offline
+        - Landing / صفحات عمومی
+        - قابلیت جدید
+        - سایر
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: راه‌حل پیشنهادی
+      description: دوست دارید Poolamkoo چگونه این مسئله را حل کند؟
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: راه‌حل‌های جایگزین
+      description: آیا روش ساده‌تر یا جایگزین دیگری برای حل مسئله وجود دارد؟
+
+  - type: textarea
+    id: data_impact
+    attributes:
+      label: اثر احتمالی روی داده
+      description: آیا این پیشنهاد ممکن است روی IndexedDB، Backup، Recovery، تراکنش‌ها، محاسبات مالی یا Market Data اثر بگذارد؟
+      placeholder: اگر مطمئن نیستید بنویسید «نامشخص».
+
+  - type: textarea
+    id: success
+    attributes:
+      label: معیار موفقیت
+      description: از کجا بفهمیم این قابلیت مسئله را واقعاً حل کرده است؟
+
+  - type: textarea
+    id: details
+    attributes:
+      label: توضیحات تکمیلی
+      description: Mockup، Screenshot، نمونه رفتار یا توضیح بیشتر را اینجا قرار دهید.
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: حریم خصوصی
+      options:
+        - label: تأیید می‌کنم که این Issue شامل اطلاعات مالی واقعی، Backup، Token، Secret یا داده شخصی نیست.
+          required: true
