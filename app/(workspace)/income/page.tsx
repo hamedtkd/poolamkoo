@@ -1,12 +1,19 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { Reveal } from "@/components/animation/reveal";
 import { PageDateFilterBar } from "@/components/app/page-date-filter-bar";
+import { IncomePlanPage } from "@/components/income/income-plan-page";
 import { IncomeSection } from "@/components/sections/income";
 import { useAppRuntime } from "@/components/app/app-runtime";
 
 export default function IncomePage() {
-  const { data, dateFilter } = useAppRuntime();
+  const { data, market, dateFilter } = useAppRuntime();
+  const searchParams = useSearchParams();
+  const planId = Number(searchParams.get("plan"));
+  if (Number.isInteger(planId) && planId > 0) {
+    return <IncomePlanPage incomeId={planId} settings={data.settings} incomes={data.incomes} planItems={data.planItems} assets={data.assets} funds={data.funds} transactions={data.transactions} quotes={market.quotes} />;
+  }
   const scope = "income" as const;
   const filtered = dateFilter.filteredFor(scope);
 

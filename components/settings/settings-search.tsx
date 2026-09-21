@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { moveSearchSelection, normalizeSearchText } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { getSettingsCategoryLabel, settingsSearchItems } from "@/components/settings/settings-navigation-model";
+import { navigateWorkspace } from "@/lib/workspace-navigation";
 
 export function SettingsSearch() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export function SettingsSearch() {
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
-    router.push(item.href);
+    navigateWorkspace(router, item.href);
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
+import { useNetworkStatus } from "@/hooks/use-network-status";
 import { marketIdentityKey } from "@/lib/market/identity";
 import { MARKET_CLIENT_REUSE_MS } from "@/lib/market/quota";
 import type { MarketHealthSummary } from "@/lib/market/reliability";
@@ -104,6 +105,7 @@ async function latestCachedQuotes() {
 }
 
 export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [], alerts: MarketAlert[] = [], enabled = true) {
+  const { online, hydrated } = useNetworkStatus();
   const targetsKey = useMemo(() => JSON.stringify(targetDescriptors(assets, watchlist, alerts)), [alerts, assets, watchlist]);
   const targets = useMemo(() => JSON.parse(targetsKey) as MarketTarget[], [targetsKey]);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
@@ -152,8 +154,17 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
   }, [targets]);
 
   const refresh = useCallback(async () => {
-    if (!enabled) return;
+    if (!enabled || !hydrated) return;
     setLoading(true);
+    if (!online) {
+      const cached = await latestCachedQuotes();
+      const merged = applyCached(cached);
+      if (!merged.quotes.length) setMode("unavailable");
+      setHealth(undefined);
+      setWarning("آفلاین هستی؛ آخرین قیمت ذخیره‌شده نمایش داده می‌شود.");
+      setLoading(false);
+      return;
+    }
     try {
       await applyResponse(await requestMarket(targets));
     } catch {
@@ -165,14 +176,20 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
     } finally {
       setLoading(false);
     }
-  }, [applyCached, applyResponse, enabled, targets]);
+  }, [applyCached, applyResponse, enabled, hydrated, online, targets]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !hydrated) return;
     let active = true;
     void latestCachedQuotes().then(async (cached) => {
       if (!active) return;
-      applyCached(cached);
+      const merged = applyCached(cached);
+      if (!online) {
+        if (!merged.quotes.length) setMode("unavailable");
+        setWarning("آفلاین هستی؛ قیمت تازه دریافت نمی‌شود.");
+        setLoading(false);
+        return;
+      }
       try {
         const data = await requestMarket(targets);
         if (active) await applyResponse(data);
@@ -183,7 +200,7 @@ export function useMarket(assets: Asset[] = [], watchlist: MarketWatchItem[] = [
       }
     });
     return () => { active = false; };
-  }, [applyCached, applyResponse, enabled, targets, targetsKey]);
+  }, [applyCached, applyResponse, enabled, hydrated, online, targets, targetsKey]);
 
   return { quotes, coverage, loading, mode, lastUpdated, warning, health, refresh };
 }

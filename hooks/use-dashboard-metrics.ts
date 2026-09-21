@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { futureFocusPercent, portfolioPosition } from "@/lib/calculations";
 import { portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { resolveAssetValuation } from "@/lib/market/valuation";
+import { transactionBuyCost, transactionSellProceeds } from "@/lib/investment-lots";
 import type { AllocationRule, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote } from "@/lib/types";
 
 export function useDashboardMetrics({ rule, incomes, funds, assets, transactions, quotes }: {
@@ -23,12 +24,14 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
         ...position,
         priceSource: valuation.source,
         pricingReliable: position.qty <= 0 || valuation.decisionReady,
+        valuationAvailable: position.valuationAvailable,
       };
     });
     const portfolio = positions.reduce((sum, position) => sum + position.currentValue, 0);
     const investedCost = positions.reduce((sum, position) => sum + position.cost, 0);
     const pricingIncomplete = positions.some((position) => position.qty > 0 && !position.pricingReliable);
-    const pnl = portfolio - investedCost;
+    const pricingMissing = positions.some((position) => position.qty > 0 && !position.valuationAvailable);
+    const pnl = positions.reduce((sum, position) => sum + (position.valuationAvailable ? position.unrealized : 0), 0);
     const pnlPct = investedCost > 0 ? pnl / investedCost * 100 : 0;
     const monthStart = new Date();
     monthStart.setDate(1);
@@ -41,7 +44,9 @@ export function useDashboardMetrics({ rule, incomes, funds, assets, transactions
     return {
       positions,
       portfolio,
+      investedCost,
       pricingIncomplete,
+      pricingMissing,
       pnl,
       pnlPct,
       monthIncome,
@@ -60,7 +65,7 @@ function makeInvestedSeries(transactions: InvestmentTransaction[]) {
   let cumulative = 0;
   const beforeStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
   for (const transaction of transactions) {
-    if (new Date(transaction.happenedAt) < beforeStart) cumulative += transaction.type === "buy" ? transaction.amountToman : -transaction.amountToman;
+    if (new Date(transaction.happenedAt) < beforeStart) cumulative += transaction.type === "buy" ? transactionBuyCost(transaction) : -transactionSellProceeds(transaction);
   }
   const result: Array<{ date: string; value: number }> = [];
   for (let offset = 5; offset >= 0; offset -= 1) {
@@ -68,7 +73,7 @@ function makeInvestedSeries(transactions: InvestmentTransaction[]) {
     const end = new Date(now.getFullYear(), now.getMonth() - offset + 1, 1);
     for (const transaction of transactions) {
       const happenedAt = new Date(transaction.happenedAt);
-      if (happenedAt >= start && happenedAt < end) cumulative += transaction.type === "buy" ? transaction.amountToman : -transaction.amountToman;
+      if (happenedAt >= start && happenedAt < end) cumulative += transaction.type === "buy" ? transactionBuyCost(transaction) : -transactionSellProceeds(transaction);
     }
     result.push({ date: formatter.format(start), value: Math.max(0, Math.round(cumulative)) });
   }

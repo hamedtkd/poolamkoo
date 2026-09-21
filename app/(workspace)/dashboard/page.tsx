@@ -5,6 +5,7 @@ import { Reveal } from "@/components/animation/reveal";
 import { PageDateFilterBar } from "@/components/app/page-date-filter-bar";
 import { DashboardSection } from "@/components/sections/dashboard";
 import { useAppRuntime } from "@/components/app/app-runtime";
+import { navigateWorkspace } from "@/lib/workspace-navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -39,8 +40,8 @@ export default function DashboardPage() {
         planItems={filtered.planItems}
         onRefreshMarket={() => void market.refresh()}
         onNewMoney={() => window.dispatchEvent(new CustomEvent("poolyar:new-money"))}
-        onOpenInvestments={() => router.push("/investments")}
-        onOpenFunds={() => router.push("/funds")}
+        onOpenInvestments={() => navigateWorkspace(router, "/investments")}
+        onOpenFunds={() => navigateWorkspace(router, "/funds")}
       />
     </div>
   );

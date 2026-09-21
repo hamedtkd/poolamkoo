@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { moveSearchSelection, normalizeSearchText } from "@/lib/search";
 import { cn } from "@/lib/utils";
-
+import { navigateWorkspace } from "@/lib/workspace-navigation";
 type SearchItem = {
   id: string;
   title: string;
@@ -37,7 +37,7 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
   const items = useMemo<SearchItem[]>(() => {
     const closeAndRoute = (href: string) => () => {
       onOpenChange(false);
-      router.push(href);
+      navigateWorkspace(router, href);
     };
     const navItems = appNav.map((item) => {
       const Icon = item.icon;

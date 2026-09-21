@@ -52,7 +52,7 @@ export function buildFinancialActivity({ incomes, funds, fundMovements, assets, 
     detail: "پول ورودی ثبت شد",
     amountToman: safeAmount(income.amountToman),
     note: cleanNote(income.note),
-    href: income.id ? `/income/${income.id}` : "/income",
+    href: income.id ? `/income?plan=${income.id}` : "/income",
     searchText: activitySearchText([income.title, income.note, "پول ورودی درآمد"]),
   }));
 

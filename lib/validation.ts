@@ -52,10 +52,17 @@ export type OpeningHoldingFormValues = z.infer<typeof openingHoldingSchema>;
 
 export const transactionSchema = z.object({
   type: z.enum(["buy", "sell"], { error: "نوع تراکنش را انتخاب کن." }),
-  amount: requiredNumber("مبلغ کل را وارد کن.").positive("مبلغ باید بیشتر از صفر باشد."),
+  amount: requiredNumber("مبلغ معامله را وارد کن.").positive("مبلغ باید بیشتر از صفر باشد."),
   price: requiredNumber("قیمت واحد را وارد کن.").positive("قیمت واحد باید بیشتر از صفر باشد."),
+  fee: z.number({ error: "کارمزد را به‌صورت عدد وارد کن." }).min(0, "کارمزد نمی‌تواند منفی باشد.").nullable().optional(),
+  otherCost: z.number({ error: "هزینه جانبی را به‌صورت عدد وارد کن." }).min(0, "هزینه جانبی نمی‌تواند منفی باشد.").nullable().optional(),
   date: z.date({ error: "تاریخ معامله را انتخاب کن." }).refine((date) => date.getTime() <= Date.now(), "تاریخ معامله نمی‌تواند در آینده باشد."),
   note: z.string().trim().max(200, "یادداشت نباید بیشتر از ۲۰۰ حرف باشد.").optional(),
+}).superRefine((value, ctx) => {
+  const costs = (value.fee ?? 0) + (value.otherCost ?? 0);
+  if (value.type === "sell" && costs >= value.amount) {
+    ctx.addIssue({ code: "custom", path: ["fee"], message: "جمع کارمزد و هزینه جانبی باید از مبلغ فروش کمتر باشد." });
+  }
 });
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;

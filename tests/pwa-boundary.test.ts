@@ -36,11 +36,12 @@ test("standalone landing root falls through to dashboard without changing normal
 
 test("service worker precaches workspace shell but keeps public navigations network-only", () => {
   const serviceWorker = read("public/sw.js");
-  const precacheLine = serviceWorker.split("\n").find((line) => line.startsWith("const PRECACHE")) ?? "";
   assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v71"'), true);
-  assert.equal(precacheLine.includes('["/",'), false);
-  assert.equal(precacheLine.includes('"/dashboard"'), true);
-  assert.equal(precacheLine.includes('"/offline"'), true);
+  assert.equal(serviceWorker.includes('"/dashboard"'), true);
+  assert.equal(serviceWorker.includes("WORKSPACE_ROUTES"), true);
+  assert.equal(serviceWorker.includes("prepareOfflineRelease"), true);
+  assert.equal(serviceWorker.includes('"/offline"'), true);
+  assert.equal(serviceWorker.includes('"/",'), false);
   assert.equal(serviceWorker.includes("WORKSPACE_NAVIGATION_PREFIXES"), true);
   assert.equal(serviceWorker.includes("!isWorkspaceNavigation(url.pathname)"), true);
   assert.equal(serviceWorker.includes("event.respondWith(fetch(request));"), true);

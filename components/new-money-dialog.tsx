@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { cn } from "@/lib/utils";
+import { navigateWorkspace } from "@/lib/workspace-navigation";
 
 interface Props {
   open: boolean;
@@ -45,7 +46,7 @@ function NewMoneyDialogSession(props: Props) {
     quotes: props.quotes,
     onSaved: (incomeId) => {
       props.onOpenChange(false);
-      router.push(`/income/${incomeId}`);
+      navigateWorkspace(router, `/income?plan=${incomeId}`);
     },
   });
   const { form, values, step, setStep, activeRule, effectiveRule, split, safetyPlan, growthPlan, growthPricingReady, smartChanged, allocationValues, allocationChanged, updateAllocation, resetAllocation, next, save } = state;

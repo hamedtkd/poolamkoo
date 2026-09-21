@@ -21,6 +21,7 @@ export interface PositionRow {
   returnPct: number;
   priceSource: PositionPriceSource;
   pricingReliable: boolean;
+  valuationAvailable: boolean;
 }
 
 export function useInvestmentPortfolio(assets: Asset[], transactions: InvestmentTransaction[], quotes: MarketQuote[]) {
@@ -33,6 +34,7 @@ export function useInvestmentPortfolio(assets: Asset[], transactions: Investment
       ...position,
       priceSource: valuation.source,
       pricingReliable: position.qty <= 0 || valuation.decisionReady,
+      valuationAvailable: position.valuationAvailable,
     };
   }), [assets, transactions, quotes]);
 
@@ -40,6 +42,9 @@ export function useInvestmentPortfolio(assets: Asset[], transactions: Investment
   const totals = useMemo(() => ({
     value: positions.reduce((sum, row) => sum + row.currentValue, 0),
     cost: positions.reduce((sum, row) => sum + row.cost, 0),
+    realized: positions.reduce((sum, row) => sum + row.realized, 0),
+    unrealized: positions.reduce((sum, row) => sum + row.unrealized, 0),
+    pricingComplete: positions.every((row) => row.qty <= 0 || row.valuationAvailable),
     targetPct: assets.filter((asset) => !asset.archived).reduce((sum, asset) => sum + asset.targetPct, 0),
   }), [assets, positions]);
 
@@ -55,7 +60,10 @@ export function useInvestmentPortfolio(assets: Asset[], transactions: Investment
     allocation,
     totalValue: totals.value,
     totalCost: totals.cost,
-    totalPnl: totals.value - totals.cost,
+    totalPnl: totals.unrealized,
+    totalRealizedPnl: totals.realized,
+    totalCombinedPnl: totals.realized + totals.unrealized,
+    pricingComplete: totals.pricingComplete,
     targetTotal: totals.targetPct,
   };
 }

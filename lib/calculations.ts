@@ -1,4 +1,5 @@
-import type { AllocationRule, Asset, InvestmentTransaction } from "@/lib/types";
+import { buildInvestmentLots } from "./investment-lots.ts";
+import type { AllocationRule, Asset, InvestmentTransaction } from "./types.ts";
 
 export function splitIncome(amount: number, rule: AllocationRule) {
   const life = Math.round((amount * rule.lifePct) / 100);
@@ -8,29 +9,26 @@ export function splitIncome(amount: number, rule: AllocationRule) {
 }
 
 export function portfolioPosition(asset: Asset, txs: InvestmentTransaction[], marketPrice?: number) {
-  const rows = txs.filter((t) => t.assetId === asset.id);
-  let qty = 0;
-  let cost = 0;
-  let realized = 0;
-  for (const tx of rows.sort((a, b) => a.happenedAt.localeCompare(b.happenedAt))) {
-    if (tx.type === "buy") {
-      qty += tx.quantity;
-      cost += tx.amountToman;
-    } else if (qty > 0) {
-      const avg = cost / qty;
-      const soldQty = Math.min(qty, tx.quantity);
-      const proceeds = tx.quantity > 0 ? tx.amountToman * (soldQty / tx.quantity) : 0;
-      realized += proceeds - avg * soldQty;
-      qty -= soldQty;
-      cost -= avg * soldQty;
-    }
-  }
+  const resolvedMarketPrice = positivePrice(marketPrice) ?? positivePrice(asset.manualPriceToman);
+  const summary = asset.id ? buildInvestmentLots(txs, asset.id, resolvedMarketPrice) : {
+    lots: [], openQuantity: 0, openCostToman: 0, realizedPnlToman: 0,
+    currentValueToman: resolvedMarketPrice === undefined ? undefined : 0,
+    unrealizedPnlToman: resolvedMarketPrice === undefined ? undefined : 0,
+  };
+  const qty = summary.openQuantity;
+  const cost = summary.openCostToman;
   const avgPrice = qty > 0 ? cost / qty : 0;
-  const price = marketPrice ?? asset.manualPriceToman ?? avgPrice;
-  const currentValue = qty * price;
-  const unrealized = currentValue - cost;
-  const returnPct = cost > 0 ? (unrealized / cost) * 100 : 0;
-  return { qty, cost, avgPrice, price, currentValue, unrealized, realized, returnPct };
+  const valuationAvailable = resolvedMarketPrice !== undefined;
+  const price = resolvedMarketPrice ?? avgPrice;
+  const currentValue = summary.currentValueToman ?? cost;
+  const unrealized = summary.unrealizedPnlToman ?? 0;
+  const realized = summary.realizedPnlToman;
+  const returnPct = valuationAvailable && cost > 0 ? unrealized / cost * 100 : 0;
+  return { qty, cost, avgPrice, price, currentValue, unrealized, realized, returnPct, valuationAvailable };
+}
+
+function positivePrice(value: number | undefined) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
 export function emergencyTarget(monthlyEssentialToman: number, months: number) {

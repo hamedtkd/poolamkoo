@@ -24,7 +24,8 @@ import { toast } from "@/components/ui/toast";
 const T = {
   createTitle: "ثبت معامله", editTitle: "اصلاح معامله", createDesc: "خرید یا فروش واقعی را ثبت کن تا سود و زیان سبد دقیق بماند.",
   editDesc: "تغییر فقط وقتی ذخیره می‌شود که موجودی تاریخی دارایی در هیچ تاریخی منفی نشود.", plan: "این خرید به برنامه پول ورودی متصل است.",
-  suggested: "مبلغ پیشنهادی", type: "نوع", buy: "خرید", sell: "فروش", amount: "مبلغ کل", price: "قیمت واحد", date: "تاریخ", note: "یادداشت اختیاری",
+  suggested: "مبلغ پیشنهادی", type: "نوع", buy: "خرید", sell: "فروش", amount: "مبلغ معامله", price: "قیمت واحد", date: "تاریخ", note: "یادداشت اختیاری",
+  fee: "کارمزد اختیاری", otherCost: "هزینه جانبی اختیاری", settlement: "مبلغ واقعی پس از هزینه‌ها",
   qty: "مقدار محاسبه‌شده", available: "موجودی قابل فروش در همین تاریخ", over: "مقدار فروش در این تاریخ از موجودی ثبت‌شده بیشتر است.",
   submit: "ثبت", update: "ذخیره اصلاح",
 };
@@ -34,13 +35,16 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
   initialAmount?: number; incomeId?: number; transaction?: InvestmentTransaction | null; transactions: InvestmentTransaction[];
 }) {
   const editing = Boolean(transaction?.id);
-  const form = useForm<TransactionFormValues>({ resolver: zodResolver(transactionSchema), defaultValues: { type: "buy", amount: undefined, price: undefined, date: new Date(), note: "" }, mode: "onBlur" });
+  const form = useForm<TransactionFormValues>({ resolver: zodResolver(transactionSchema), defaultValues: { type: "buy", amount: undefined, price: undefined, fee: null, otherCost: null, date: new Date(), note: "" }, mode: "onBlur" });
   const ledgerError = form.formState.errors.root?.ledger?.message;
   const type = useWatch({ control: form.control, name: "type" }) ?? "buy";
   const amount = Number(useWatch({ control: form.control, name: "amount" })) || 0;
   const price = Number(useWatch({ control: form.control, name: "price" })) || 0;
+  const fee = Number(useWatch({ control: form.control, name: "fee" })) || 0;
+  const otherCost = Number(useWatch({ control: form.control, name: "otherCost" })) || 0;
   const date = useWatch({ control: form.control, name: "date" }) ?? new Date();
   const quantity = amount > 0 && price > 0 ? amount / price : 0;
+  const settlement = type === "buy" ? amount + fee + otherCost : Math.max(0, amount - fee - otherCost);
   const availableQty = asset?.id ? availableQuantityOnDate(transactions, asset.id, dateToISO(date), transaction?.id) : 0;
   const overSelling = type === "sell" && quantity > availableQty + 1e-10;
   const linkedPlan = planItem || Boolean(transaction?.planItemId);
@@ -49,10 +53,10 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
     if (!asset) return;
     form.clearErrors("root.ledger");
     if (transaction) {
-      form.reset({ type: transaction.type, amount: transaction.amountToman, price: transaction.unitPriceToman, date: isoToDate(transaction.happenedAt) ?? new Date(), note: transaction.note ?? "" });
+      form.reset({ type: transaction.type, amount: transaction.amountToman, price: transaction.unitPriceToman, fee: transaction.feeToman ?? null, otherCost: transaction.otherCostToman ?? null, date: isoToDate(transaction.happenedAt) ?? new Date(), note: transaction.note ?? "" });
       return;
     }
-    form.reset({ type: "buy", amount: initialAmount || undefined, price: suggestedPrice || asset.manualPriceToman || undefined, date: new Date(), note: "" });
+    form.reset({ type: "buy", amount: initialAmount || undefined, price: suggestedPrice || asset.manualPriceToman || undefined, fee: null, otherCost: null, date: new Date(), note: "" });
   }, [asset, form, initialAmount, suggestedPrice, transaction]);
 
   const save = form.handleSubmit(async (values) => {
@@ -61,6 +65,7 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
     const now = new Date().toISOString();
     const candidate: InvestmentTransaction = {
       id: transaction?.id, assetId: asset.id, type: values.type, amountToman: values.amount, quantity: qty, unitPriceToman: values.price,
+      feeToman: values.fee || undefined, otherCostToman: values.otherCost || undefined,
       happenedAt: dateToISO(values.date), note: values.note?.trim() || undefined, incomeId: transaction?.incomeId ?? (planItem ? incomeId : undefined),
       planItemId: transaction?.planItemId ?? planItem?.id, createdAt: transaction?.createdAt ?? now,
     };
@@ -93,9 +98,13 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
         {type === "sell" && <div className="rounded-xl bg-muted/45 p-3 type-caption text-muted-foreground">{T.available}: <strong dir="ltr" className="text-foreground">{formatNumber(availableQty, 8)}</strong></div>}
         <Controller name="amount" control={form.control} render={({ field, fieldState }) => <Field label={T.amount} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={(value) => { form.clearErrors("root.ledger"); field.onChange(value); }} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
         <Controller name="price" control={form.control} render={({ field, fieldState }) => <Field label={T.price} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={(value) => { form.clearErrors("root.ledger"); field.onChange(value); }} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Controller name="fee" control={form.control} render={({ field, fieldState }) => <Field label={T.fee} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
+          <Controller name="otherCost" control={form.control} render={({ field, fieldState }) => <Field label={T.otherCost} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={field.onChange} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
+        </div>
         <Controller name="date" control={form.control} render={({ field, fieldState }) => <Field label={T.date} error={fieldState.error?.message}><DatePicker value={field.value} onValueChange={(value) => { if (value) { form.clearErrors("root.ledger"); field.onChange(value); } }} /></Field>} />
         <Controller name="note" control={form.control} render={({ field, fieldState }) => <Field label={T.note} error={fieldState.error?.message}><Textarea {...field} value={field.value ?? ""} maxLength={200} /></Field>} />
-        <div className="rounded-xl bg-muted/45 p-3 text-sm"><span className="text-muted-foreground">{T.qty}: </span><strong dir="ltr">{formatNumber(quantity, 8)}</strong></div>
+        <div className="grid gap-2 rounded-xl bg-muted/45 p-3 text-sm sm:grid-cols-2"><div><span className="text-muted-foreground">{T.qty}: </span><strong dir="ltr">{formatNumber(quantity, 8)}</strong></div><div><span className="text-muted-foreground">{T.settlement}: </span><strong>{formatMoney(settlement, settings.displayUnit, true)}</strong></div></div>
         {(overSelling || ledgerError) && <div className="rounded-xl border border-destructive/25 bg-destructive/8 p-3 type-caption type-body-strong text-destructive">{ledgerError ?? T.over}</div>}
         <Button type="submit" className="w-full" disabled={overSelling}>{editing ? <RiEditLine /> : <RiMoneyDollarCircleLine />} {editing ? T.update : `${T.submit} ${type === "buy" ? T.buy : T.sell}`}</Button>
       </form>

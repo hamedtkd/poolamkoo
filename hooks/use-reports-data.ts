@@ -18,6 +18,7 @@ export interface PerformanceRow {
   pnlPct: number;
   priceSource: ValuationPriceSource;
   pricingReliable: boolean;
+  valuationAvailable: boolean;
 }
 
 export interface PlanAdherenceRow {
@@ -57,6 +58,7 @@ export function useReportsData({ incomes, allocations, funds, fundMovements, ass
       pnlPct: position.returnPct,
       priceSource: position.priceSource,
       pricingReliable: position.pricingReliable,
+      valuationAvailable: position.valuationAvailable,
     }));
     const pricingIncomplete = positions.some((position) => position.qty > 0 && !position.pricingReliable);
     const totalIncome = incomes.reduce((sum, income) => sum + income.amountToman, 0);

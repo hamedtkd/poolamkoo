@@ -32,7 +32,7 @@ test("settings search and global search share deep-linkable settings items", () 
   const globalSearch = read("components/app/global-search.tsx");
   assert.equal(settingsSearch.includes("settingsSearchItems"), true);
   assert.equal(settingsSearch.includes("normalizeSearchText"), true);
-  assert.equal(settingsSearch.includes("router.push(item.href)"), true);
+  assert.equal(settingsSearch.includes("navigateWorkspace(router, item.href)"), true);
   assert.equal(globalSearch.includes("settingsSearchItems.map"), true);
   assert.equal(globalSearch.includes("تنظیم ·"), true);
 });

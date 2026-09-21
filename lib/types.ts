@@ -102,6 +102,8 @@ export interface InvestmentTransaction {
   amountToman: number;
   quantity: number;
   unitPriceToman: number;
+  feeToman?: number;
+  otherCostToman?: number;
   happenedAt: string;
   note?: string;
   incomeId?: number;
