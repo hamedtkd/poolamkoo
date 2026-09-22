@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { RiFileList3Line, RiFundsLine, RiHistoryLine, RiSafe2Line, RiSearch2Line, RiWallet3Line } from "react-icons/ri";
+import { RiBankCardLine, RiFileList3Line, RiFundsLine, RiHistoryLine, RiSafe2Line, RiSearch2Line, RiWallet3Line } from "react-icons/ri";
 import { Reveal, RevealGrid } from "@/components/animation/reveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
   type FinancialActivityItem,
 } from "@/lib/activity";
 import { formatMoney, toPersianDate } from "@/lib/format";
-import type { AppSettings, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction } from "@/lib/types";
+import type { AppSettings, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, Loan, LoanPayment } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const FILTERS: Array<{ value: FinancialActivityCategory | "all"; label: string }> = [
@@ -26,19 +26,22 @@ const FILTERS: Array<{ value: FinancialActivityCategory | "all"; label: string }
   { value: "income", label: "ورودی‌ها" },
   { value: "fund", label: "صندوق‌ها" },
   { value: "investment", label: "سرمایه‌گذاری" },
+  { value: "loan", label: "وام‌ها" },
 ];
 
-export function ActivitySection({ settings, incomes, funds, fundMovements, assets, transactions }: {
+export function ActivitySection({ settings, incomes, funds, fundMovements, assets, transactions, loans, loanPayments }: {
   settings: AppSettings;
   incomes: IncomeEvent[];
   funds: GoalFund[];
   fundMovements: FundMovement[];
   assets: Asset[];
   transactions: InvestmentTransaction[];
+  loans: Loan[];
+  loanPayments: LoanPayment[];
 }) {
   const [category, setCategory] = useState<FinancialActivityCategory | "all">("all");
   const [query, setQuery] = useState("");
-  const activity = useMemo(() => buildFinancialActivity({ incomes, funds, fundMovements, assets, transactions }), [assets, fundMovements, funds, incomes, transactions]);
+  const activity = useMemo(() => buildFinancialActivity({ incomes, funds, fundMovements, assets, transactions, loans, loanPayments }), [assets, fundMovements, funds, incomes, loanPayments, loans, transactions]);
   const visible = useMemo(() => filterFinancialActivity(activity, category, query), [activity, category, query]);
   const summary = useMemo(() => summarizeFinancialActivity(activity), [activity]);
   const groups = useMemo(() => groupFinancialActivityByDay(visible), [visible]);
@@ -52,11 +55,12 @@ export function ActivitySection({ settings, incomes, funds, fundMovements, asset
       </div>
     </Reveal>
 
-    <RevealGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" startStep={2}>
+    <RevealGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" startStep={2}>
       <SummaryCard icon={<RiHistoryLine />} label="رویدادهای این بازه" value={summary.eventCount.toLocaleString("fa-IR")} detail="رکورد واقعی ثبت‌شده" />
       <SummaryCard icon={<RiWallet3Line />} label="پول ورودی" value={formatMoney(summary.incomeTotal, settings.displayUnit, true)} detail="جمع ورودی‌های ثبت‌شده" sensitive />
       <SummaryCard icon={<RiSafe2Line />} label="گردش صندوق" value={formatMoney(summary.fundTurnover, settings.displayUnit, true)} detail="جمع واریز، برداشت و افتتاح" sensitive />
       <SummaryCard icon={<RiFundsLine />} label="گردش سرمایه‌گذاری" value={formatMoney(summary.investmentTurnover, settings.displayUnit, true)} detail="جمع مبلغ خرید و فروش" sensitive />
+      <SummaryCard icon={<RiBankCardLine />} label="اقساط پرداخت‌شده" value={formatMoney(summary.loanPaymentsTotal, settings.displayUnit, true)} detail="پرداخت‌های واقعی ثبت‌شده" sensitive />
     </RevealGrid>
 
     <Reveal step={6}>
@@ -87,7 +91,7 @@ function ActivityDay({ day, rows, settings }: { day: string; rows: FinancialActi
 }
 
 function ActivityRow({ row, settings, divided }: { row: FinancialActivityItem; settings: AppSettings; divided: boolean }) {
-  const Icon = row.category === "income" ? RiWallet3Line : row.category === "fund" ? RiSafe2Line : RiFundsLine;
+  const Icon = row.category === "income" ? RiWallet3Line : row.category === "fund" ? RiSafe2Line : row.category === "loan" ? RiBankCardLine : RiFundsLine;
   return <div className={cn("flex flex-col gap-3 p-4 sm:flex-row sm:items-center", divided && "border-t")}>
     <div className="flex min-w-0 flex-1 items-start gap-3">
       <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-5" /></div>

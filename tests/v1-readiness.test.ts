@@ -5,9 +5,9 @@ import { LOCAL_DATABASE_SCHEMA_VERSION } from "../lib/app-version.ts";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
-test("v0.43 readiness hardening remains the schema-8 baseline", () => {
+test("v0.43 remains a schema-8 historical baseline while the current app advances", () => {
   const release = read("docs/releases/0.43.0.md");
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 8);
+  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 9);
   assert.equal(release.includes("schema 8"), true);
   assert.equal(release.includes("network-only"), true);
 });
@@ -26,7 +26,7 @@ test("generic workspace errors do not perform database repair", () => {
 test("public routes stay outside the workspace runtime navigation cache", () => {
   const serviceWorker = read("public/sw.js");
   const releaseSmoke = read("scripts/release-browser-smoke.mjs");
-  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v71"'), true);
+  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v72"'), true);
   assert.equal(serviceWorker.includes("WORKSPACE_NAVIGATION_PREFIXES"), true);
   assert.equal(serviceWorker.includes("!isWorkspaceNavigation(url.pathname)"), true);
   assert.equal(releaseSmoke.includes("workspace service worker must not cache the public landing navigation"), true);

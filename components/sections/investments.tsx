@@ -18,6 +18,7 @@ import { PortfolioDecisionCard } from "@/components/investments/portfolio-decisi
 import { PortfolioTables } from "@/components/investments/portfolio-tables";
 import { TransactionDialog } from "@/components/investments/transaction-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useInvestmentPortfolio } from "@/hooks/use-investment-portfolio";
@@ -25,6 +26,7 @@ import { db } from "@/lib/db";
 import { createRecoverySnapshot } from "@/lib/recovery";
 import { toPersianUiError } from "@/lib/errors";
 import { formatMoney, formatPercent, formatSignedMoney } from "@/lib/format";
+import { marketQuoteForAsset } from "@/lib/market/valuation";
 import { assetArchiveBlockers, portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 import { investmentLedgerErrorMessage, validateInvestmentLedger } from "@/lib/investment-ledger";
 import type { MarketAlertTarget } from "@/lib/market/alerts";
@@ -56,7 +58,7 @@ const T = {
 
 type TransactionTarget = { asset: Asset; planItem?: PlanItem; transaction?: InvestmentTransaction } | null;
 
-export function InvestmentsSection({ settings, assets, allAssets, archivedAssets, transactions, quotes, snapshots, watchlist, marketAlerts, backgroundPush, planItems, incomes, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
+export function InvestmentsSection({ settings, assets, allAssets, archivedAssets, transactions, quotes, snapshots, watchlist, marketAlerts, backgroundPush, planItems, incomes, initialLoanId, visibleTransactions, visibleSnapshots, visiblePlanItems, visibleIncomes }: {
   settings: AppSettings;
   assets: Asset[];
   allAssets: Asset[];
@@ -69,6 +71,7 @@ export function InvestmentsSection({ settings, assets, allAssets, archivedAssets
   backgroundPush: BackgroundPushControls;
   planItems: PlanItem[];
   incomes: IncomeEvent[];
+  initialLoanId?: number | null;
   visibleTransactions?: InvestmentTransaction[];
   visibleSnapshots?: MarketSnapshot[];
   visiblePlanItems?: PlanItem[];
@@ -85,6 +88,7 @@ export function InvestmentsSection({ settings, assets, allAssets, archivedAssets
   const [archiveTarget, setArchiveTarget] = useState<Asset | null>(null);
   const [deleteTransactionId, setDeleteTransactionId] = useState<number | null>(null);
   const [alertTarget, setAlertTarget] = useState<MarketAlertTarget | null>(null);
+  const [loanAssetPickerOpen, setLoanAssetPickerOpen] = useState(Boolean(initialLoanId));
 
   async function archiveAsset() {
     if (!archiveTarget?.id) return;
@@ -157,6 +161,23 @@ export function InvestmentsSection({ settings, assets, allAssets, archivedAssets
     setSeedKind(instrument.name.includes("صندوق") ? "fund" : "stock");
     setAssetDialogOpen(true);
   }
+
+  function startLoanTransaction(asset: Asset) {
+    setLoanAssetPickerOpen(false);
+    setTransactionTarget({ asset });
+  }
+
+  function currentMarketPrice(asset: Asset) {
+    return marketQuoteForAsset(asset, quotes)?.priceToman;
+  }
+
+  function createAssetForLoan() {
+    setLoanAssetPickerOpen(false);
+    setEditingAsset(null);
+    setSeedInstrument(undefined);
+    setSeedKind(undefined);
+    setAssetDialogOpen(true);
+  }
   return <div className="space-y-5">
     <Reveal direction="down" step={1}><div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="type-caption type-body-strong text-primary">{T.eyebrow}</div><h1 className="mt-1 type-page-title">{T.title}</h1><p className="mt-1 type-body text-muted-foreground">{T.desc}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setHistoryImportOpen(true)}><RiFileUploadLine /> ورود سوابق CSV</Button><Button variant="outline" onClick={() => setOpeningHoldingOpen(true)}><RiHistoryLine /> دارایی قبلی دارم</Button><Button onClick={() => { setEditingAsset(null); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }}><RiAddLine />{T.add}</Button></div></div></Reveal>
     <RevealGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" startStep={2} ><Kpi icon={<RiFundsLine />} label={portfolio.pricingComplete ? T.value : "ارزش فعلی ناقص"} help={portfolio.pricingComplete ? "ارزش فعلی همه دارایی‌ها بر اساس مقدار ثبت‌شده و آخرین قیمت در دسترس." : "برای بخشی از سبد قیمت فعلی نداریم؛ موجودی و بهای خرید همچنان کامل است اما ارزش بازار کل قطعی نیست."} value={portfolio.pricingComplete ? formatMoney(portfolio.totalValue, settings.displayUnit) : "نیاز به قیمت"} /><Kpi icon={<RiShoppingBag3Line />} label={T.cost} help="بهای خریدِ مقدار دارایی‌هایی که هنوز در سبد داری؛ این عدد حتی بدون اینترنت در دسترس است." value={formatMoney(portfolio.totalCost, settings.displayUnit)} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalPnl > 0 ? "profit" : portfolio.totalPnl < 0 ? "danger" : "neutral"} label={portfolio.totalPnl > 0 ? "سود باز" : portfolio.totalPnl < 0 ? "زیان باز" : T.pnl} help="سود یا زیان دارایی‌هایی که هنوز نگه داشته‌ای. اگر قیمت نداریم، این عدد برای آن دارایی ساخته نمی‌شود." value={portfolio.pricingComplete ? formatSignedMoney(portfolio.totalPnl, settings.displayUnit) : "ناقص"} valueTone={portfolio.pricingComplete ? (portfolio.totalPnl > 0 ? "profit" : portfolio.totalPnl < 0 ? "loss" : undefined) : undefined} /><Kpi icon={<RiLineChartLine />} iconTone={portfolio.totalRealizedPnl > 0 ? "profit" : portfolio.totalRealizedPnl < 0 ? "danger" : "neutral"} label="سود / زیان قطعی" help="سودی که از فروش‌های ثبت‌شده واقعاً محقق شده است. برای محاسبه فروش، قدیمی‌ترین خرید باز زودتر مصرف می‌شود." value={formatSignedMoney(portfolio.totalRealizedPnl, settings.displayUnit)} valueTone={portfolio.totalRealizedPnl > 0 ? "profit" : portfolio.totalRealizedPnl < 0 ? "loss" : undefined} /></RevealGrid>
@@ -169,11 +190,12 @@ export function InvestmentsSection({ settings, assets, allAssets, archivedAssets
     <Reveal step={8}><PortfolioTables positions={portfolio.positions} allocationRows={portfolio.allocation.rows} transactions={visibleTransactions ?? transactions} assets={allAssets} settings={settings} onTransaction={(asset) => setTransactionTarget({ asset })} onEditAsset={(asset) => { setEditingAsset(asset); setSeedInstrument(undefined); setSeedKind(undefined); setAssetDialogOpen(true); }} onArchiveAsset={setArchiveTarget} onRestoreAsset={(asset) => void restoreAsset(asset)} onEditTransaction={editTransaction} onDeleteTransaction={setDeleteTransactionId} /></Reveal>
     <Reveal step={9}><InvestmentLotsCard assets={allAssets} transactions={transactions} quotes={quotes} settings={settings} /></Reveal>
     <Reveal step={10}><ArchivedAssetsCard assets={archivedAssets} transactions={transactions} planItems={planItems} onRestore={(asset) => void restoreAsset(asset)} /></Reveal>
-    <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
+    <AssetDialog open={assetDialogOpen} onOpenChange={(open) => { setAssetDialogOpen(open); if (!open) { setSeedInstrument(undefined); setSeedKind(undefined); } }} onSaved={(asset) => { if (initialLoanId && !editingAsset) setTransactionTarget({ asset }); }} asset={editingAsset} settings={settings} initialInstrument={seedInstrument} initialKind={seedKind} />
     <OpeningHoldingDialog open={openingHoldingOpen} onOpenChange={setOpeningHoldingOpen} assets={assets} settings={settings} />
     <HistoryImportDialog open={historyImportOpen} onOpenChange={setHistoryImportOpen} assets={assets} transactions={transactions} settings={settings} />
     <MarketAlertDialog open={!!alertTarget} target={alertTarget} settings={settings} onOpenChange={(open) => !open && setAlertTarget(null)} />
-    <TransactionDialog asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={activePosition?.pricingReliable ? activePosition.price : activeAsset?.manualPriceToman} settings={settings} planItem={activePlan} initialAmount={activeTransaction ? undefined : activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} transaction={activeTransaction} transactions={transactions} />
+    {activeAsset && <TransactionDialog key={`${activeAsset.id ?? "asset"}-${activeTransaction?.id ?? activePlan?.id ?? "new"}-${initialLoanId ?? "personal"}`} asset={activeAsset} onClose={() => setTransactionTarget(null)} suggestedPrice={currentMarketPrice(activeAsset) ?? (activePosition?.pricingReliable ? activePosition.price : activeAsset.manualPriceToman)} settings={settings} planItem={activePlan} initialAmount={activeTransaction ? undefined : activePlan ? planRemaining(activePlan) : undefined} incomeId={activePlan?.incomeId} initialLoanId={initialLoanId} transaction={activeTransaction} transactions={transactions} />}
+    {initialLoanId && <Dialog open={loanAssetPickerOpen} onOpenChange={setLoanAssetPickerOpen}><DialogContent><DialogHeader><DialogTitle>ثبت دارایی برای این وام</DialogTitle><DialogDescription>ابتدا دارایی مقصد را انتخاب کن؛ سپس فرم خرید با منبع تامین مالی این وام باز می‌شود.</DialogDescription></DialogHeader><div className="space-y-2">{assets.length ? assets.map((asset) => { const quote = marketQuoteForAsset(asset, quotes); return <button type="button" key={asset.id} onClick={() => startLoanTransaction(asset)} className="flex w-full items-center justify-between rounded-2xl border p-3 text-start transition hover:border-primary hover:bg-primary/5"><span><span className="block type-strong">{asset.name}</span><span className="mt-1 block type-caption text-muted-foreground">{asset.symbol || asset.kind}</span></span><span className="text-end"><span className="block type-caption text-primary">انتخاب</span><span className="mt-1 block type-caption text-muted-foreground">{quote ? `قیمت بازار: ${formatMoney(quote.priceToman, settings.displayUnit, true)}` : "قیمت بازار در دسترس نیست"}</span></span></button>; }) : <p className="rounded-xl border border-dashed p-4 type-caption text-muted-foreground">هنوز دارایی‌ای ثبت نشده است.</p>}<Button type="button" variant="outline" className="w-full" onClick={createAssetForLoan}><RiAddLine /> ساخت دارایی جدید و اتصال به وام</Button></div></DialogContent></Dialog>}
     <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.archiveTitle}</AlertDialogTitle><AlertDialogDescription>{archiveTarget?.id ? archiveBlockerDescription(assetArchiveBlockers(archiveTarget.id, transactions, planItems), T.archiveDesc) : T.archiveDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction disabled={archiveTarget?.id ? assetArchiveBlockers(archiveTarget.id, transactions, planItems).blocked : true} onClick={() => void archiveAsset()}>{T.archive}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={deleteTransactionId !== null} onOpenChange={(open) => !open && setDeleteTransactionId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{T.deleteTitle}</AlertDialogTitle><AlertDialogDescription>{T.deleteDesc}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel /><AlertDialogAction destructive onClick={() => void deleteTransaction()}>{T.delete}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;

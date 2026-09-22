@@ -5,6 +5,7 @@ import { ArcGauge } from "@/components/charts/arc-gauge";
 import { LazyPortfolioAreaChart } from "@/components/charts/lazy-portfolio-area-chart";
 import { Sparkline } from "@/components/charts/sparkline";
 import { MarketSourceLabel } from "@/components/market/market-source-label";
+import { DashboardLoanCard } from "@/components/loans/dashboard-loan-card";
 import { Reveal } from "@/components/animation/reveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,14 +14,15 @@ import { KpiIcon } from "@/components/ui/kpi-icon";
 import { Progress } from "@/components/ui/progress";
 import { SensitiveValue } from "@/components/ui/sensitive-value";
 import { useDashboardMetrics } from "@/hooks/use-dashboard-metrics";
+import type { LoanRiskControls } from "@/hooks/use-loan-risk";
 import { formatMoney, formatPercent, formatSignedMoney, formatSignedPercent, toPersianDate } from "@/lib/format";
 import { marketQuoteKey } from "@/lib/market/runtime";
 import { incomePlanProgress } from "@/lib/plan-execution";
-import type { AllocationRule, AppSettings, Asset, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, MarketSnapshot, MoneyUnit, PlanItem } from "@/lib/types";
+import type { AllocationRule, AppSettings, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, Loan, LoanPayment, MarketQuote, MarketSnapshot, MoneyUnit, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function DashboardSection({ settings, rule, incomes, funds, assets, transactions, quotes, snapshots, marketMode, marketDegraded, marketLoading, marketLastUpdated, marketWarning, planItems, onRefreshMarket, onNewMoney, onOpenInvestments, onOpenFunds }: {
-  settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; funds: GoalFund[]; assets: Asset[]; transactions: InvestmentTransaction[]; quotes: MarketQuote[]; snapshots: MarketSnapshot[]; marketMode: string; marketDegraded?: boolean; marketLoading: boolean; marketLastUpdated: string | null; marketWarning?: string; planItems?: PlanItem[]; onRefreshMarket: () => void; onNewMoney: () => void; onOpenInvestments: () => void; onOpenFunds: () => void;
+export function DashboardSection({ settings, rule, incomes, funds, assets, transactions, fundMovements, loans, loanPayments, loanRisk, quotes, snapshots, marketMode, marketDegraded, marketLoading, marketLastUpdated, marketWarning, planItems, onRefreshMarket, onNewMoney, onOpenInvestments, onOpenFunds, onOpenLoans }: {
+  settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; funds: GoalFund[]; assets: Asset[]; transactions: InvestmentTransaction[]; fundMovements: FundMovement[]; loans: Loan[]; loanPayments: LoanPayment[]; loanRisk: LoanRiskControls; quotes: MarketQuote[]; snapshots: MarketSnapshot[]; marketMode: string; marketDegraded?: boolean; marketLoading: boolean; marketLastUpdated: string | null; marketWarning?: string; planItems?: PlanItem[]; onRefreshMarket: () => void; onNewMoney: () => void; onOpenInvestments: () => void; onOpenFunds: () => void; onOpenLoans: () => void;
 }) {
   const unit = settings.displayUnit;
   const metrics = useDashboardMetrics({ rule, incomes, funds, assets, transactions, quotes });
@@ -38,6 +40,8 @@ export function DashboardSection({ settings, rule, incomes, funds, assets, trans
       <Reveal hover step={5}><SummaryCard icon={<RiSafe2Line />} label="حاشیه امن" value={emergency ? formatMoney(emergency.currentToman, unit) : "هنوز نساختی"} sub={emergency ? `${formatPercent(emergencyPct)} از هدف اضطراری` : "از بخش صندوق‌ها شروع کن"} positive /></Reveal>
       <Reveal hover step={6}><SummaryCard icon={<RiFileList3Line />} iconTone={planProgress.pct >= 80 ? "primary" : "neutral"} label="پایبندی به برنامه" value={formatPercent(planProgress.pct, 0)} sub={`${formatMoney(planProgress.executed, unit, true)} / ${formatMoney(planProgress.planned, unit, true)}`} positive={planProgress.pct >= 80} /></Reveal>
     </div>
+
+    {loans.some((loan) => loan.status === "active") && <Reveal step={6}><DashboardLoanCard settings={settings} loans={loans} payments={loanPayments} funds={funds} assets={assets} transactions={transactions} fundMovements={fundMovements} quotes={quotes} loanRisk={loanRisk} onOpenLoans={onOpenLoans} /></Reveal>}
 
     <div className="grid gap-4 xl:grid-cols-[1.05fr_1.95fr]">
       <Reveal step={6} className="h-full">

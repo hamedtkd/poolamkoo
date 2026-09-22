@@ -31,8 +31,11 @@ test("release smoke covers landing, dashboard/dialog visibility, reports and PWA
   for (const contract of [
     "public theme toggle hydration",
     "legacy schema 6 fixture must use native IndexedDB version 60",
-    "schema 6 profile must upgrade in place through schema 8",
-    "schema 8 migration must create an opening fund-ledger row for legacy balances",
+    "schema 6 profile must upgrade in place through schema 9",
+    "schema 8 migration must create an opening fund-ledger row before schema 9 loan stores are added",
+    "schema 9 migration must create an empty loans store for legacy profiles",
+    "schema 9 migration must create an empty loan payments store for legacy profiles",
+    "schema 9 loan payments must expose the compound installment index",
     "legacy linked assets must normalize to Tindex during schema 7 migration",
     "Tindex and TSETMC rows with the same raw marketId must coexist after migration",
     "migration fixture cleanup must restore a fresh public origin",

@@ -66,7 +66,7 @@ export interface GoalFund {
 }
 
 export type FundMovementType = "deposit" | "withdraw" | "opening";
-export type FundMovementSource = "manual" | "opening" | "plan" | "direct" | "income_reversal" | "migration";
+export type FundMovementSource = "manual" | "opening" | "plan" | "direct" | "income_reversal" | "loan_reserve" | "loan_payment" | "migration";
 
 export interface FundMovement {
   id?: number;
@@ -76,6 +76,8 @@ export interface FundMovement {
   amountToman: number;
   happenedAt: string;
   note?: string;
+  loanId?: number;
+  loanPaymentId?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -108,8 +110,13 @@ export interface InvestmentTransaction {
   note?: string;
   incomeId?: number;
   planItemId?: number;
+  loanId?: number;
   createdAt: string;
 }
+
+
+
+export type { Loan, LoanAllocationPlanItem, LoanPayment, LoanPaymentSource, LoanRiskAlert, LoanRiskAlertKind, LoanStatus } from "./loans/types";
 
 export interface MarketQuote {
   marketId?: string;

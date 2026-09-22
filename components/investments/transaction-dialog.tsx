@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { RiEditLine, RiMoneyDollarCircleLine } from "react-icons/ri";
@@ -30,12 +31,34 @@ const T = {
   submit: "ثبت", update: "ذخیره اصلاح",
 };
 
-export function TransactionDialog({ asset, onClose, suggestedPrice, settings, planItem, initialAmount, incomeId, transaction, transactions }: {
+export function TransactionDialog({ asset, onClose, suggestedPrice, settings, planItem, initialAmount, incomeId, initialLoanId, transaction, transactions }: {
   asset: Asset | null; onClose: () => void; suggestedPrice?: number; settings: AppSettings; planItem?: PlanItem | null;
-  initialAmount?: number; incomeId?: number; transaction?: InvestmentTransaction | null; transactions: InvestmentTransaction[];
+  initialAmount?: number; incomeId?: number; initialLoanId?: number | null; transaction?: InvestmentTransaction | null; transactions: InvestmentTransaction[];
 }) {
   const editing = Boolean(transaction?.id);
-  const form = useForm<TransactionFormValues>({ resolver: zodResolver(transactionSchema), defaultValues: { type: "buy", amount: undefined, price: undefined, fee: null, otherCost: null, date: new Date(), note: "" }, mode: "onBlur" });
+  const loans = useLiveQuery(() => db.loans.toArray(), []) ?? [];
+  const [loanId, setLoanId] = useState<number | null>(transaction?.loanId ?? initialLoanId ?? null);
+  const form = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: transaction ? {
+      type: transaction.type,
+      amount: transaction.amountToman,
+      price: transaction.unitPriceToman,
+      fee: transaction.feeToman ?? null,
+      otherCost: transaction.otherCostToman ?? null,
+      date: isoToDate(transaction.happenedAt) ?? new Date(),
+      note: transaction.note ?? "",
+    } : {
+      type: "buy",
+      amount: initialAmount || undefined,
+      price: suggestedPrice || asset?.manualPriceToman || undefined,
+      fee: null,
+      otherCost: null,
+      date: new Date(),
+      note: "",
+    },
+    mode: "onBlur",
+  });
   const ledgerError = form.formState.errors.root?.ledger?.message;
   const type = useWatch({ control: form.control, name: "type" }) ?? "buy";
   const amount = Number(useWatch({ control: form.control, name: "amount" })) || 0;
@@ -49,16 +72,6 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
   const overSelling = type === "sell" && quantity > availableQty + 1e-10;
   const linkedPlan = planItem || Boolean(transaction?.planItemId);
 
-  useEffect(() => {
-    if (!asset) return;
-    form.clearErrors("root.ledger");
-    if (transaction) {
-      form.reset({ type: transaction.type, amount: transaction.amountToman, price: transaction.unitPriceToman, fee: transaction.feeToman ?? null, otherCost: transaction.otherCostToman ?? null, date: isoToDate(transaction.happenedAt) ?? new Date(), note: transaction.note ?? "" });
-      return;
-    }
-    form.reset({ type: "buy", amount: initialAmount || undefined, price: suggestedPrice || asset.manualPriceToman || undefined, fee: null, otherCost: null, date: new Date(), note: "" });
-  }, [asset, form, initialAmount, suggestedPrice, transaction]);
-
   const save = form.handleSubmit(async (values) => {
     if (!asset?.id || overSelling) return;
     const qty = values.amount / values.price;
@@ -67,7 +80,7 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
       id: transaction?.id, assetId: asset.id, type: values.type, amountToman: values.amount, quantity: qty, unitPriceToman: values.price,
       feeToman: values.fee || undefined, otherCostToman: values.otherCost || undefined,
       happenedAt: dateToISO(values.date), note: values.note?.trim() || undefined, incomeId: transaction?.incomeId ?? (planItem ? incomeId : undefined),
-      planItemId: transaction?.planItemId ?? planItem?.id, createdAt: transaction?.createdAt ?? now,
+      planItemId: transaction?.planItemId ?? planItem?.id, loanId: linkedPlan ? undefined : loanId || undefined, createdAt: transaction?.createdAt ?? now,
     };
     const check = validateTransactionChange(transactions.filter((row) => row.assetId === asset.id), candidate, transaction?.id);
     const message = investmentLedgerErrorMessage(check);
@@ -95,6 +108,8 @@ export function TransactionDialog({ asset, onClose, suggestedPrice, settings, pl
       {linkedPlan && <div className="rounded-xl border border-primary/25 bg-primary/7 p-3 text-xs leading-6"><div className="type-strong text-primary">{T.plan}</div>{planItem && <div className="mt-1 text-muted-foreground">{T.suggested}: {formatMoney(planRemaining(planItem), settings.displayUnit)}</div>}</div>}
       <form onSubmit={save} className="space-y-4">
         <Controller name="type" control={form.control} render={({ field }) => <Field label={T.type}><Select value={field.value} onValueChange={(value) => { form.clearErrors("root.ledger"); field.onChange(value); }} options={linkedPlan ? [{ value: "buy", label: T.buy }] : [{ value: "buy", label: T.buy }, { value: "sell", label: T.sell }]} /></Field>} />
+        {!linkedPlan && <Field label="منبع این معامله"><Select value={loanId ? String(loanId) : "personal"} onValueChange={(value) => setLoanId(value === "personal" ? null : Number(value))} options={[{ value: "personal", label: "پول شخصی" }, ...loans.filter((loan) => loan.status === "active" || loan.id === transaction?.loanId).filter((loan) => loan.id).map((loan) => ({ value: String(loan.id), label: `وام: ${loan.name}` }))]} /></Field>}
+        {loanId && !linkedPlan && <div className="rounded-xl border border-primary/20 bg-primary/7 p-3 type-caption leading-6"><div className="type-strong text-primary">این معامله به وام متصل می‌شود</div><div className="mt-1 text-muted-foreground">سود و زیان این تراکنش در صفحه همان وام جداگانه محاسبه می‌شود. برای خرید ترکیبی، دو تراکنش جدا ثبت کن.</div></div>}
         {type === "sell" && <div className="rounded-xl bg-muted/45 p-3 type-caption text-muted-foreground">{T.available}: <strong dir="ltr" className="text-foreground">{formatNumber(availableQty, 8)}</strong></div>}
         <Controller name="amount" control={form.control} render={({ field, fieldState }) => <Field label={T.amount} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={(value) => { form.clearErrors("root.ledger"); field.onChange(value); }} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />
         <Controller name="price" control={form.control} render={({ field, fieldState }) => <Field label={T.price} error={fieldState.error?.message}><MoneyInput value={field.value ?? null} onValueChange={(value) => { form.clearErrors("root.ledger"); field.onChange(value); }} unit={settings.displayUnit} invalid={Boolean(fieldState.error)} /></Field>} />

@@ -1,5 +1,5 @@
-const CACHE = "poolamkoo-v71";
-const OFFLINE_RELEASE = "v85";
+const CACHE = "poolamkoo-v72";
+const OFFLINE_RELEASE = "v86";
 const RUNTIME_CACHE = `poolamkoo-offline-${OFFLINE_RELEASE}`;
 const WORKSPACE_CACHE = `${RUNTIME_CACHE}-workspace`;
 const STATIC_SHELL_ASSETS = [
@@ -17,6 +17,8 @@ const WORKSPACE_ROUTES = [
   "/income",
   "/funds",
   "/investments",
+  "/loans",
+  "/loans/new",
   "/reports",
   "/settings",
   "/settings/general",
@@ -28,7 +30,7 @@ const WORKSPACE_ROUTES = [
   "/settings/about",
   "/offline",
 ];
-const WORKSPACE_NAVIGATION_PREFIXES = ["/dashboard", "/activity", "/income", "/funds", "/investments", "/reports", "/settings"];
+const WORKSPACE_NAVIGATION_PREFIXES = ["/dashboard", "/activity", "/income", "/funds", "/investments", "/loans", "/reports", "/settings"];
 const STATIC_FILE_RE = /\.(?:js|css|woff2?|ttf|otf|svg|png|jpe?g|webp|avif|ico)$/i;
 
 function isWorkspaceNavigation(pathname) {
@@ -300,9 +302,132 @@ function markAlertTriggered(alertId, triggeredAt) {
   });
 }
 
+function markLoanRiskTriggered(alertId, triggeredAt) {
+  if (!Number.isInteger(alertId) || !triggeredAt) return Promise.resolve();
+  return new Promise((resolve) => {
+    const request = indexedDB.open("poolyar-local");
+    request.onerror = () => resolve();
+    request.onsuccess = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains("loanRiskAlerts")) { database.close(); resolve(); return; }
+      const tx = database.transaction("loanRiskAlerts", "readwrite");
+      const store = tx.objectStore("loanRiskAlerts");
+      const get = store.get(alertId);
+      get.onsuccess = () => {
+        const row = get.result;
+        if (row) store.put({ ...row, armed: false, lastTriggeredAt: triggeredAt, updatedAt: triggeredAt });
+      };
+      tx.oncomplete = () => { database.close(); resolve(); };
+      tx.onerror = () => { database.close(); resolve(); };
+    };
+  });
+}
+
+function readLocalAsset(assetId) {
+  if (!Number.isInteger(assetId)) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const request = indexedDB.open("poolyar-local");
+    request.onerror = () => resolve(null);
+    request.onsuccess = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains("assets")) { database.close(); resolve(null); return; }
+      const tx = database.transaction("assets", "readonly");
+      const get = tx.objectStore("assets").get(assetId);
+      get.onsuccess = () => resolve(get.result || null);
+      get.onerror = () => resolve(null);
+      tx.oncomplete = () => database.close();
+      tx.onerror = () => database.close();
+    };
+  });
+}
+
+function markLoanReminderNotified(reminderKey, triggeredAt) {
+  if (typeof reminderKey !== "string" || !reminderKey || !triggeredAt) return Promise.resolve();
+  return new Promise((resolve) => {
+    const request = indexedDB.open("poolyar-local");
+    request.onerror = () => resolve();
+    request.onsuccess = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains("appMeta")) { database.close(); resolve(); return; }
+      const tx = database.transaction("appMeta", "readwrite");
+      tx.objectStore("appMeta").put({ key: `loan-reminder-notified:v1:${reminderKey}`, value: triggeredAt, updatedAt: triggeredAt });
+      tx.oncomplete = () => { database.close(); resolve(); };
+      tx.onerror = () => { database.close(); resolve(); };
+    };
+  });
+}
+
+function readLocalLoan(loanId) {
+  if (!Number.isInteger(loanId)) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const request = indexedDB.open("poolyar-local");
+    request.onerror = () => resolve(null);
+    request.onsuccess = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains("loans")) { database.close(); resolve(null); return; }
+      const tx = database.transaction("loans", "readonly");
+      const get = tx.objectStore("loans").get(loanId);
+      get.onsuccess = () => resolve(get.result || null);
+      get.onerror = () => resolve(null);
+      tx.oncomplete = () => database.close();
+      tx.onerror = () => database.close();
+    };
+  });
+}
+
+function localLoanInstallment(loan) {
+  if (!loan) return 0;
+  if (Number(loan.actualInstallmentToman) > 0) return Number(loan.actualInstallmentToman);
+  const principal = Number(loan.principalToman) || 0;
+  const months = Number(loan.termMonths) || 0;
+  const monthlyRate = (Number(loan.nominalAnnualRatePct) || 0) / 100 / 12;
+  if (!(principal > 0) || !(months > 0)) return 0;
+  if (!monthlyRate) return principal / months;
+  return principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
+}
+
+function localLoanReminderBody(data, loan) {
+  const days = Number(data.daysRemaining);
+  const lead = days < 0 ? `سررسید ${Math.abs(days).toLocaleString("fa-IR")} روز گذشته است` : days === 0 ? "سررسید امروز است" : days === 1 ? "سررسید فرداست" : `${days.toLocaleString("fa-IR")} روز تا سررسید مانده است`;
+  const installment = localLoanInstallment(loan);
+  const amount = installment > 0 ? ` · ${Math.round(installment).toLocaleString("fa-IR")} تومان` : "";
+  return `${lead}${amount}`;
+}
+
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
+  if (data.kind === "loan-risk") {
+    event.waitUntil((async () => {
+      const alertId = Number(data.loanRiskAlertId);
+      const triggeredAt = data.triggeredAt || new Date().toISOString();
+      const [loan, asset] = await Promise.all([readLocalLoan(Number(data.loanId)), readLocalAsset(Number(data.assetId))]);
+      await markLoanRiskTriggered(alertId, triggeredAt);
+      const title = loan?.name ? `\u0647\u0634\u062f\u0627\u0631 \u0631\u06cc\u0633\u06a9 ${loan.name}` : "\u0647\u0634\u062f\u0627\u0631 \u0631\u06cc\u0633\u06a9 \u0648\u0627\u0645 \u067e\u0648\u0644\u0645\u200c\u06a9\u0648";
+      const body = asset?.name ? `\u0642\u06cc\u0645\u062a \u0628\u0627\u0632\u0627\u0631 ${asset.name} \u0627\u0632 \u062d\u062f \u062a\u0627\u0632\u06af\u06cc \u062a\u0639\u06cc\u06cc\u0646\u200c\u0634\u062f\u0647 \u0639\u0628\u0648\u0631 \u06a9\u0631\u062f\u0647 \u0627\u0633\u062a.` : "\u0642\u06cc\u0645\u062a \u06cc\u06a9 \u062f\u0627\u0631\u0627\u06cc\u06cc \u0645\u062a\u0635\u0644 \u0628\u0647 \u0648\u0627\u0645 \u062a\u0627\u0632\u0647 \u0646\u06cc\u0633\u062a.";
+      await self.registration.showNotification(title, {
+        body, icon: data.icon || "/icon-192.png", badge: data.badge || "/icon-192.png",
+        tag: data.tag || `poolamkoo-loan-risk-${alertId}`,
+        data: { url: data.url || `/loans/${data.loanId}`, loanRiskAlertId: alertId, triggeredAt },
+      });
+    })());
+    return;
+  }
+  if (data.kind === "loan-reminder") {
+    event.waitUntil((async () => {
+      const reminderKey = typeof data.reminderKey === "string" ? data.reminderKey : "";
+      const loan = await readLocalLoan(Number(data.loanId));
+      await markLoanReminderNotified(reminderKey, data.triggeredAt || new Date().toISOString());
+      await self.registration.showNotification(loan?.name ? `یادآوری ${loan.name}` : "یادآوری قسط پولم‌کو", {
+        body: localLoanReminderBody(data, loan),
+        icon: data.icon || "/icon-192.png",
+        badge: data.badge || "/icon-192.png",
+        tag: data.tag || `poolamkoo-${reminderKey || "loan-reminder"}`,
+        data: { url: data.url || "/loans", reminderKey },
+      });
+    })());
+    return;
+  }
   const title = typeof data.title === "string" ? data.title : "هشدار بازار پولم‌کو";
   const options = {
     body: typeof data.body === "string" ? data.body : "شرط یکی از هشدارهای بازار برقرار شده است.",

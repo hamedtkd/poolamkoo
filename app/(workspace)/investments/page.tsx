@@ -4,9 +4,12 @@ import { Reveal } from "@/components/animation/reveal";
 import { PageDateFilterBar } from "@/components/app/page-date-filter-bar";
 import { InvestmentsSection } from "@/components/sections/investments";
 import { useAppRuntime } from "@/components/app/app-runtime";
+import { useSearchParams } from "next/navigation";
 
 export default function InvestmentsPage() {
   const { data, market, dateFilter, backgroundPush } = useAppRuntime();
+  const searchParams = useSearchParams();
+  const initialLoanId = Number(searchParams.get("loanId")) || null;
   const scope = "investments" as const;
   const filtered = dateFilter.filteredFor(scope);
 
@@ -33,6 +36,7 @@ export default function InvestmentsPage() {
         backgroundPush={backgroundPush}
         planItems={data.planItems}
         incomes={data.incomes}
+        initialLoanId={initialLoanId}
         visibleTransactions={filtered.transactions}
         visibleSnapshots={filtered.snapshots}
         visiblePlanItems={filtered.planItems}

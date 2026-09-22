@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RiAddLine, RiFundsLine, RiSafe2Line, RiSearch2Line, RiWallet3Line } from "react-icons/ri";
+import { RiAddLine, RiBankCardLine, RiFundsLine, RiSafe2Line, RiSearch2Line, RiWallet3Line } from "react-icons/ri";
 import { appNav } from "@/components/app/navigation";
 import { getSettingsCategoryLabel, settingsSearchItems } from "@/components/settings/settings-navigation-model";
 import { useAppRuntime } from "@/components/app/app-runtime";
@@ -21,7 +21,6 @@ type SearchItem = {
   icon: React.ReactNode;
   action: () => void;
 };
-
 export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -33,7 +32,6 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const resultsRef = useRef<HTMLDivElement>(null);
-
   const items = useMemo<SearchItem[]>(() => {
     const closeAndRoute = (href: string) => () => {
       onOpenChange(false);
@@ -85,6 +83,14 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
       icon: <RiFundsLine className="size-5" />,
       action: closeAndRoute("/investments"),
     }));
+    const loans = data.loans.slice(0, 30).map((loan) => ({
+      id: `loan:${loan.id ?? loan.createdAt}`,
+      title: loan.name,
+      subtitle: loan.lender ? `وام · ${loan.lender}` : "وام و بازپرداخت",
+      keywords: `${loan.name} ${loan.lender ?? ""} loan debt installment قسط بدهی`,
+      icon: <RiBankCardLine className="size-5" />,
+      action: closeAndRoute(loan.id ? `/loans/${loan.id}` : "/loans"),
+    }));
     return [{
       id: "action:new-money",
       title: "پول جدید دارم",
@@ -95,9 +101,8 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
         onOpenChange(false);
         onNewMoney();
       },
-    }, ...navItems, ...settingItems, ...incomes, ...funds, ...assets];
-  }, [data.assets, data.funds, data.incomes, onNewMoney, onOpenChange, router]);
-
+    }, ...navItems, ...settingItems, ...incomes, ...funds, ...assets, ...loans];
+  }, [data.assets, data.funds, data.incomes, data.loans, onNewMoney, onOpenChange, router]);
   const normalized = normalizeSearchText(query);
   const quickItems = useMemo(() => {
     const ids = new Set(["action:new-money", "nav:/activity", "nav:/reports", "nav:/settings"]);
@@ -109,11 +114,9 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
   }, [items, normalized]);
   const visibleItems = normalized ? results : quickItems;
   const safeActiveIndex = visibleItems.length ? Math.min(Math.max(activeIndex, 0), visibleItems.length - 1) : -1;
-
   useEffect(() => {
     resultsRef.current?.querySelector<HTMLElement>("[data-search-active='true']")?.scrollIntoView({ block: "nearest" });
   }, [safeActiveIndex]);
-
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
@@ -135,13 +138,11 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
       visibleItems[safeActiveIndex].action();
     }
   }
-
   function setOpen(next: boolean) {
     onOpenChange(next);
     if (!next) setQuery("");
     setActiveIndex(0);
   }
-
   const panel = (
     <SearchPanel
       query={query}
@@ -154,32 +155,29 @@ export function GlobalSearch({ open, onOpenChange, onNewMoney }: {
       resultsRef={resultsRef}
     />
   );
-
   if (mobile) {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="px-4 pt-0">
           <DrawerTitle className="mb-1 text-start type-card-title">جست‌وجوی پولم‌کو</DrawerTitle>
-          <DrawerDescription className="mb-4">اسم یک بخش، تنظیم، پول ورودی، صندوق یا دارایی را بنویس.</DrawerDescription>
+          <DrawerDescription className="mb-4">اسم یک بخش، تنظیم، پول ورودی، صندوق، دارایی یا وام را بنویس.</DrawerDescription>
           {panel}
         </DrawerContent>
       </Drawer>
     );
   }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:w-[min(100%,38rem)] sm:p-5">
         <DialogHeader className="mb-4">
           <DialogTitle>جست‌وجوی پولم‌کو</DialogTitle>
-          <DialogDescription>اسم یک بخش، تنظیم، پول ورودی، صندوق یا دارایی را بنویس.</DialogDescription>
+          <DialogDescription>اسم یک بخش، تنظیم، پول ورودی، صندوق، دارایی یا وام را بنویس.</DialogDescription>
         </DialogHeader>
         {panel}
       </DialogContent>
     </Dialog>
   );
 }
-
 function SearchPanel({ query, onQueryChange, onInputKeyDown, items, searching, activeIndex, onActiveIndexChange, resultsRef }: {
   query: string;
   onQueryChange: (value: string) => void;
@@ -211,7 +209,6 @@ function SearchPanel({ query, onQueryChange, onInputKeyDown, items, searching, a
         />
       </div>
       <div className="sr-only" aria-live="polite">{searching ? (items.length ? `${items.length} نتیجه پیدا شد` : "نتیجه‌ای پیدا نشد") : `${items.length} میانبر پیشنهادی`}</div>
-
       <div className="mt-3 flex items-center justify-between type-caption text-muted-foreground">
         <span>{searching ? "نتایج" : "میانبرها"}</span>
         {!searching ? <span>برای نتیجه دقیق‌تر شروع به تایپ کن</span> : null}

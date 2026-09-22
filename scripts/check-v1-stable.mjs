@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 const BRAND_HASHES = {
   mark: "fabbfff77baacc3480ada96e505980b1ea879385eda10c034ce6e151fc0c9d4b",
   dark: "9d1f72084f83b7098f302e27cabdaa616fc7ab54c7e8508d411252b588f2bdb1",
@@ -52,10 +52,10 @@ const pkg = JSON.parse(packageSource);
 const lock = JSON.parse(lockSource);
 const categoryRoutes = ["general", "money", "market", "data", "transfer", "privacy", "about"];
 const checks = [
-  [pkg.version === VERSION, "package.json version must match v1.2.0"],
-  [lock.version === VERSION && lock.packages?.[""]?.version === VERSION, "package-lock.json version must match v1.2.0"],
-  [appVersionSource.includes(`APP_VERSION = "${VERSION}"`), "runtime app version must match v1.2.0"],
-  [appVersionSource.includes("LOCAL_DATABASE_SCHEMA_VERSION = 8"), "investment queue UX patch must not bump IndexedDB schema"],
+  [pkg.version === VERSION, "package.json version must match v1.3.0"],
+  [lock.version === VERSION && lock.packages?.[""]?.version === VERSION, "package-lock.json version must match v1.3.0"],
+  [appVersionSource.includes(`APP_VERSION = "${VERSION}"`), "runtime app version must match v1.3.0"],
+  [appVersionSource.includes("LOCAL_DATABASE_SCHEMA_VERSION = 9"), "current release must use IndexedDB schema 9 for the loan core"],
   [releaseSource.includes("Investment queue UX & GitHub showcase") && releaseSource.includes("چهار گروه") && releaseSource.includes("SensitiveValue") && releaseSource.includes("schema 8") && releaseSource.includes("سبز") && releaseSource.includes("comma استاندارد") && releaseSource.includes("Composition سینمایی"), "release note must document compact purchases plus financial semantics, number grouping and landing polish"],
   [globalsSource.includes("--profit: #15803d") && globalsSource.includes("--profit: #4ade80") && globalsSource.includes("--loss: #c62828") && globalsSource.includes("--loss: #f87171") && formatSource.includes('new Intl.NumberFormat("en-US"') && formatSource.includes("formatSignedMoney") && priceInputSource.includes("formatGroupedNumber"), "profit/loss colors and Persian money grouping must remain semantic and palette-independent"],
   [dashboardSource.includes("سود باز") && dashboardSource.includes("زیان باز") && dashboardSource.includes("text-profit") && dashboardSource.includes("text-loss") && investmentsSource.includes("formatSignedMoney"), "dashboard and investments must label and color open profit/loss explicitly"],
@@ -78,7 +78,7 @@ const checks = [
   [brandComponentSource.includes('/brand/poolamkoo-mark.svg') && brandComponentSource.includes("MaskImage") && brandComponentSource.includes("bg-primary"), "runtime brand mark must keep the owner SVG as a theme-aware CSS mask"],
   [faviconSource.includes("prefers-color-scheme: dark") && faviconSource.includes('viewBox="0 0 475 383"'), "favicon must retain accepted mark geometry and remain theme-aware"],
   [manifestSource.includes('"name": "پولم‌کو"') && manifestSource.includes('/icon-192.png') && manifestSource.includes('/maskable-512.png'), "PWA manifest must keep Persian naming and symbol launcher assets"],
-  [serviceWorkerSource.includes('const CACHE = "poolamkoo-v71"') && serviceWorkerSource.includes('/logo-poolamkoo.svg'), "v1.1.1 must ship a fresh PWA cache"],
+  [serviceWorkerSource.includes('const CACHE = "poolamkoo-v72"') && serviceWorkerSource.includes('/logo-poolamkoo.svg'), "v1.1.1 must ship a fresh PWA cache"],
   [priorSettingsSource.includes("Searchable settings architecture") && priorSettingsSource.includes("رنگ‌ساز سفارشی") && priorBrandSource.includes("Brand mark & PWA identity refresh") && priorLaunchSource.includes("Public launch & quota hardening"), "v1.1.1 must preserve accepted v1.1.0 and v1.0.x boundaries"],
   [quotaSource.includes("brsapiCoreQuotes: 180") && quotaSource.includes("tsetmcQuote: 120") && quotaSource.includes("tsetmcSearch: 600") && quotaSource.includes("MARKET_CLIENT_REUSE_MS = 30_000"), "quota constants must keep launch-safe cache/reuse windows"],
   [reliabilitySource.includes("activeProviderCooldown") && reliabilitySource.includes("retryAfterSeconds") && reliabilitySource.includes("guarded: true"), "provider cooldowns must remain intact"],
@@ -91,4 +91,4 @@ for (const [ok, message] of checks) {
   if (!ok) { console.error(`Stable readiness check failed: ${message}`); process.exit(1); }
 }
 
-console.log("v1.2.0 stable metadata gate passed. Full production release gate completed before investment-queue UX acceptance.");
+console.log("v1.3.0 stable metadata gate passed. Full production release gate completed with the schema 9 loan core.");

@@ -47,3 +47,10 @@ export const storesV8 = {
   ...storesV7,
   fundMovements: "++id, fundId, type, source, happenedAt, createdAt",
 };
+
+export const storesV9 = {
+  ...storesV8,
+  loans: "++id, status, firstPaymentAt, updatedAt",
+  loanPayments: "++id, loanId, [loanId+installmentNo], dueAt, paidAt",
+  loanRiskAlerts: "++id, loanId, assetId, kind, enabled, updatedAt",
+};

@@ -18,10 +18,36 @@ export interface RemoteMarketAlert {
   updatedAt: string;
 }
 
+export interface RemoteLoanReminder {
+  loanId: number;
+  installmentNo: number;
+  dueAt: string;
+  reminderDays: number[];
+  timeZone: string;
+  enabled: boolean;
+  sentKeys: string[];
+  updatedAt: string;
+}
+
+export interface RemoteLoanRiskAlert {
+  id: number;
+  loanId: number;
+  assetId: number;
+  marketId: string;
+  thresholdHours: number;
+  rearmHours: number;
+  enabled: boolean;
+  armed: boolean;
+  lastTriggeredAt?: string;
+  updatedAt: string;
+}
+
 export interface PushDeviceRecord {
-  version: 1;
+  version: 1 | 2 | 3;
   subscription: WebPushSubscriptionData;
   alerts: RemoteMarketAlert[];
+  loanReminders?: RemoteLoanReminder[];
+  loanRiskAlerts?: RemoteLoanRiskAlert[];
   syncedAt: string;
 }
 

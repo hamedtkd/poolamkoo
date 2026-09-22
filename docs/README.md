@@ -28,6 +28,14 @@
 
 ## نقشه راه
 
+### وام‌ها و مدیریت بازپرداخت
+
+- [مدل اقتصادی و مدیریت ریسک](./loans/economic-model.fa.md)
+- [مشخصات محصول و UX](./loans/product-ux-spec.fa.md)
+- [برنامه فنی و فازهای اجرا](./loans/technical-plan.fa.md)
+- [گزارش پذیرش Phase 2: Loan Core](./loans/phase-2-acceptance.fa.md)
+- [گزارش پذیرش Phase 3: Loan Product UI](./loans/phase-3-acceptance.fa.md)
+
 - [Roadmap](./ROADMAP.md)
 - [Background Push backlog](./backlog/background-push.md)
 

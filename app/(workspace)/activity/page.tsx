@@ -26,6 +26,8 @@ export default function ActivityPage() {
       fundMovements={filtered.fundMovements}
       assets={data.allAssets}
       transactions={filtered.transactions}
+      loans={data.loans}
+      loanPayments={filtered.loanPayments}
     />
   </div>;
 }

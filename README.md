@@ -93,6 +93,26 @@ Since v0.19, `/` is the public product landing page while the local-first financ
 - Target, balance, due date, and progress tracking
 - Auditable deposit/withdrawal history with date, note, safe correction, and system-source provenance without turning the app into detailed expense bookkeeping
 
+### Loans and repayment
+
+- Track loans as liabilities rather than ordinary income
+- Calculate installments, effective borrowing cost, break-even return, and fixed-return scenarios
+- Create or link an installment reserve with 3, 6, 9, or 12-payment targets
+- Explicitly link investment transactions to loan-funded capital
+- Record installments from reserve cash, external cash, asset-sale proceeds, or a mix
+- See next payment, reserve runway, outstanding principal, and net strategy effect
+- Surface loan context in Dashboard, Search, Activity, and Reports
+- Active repayment reminders while the workspace is running, with duplicate-notification suppression
+- Optional same-device browser notifications and optional Background Push when the PWA is closed
+- Loan health engine that monitors reserve runway and per-asset loss budgets in installment units
+- Armed/rearm hysteresis to prevent noisy repeated alerts
+- Snapshot prices remain display-only for automatic loss-budget alerts
+- Exact quote-age guards prevent stale market data from driving automatic risk actions
+- Per-position quote-freshness monitoring with armed/rearm hysteresis
+- Fixed-income fund return spread compares recorded annualized return with effective loan cost after enough history exists
+- Market shock scenarios show stress impact in money and installment units without presenting a forecast
+- Privacy-minimized background risk push is limited to server-evaluable quote-freshness alerts
+
 ### Market data
 
 - Market data from TSETMC, BrsApi, and [Tindex](https://tindex.app); Tindex is also a Poolamkoo data-source sponsor

@@ -107,6 +107,7 @@ export function useAppDateFilter(data: ReturnTypeOfAppData) {
         planItems: data.planItems.filter((row) => incomeIds.has(row.incomeId)),
         transactions: data.transactions.filter((row) => dateInRange(row.happenedAt, range)),
         fundMovements: data.fundMovements.filter((row) => dateInRange(row.happenedAt, range)),
+        loanPayments: data.loanPayments.filter((row) => dateInRange(row.paidAt, range)),
         snapshots: data.snapshots.filter((row) => dateInRange(row.capturedAt, range)),
       };
     };
@@ -118,7 +119,7 @@ export function useAppDateFilter(data: ReturnTypeOfAppData) {
       investments: build(ranges.investments),
       activity: build(ranges.activity),
     };
-  }, [data.allocations, data.fundMovements, data.incomes, data.planItems, data.snapshots, data.transactions, ranges]);
+  }, [data.allocations, data.fundMovements, data.incomes, data.loanPayments, data.planItems, data.snapshots, data.transactions, ranges]);
 
   return {
     ranges,

@@ -5,8 +5,9 @@ import { LOCAL_DATA_BLOCKED_EVENT, LOCAL_DATA_VERSION_CHANGE_EVENT } from "@/lib
 import { LOCAL_DATABASE_SCHEMA_VERSION } from "@/lib/app-version";
 import { validatePortableData } from "@/lib/data-portability";
 import { legacyFundOpeningMovement, normalizePortableFundLedger } from "@/lib/fund-ledger";
-import { storesV1, storesV2, storesV4, storesV5, storesV6, storesV7, storesV8 } from "@/lib/db-schema";
+import { storesV1, storesV2, storesV4, storesV5, storesV6, storesV7, storesV8, storesV9 } from "@/lib/db-schema";
 import { normalizeLegacyAssetIdentityRow, normalizeLegacyExchangeIdentityRow, normalizePortableMarketIdentities } from "@/lib/market/identity";
+import { normalizePortableLoanData } from "@/lib/loans/portable";
 import type {
   AllocationEntry,
   AllocationRule,
@@ -19,6 +20,9 @@ import type {
   MarketAlert,
   MarketSnapshot,
   MarketWatchItem,
+  Loan,
+  LoanPayment,
+  LoanRiskAlert,
   PlanItem,
   RecoverySnapshot,
   AppMeta,
@@ -51,6 +55,9 @@ export class PoolYarDB extends Dexie {
   marketSnapshots!: EntityTable<MarketSnapshot, "id">;
   marketWatchlist!: EntityTable<MarketWatchItem, "id">;
   marketAlerts!: EntityTable<MarketAlert, "id">;
+  loans!: EntityTable<Loan, "id">;
+  loanPayments!: EntityTable<LoanPayment, "id">;
+  loanRiskAlerts!: EntityTable<LoanRiskAlert, "id">;
   recoverySnapshots!: EntityTable<RecoverySnapshot, "id">;
   appMeta!: EntityTable<AppMeta, "key">;
   planItems!: EntityTable<PlanItem, "id">;
@@ -71,11 +78,12 @@ export class PoolYarDB extends Dexie {
       await tx.table("marketWatchlist").toCollection().modify((row) => normalizeLegacyExchangeIdentityRow(row as Record<string, unknown>));
       await tx.table("marketAlerts").toCollection().modify((row) => normalizeLegacyExchangeIdentityRow(row as Record<string, unknown>));
     });
-    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV8).upgrade(async (tx) => {
+    this.version(8).stores(storesV8).upgrade(async (tx) => {
       const funds = await tx.table("funds").toArray() as GoalFund[];
       const openings = funds.map((fund) => legacyFundOpeningMovement(fund)).filter((row): row is FundMovement => Boolean(row));
       if (openings.length) await tx.table("fundMovements").bulkAdd(openings);
     });
+    this.version(LOCAL_DATABASE_SCHEMA_VERSION).stores(storesV9);
   }
 }
 
@@ -198,14 +206,15 @@ export async function exportDatabaseObject() {
     allocations: await db.allocations.toArray(), funds: await db.funds.toArray(), fundMovements: await db.fundMovements.toArray(), assets: await db.assets.toArray(),
     transactions: await db.transactions.toArray(), marketSnapshots: await db.marketSnapshots.toArray(),
     marketWatchlist: await db.marketWatchlist.toArray(), marketAlerts: await db.marketAlerts.toArray(),
+    loans: await db.loans.toArray(), loanPayments: await db.loanPayments.toArray(), loanRiskAlerts: await db.loanRiskAlerts.toArray(),
     planItems: await db.planItems.toArray(), settings: await db.settings.toArray(),
   };
 }
 
-const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "fundMovements", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "planItems", "settings"] as const;
+const backupTableNames = ["allocationRules", "incomes", "allocations", "funds", "fundMovements", "assets", "transactions", "marketSnapshots", "marketWatchlist", "marketAlerts", "loans", "loanPayments", "loanRiskAlerts", "planItems", "settings"] as const;
 export async function importDatabaseObject(data: Record<string, unknown>) {
   validatePortableData(data);
-  const normalizedData = normalizePortableFundLedger(normalizePortableMarketIdentities(data));
+  const normalizedData = normalizePortableLoanData(normalizePortableFundLedger(normalizePortableMarketIdentities(data)));
 
   await db.transaction("rw", db.tables, async () => {
     for (const name of backupTableNames) await db.table(name).clear();

@@ -4,6 +4,8 @@ import {
   assertPortableFundLedger,
   fundLedgerAfterDelete,
   fundLedgerAfterUpsert,
+  fundMovementCanEdit,
+  fundMovementSourceTypeIsValid,
   legacyFundOpeningMovement,
   normalizePortableFundLedger,
   reviewFundLedger,
@@ -34,6 +36,20 @@ test("editing an old deposit cannot invalidate a later withdrawal", () => {
 test("deleting a deposit is unsafe when a later withdrawal depends on it", () => {
   const rows = [movement(1, "deposit", 100, "2026-08-01"), movement(2, "withdraw", 80, "2026-08-02")];
   assert.equal(fundLedgerAfterDelete(rows, 1).valid, false);
+});
+
+
+
+test("loan reserve funding is deposit-only and loan payment is system withdrawal", () => {
+  assert.equal(fundMovementSourceTypeIsValid("deposit", "loan_reserve"), true);
+  assert.equal(fundMovementSourceTypeIsValid("withdraw", "loan_reserve"), false);
+  assert.equal(fundMovementCanEdit(movement(8, "deposit", 25, "2026-08-03", "loan_reserve")), false);
+});
+
+test("loan payment fund movements are system withdrawals and cannot be edited independently", () => {
+  assert.equal(fundMovementSourceTypeIsValid("withdraw", "loan_payment"), true);
+  assert.equal(fundMovementSourceTypeIsValid("deposit", "loan_payment"), false);
+  assert.equal(fundMovementCanEdit(movement(9, "withdraw", 25, "2026-08-03", "loan_payment")), false);
 });
 
 test("legacy fund balance becomes one explicit opening ledger movement", () => {

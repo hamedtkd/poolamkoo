@@ -19,8 +19,8 @@ function movementPriority(type: FundMovementType) {
 export function fundMovementSourceTypeIsValid(type: FundMovementType, source: FundMovementSource) {
   if (type === "opening") return source === "opening" || source === "migration";
   if (source === "opening" || source === "migration") return false;
-  if (source === "plan" || source === "direct") return type === "deposit";
-  if (source === "income_reversal") return type === "withdraw";
+  if (source === "plan" || source === "direct" || source === "loan_reserve") return type === "deposit";
+  if (source === "income_reversal" || source === "loan_payment") return type === "withdraw";
   return source === "manual";
 }
 
@@ -88,7 +88,7 @@ export function assertPortableFundLedger(data: Record<string, unknown>) {
   const movements = data.fundMovements as FundMovement[];
   const fundIds = new Set(funds.map((fund) => fund.id).filter((id): id is number => Number.isInteger(id)));
   const allowedTypes = new Set<FundMovementType>(["deposit", "withdraw", "opening"]);
-  const allowedSources = new Set<FundMovementSource>(["manual", "opening", "plan", "direct", "income_reversal", "migration"]);
+  const allowedSources = new Set<FundMovementSource>(["manual", "opening", "plan", "direct", "income_reversal", "loan_reserve", "loan_payment", "migration"]);
   for (const row of movements) {
     if (!row || !Number.isInteger(row.fundId) || !fundIds.has(row.fundId)) throw new Error("گردش صندوق به صندوق معتبری متصل نیست.");
     if (!allowedTypes.has(row.type) || !allowedSources.has(row.source) || !fundMovementSourceTypeIsValid(row.type, row.source)) throw new Error("نوع یا منبع گردش صندوق معتبر نیست.");

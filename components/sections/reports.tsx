@@ -10,6 +10,7 @@ import { LazyMonthlyBars } from "@/components/charts/lazy-monthly-bars";
 import { DecisionInsightsCard } from "@/components/reports/decision-insights-card";
 import { InvestmentAnalyticsDashboard } from "@/components/reports/investment-analytics-dashboard";
 import { ReportExportDialog } from "@/components/reports/report-export-dialog";
+import { LoanStrategyReport } from "@/components/reports/loan-strategy-report";
 import { ReconciliationCard } from "@/components/reports/reconciliation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { useReportsData, type PerformanceRow, type PlanAdherenceRow } from "@/ho
 import { formatMoney, formatPercent, formatSignedMoney, formatSignedPercent } from "@/lib/format";
 import { valuationPriceSourceLabel } from "@/lib/market/valuation";
 import type { AppDateRange } from "@/lib/date-range";
-import type { AllocationEntry, AllocationRule, AppSettings, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, MarketQuote, PlanItem } from "@/lib/types";
+import type { AllocationEntry, AllocationRule, AppSettings, Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, Loan, LoanPayment, MarketQuote, PlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const HELP = {
@@ -36,9 +37,9 @@ const HELP = {
   monthly: "تقسیم پول‌های ورودی در شش ماه اخیر. اگر ماهی ورودی نداشته باشد چیزی برای رسم وجود ندارد.",
 };
 
-export function ReportsSection({ settings, rule, incomes, allocations, funds, fundMovements, assets, transactions, periodTransactions, quotes, planItems, range }: {
-  settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; allocations: AllocationEntry[]; funds: GoalFund[]; fundMovements: FundMovement[];
-  assets: Asset[]; transactions: InvestmentTransaction[]; periodTransactions: InvestmentTransaction[]; quotes: MarketQuote[]; planItems: PlanItem[]; range: AppDateRange;
+export function ReportsSection({ settings, rule, incomes, allocations, funds, fundMovements, allFundMovements, assets, transactions, periodTransactions, loans, loanPayments, periodLoanPayments, quotes, planItems, range }: {
+  settings: AppSettings; rule?: AllocationRule; incomes: IncomeEvent[]; allocations: AllocationEntry[]; funds: GoalFund[]; fundMovements: FundMovement[]; allFundMovements: FundMovement[];
+  assets: Asset[]; transactions: InvestmentTransaction[]; periodTransactions: InvestmentTransaction[]; loans: Loan[]; loanPayments: LoanPayment[]; periodLoanPayments: LoanPayment[]; quotes: MarketQuote[]; planItems: PlanItem[]; range: AppDateRange;
 }) {
   const [exportOpen, setExportOpen] = useState(false);
   const report = useReportsData({ incomes, allocations, funds, fundMovements, assets, transactions, periodTransactions, quotes, planItems, rule });
@@ -70,6 +71,7 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, fu
 
     {pricingIncomplete && <Reveal step={7}><div className="flex gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/7 p-4 text-sm"><RiAlertLine className="mt-0.5 size-5 shrink-0 text-amber-600" /><div><div className="type-strong">بخشی از ارزش سبد با fallback نمایش داده می‌شود</div><p className="mt-1 type-caption leading-6 text-muted-foreground">Snapshot محلی یا بهای خرید می‌تواند برای تداوم نمایش باقی بماند، اما رتبه‌بندی بازده و تصمیم‌های خودکار سبد تا رسیدن قیمت تازه بازار یا قیمت دستی قابل اتکا متوقف می‌شوند.</p></div></div></Reveal>}
 
+    <Reveal step={7}><LoanStrategyReport settings={settings} loans={loans} payments={loanPayments} periodPayments={periodLoanPayments} funds={funds} fundMovements={allFundMovements} assets={assets} transactions={transactions} quotes={quotes} /></Reveal>
     <Reveal step={7}><DecisionInsightsCard snapshot={decision} unit={settings.displayUnit} /></Reveal>
     <Reveal step={7}><ReconciliationCard snapshot={reconciliation} unit={settings.displayUnit} /></Reveal>
     <Reveal step={7}><InvestmentAnalyticsDashboard settings={settings} assets={assets} transactions={transactions} quotes={quotes} /></Reveal>

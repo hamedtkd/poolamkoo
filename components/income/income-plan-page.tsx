@@ -98,16 +98,17 @@ export function IncomePlanPage({
       </div>
 
       <PlanExecutionDialog item={executionItem} settings={settings} onClose={() => setExecutionItem(null)} />
-      <TransactionDialog
+      {asset && purchaseItem && <TransactionDialog
+        key={`${asset.id ?? "asset"}-${purchaseItem.id ?? "plan"}`}
         asset={asset}
         onClose={() => setPurchaseItem(null)}
-        suggestedPrice={asset?.id ? state.assetPriceMap.get(asset.id) ?? asset.manualPriceToman : asset?.manualPriceToman}
+        suggestedPrice={asset.id ? state.assetPriceMap.get(asset.id) ?? asset.manualPriceToman : asset.manualPriceToman}
         transactions={transactions}
         settings={settings}
         planItem={purchaseItem}
-        initialAmount={purchaseItem ? planRemaining(purchaseItem) : undefined}
+        initialAmount={planRemaining(purchaseItem)}
         incomeId={state.income.id}
-      />
+      />}
       <PlanEditDialog item={editItem} onOpenChange={(open) => !open && setEditItem(null)} settings={settings} income={state.income} planItems={planItems} assets={assets} funds={funds} />
       <QuickPlanDialog open={quickOpen} onOpenChange={setQuickOpen} settings={settings} income={state.income} planItems={planItems} assets={assets} funds={funds} initialBucket={quickBucket} />
       <PlanDeleteDialog

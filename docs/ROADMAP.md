@@ -2,6 +2,14 @@
 
 This roadmap prioritizes zero-cost, local-first product reliability before optional hosted infrastructure.
 
+## Planned: Loans and repayment safety
+
+- Phase 1 complete: economic model, product/UX spec, and technical implementation plan documented under `docs/loans/`.
+- Phase 2 complete: schema v9, loan calculations, payment ledger, backup/restore, portability integrity, and unit tests.
+- Phase 3 complete: loan workspace UI, reserve linking, investment linking, payment flow, dashboard/report/activity/search integration, offline routes, and scenario UI.
+- Phase 4: installment reminders, browser notifications, reserve runway alerts, loss-budget alerts, and fresh-quote guards.
+- Phase 5: data-health checks, accessibility/responsive hardening, full release gates, and final source package.
+
 ## v0.13.1 — Zero-cost baseline
 
 - Pause Background Web Push behind an explicit experimental feature flag.

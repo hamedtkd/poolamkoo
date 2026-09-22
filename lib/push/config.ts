@@ -10,6 +10,7 @@ export function pushServerConfig() {
   const cronSecret = process.env.CRON_SECRET?.trim() ?? "";
   const marketToken = process.env.TINDEX_API_TOKEN?.trim() ?? "";
   const validSubject = subject.startsWith("mailto:") || subject.startsWith("https://");
+  const configured = Boolean(featureEnabled && publicKey && privateKey && validSubject && redisUrl && redisToken && cronSecret);
   return {
     featureEnabled,
     publicKey,
@@ -19,6 +20,7 @@ export function pushServerConfig() {
     redisToken,
     cronSecret,
     marketToken,
-    configured: Boolean(featureEnabled && publicKey && privateKey && validSubject && redisUrl && redisToken && cronSecret && marketToken),
+    configured,
+    marketConfigured: Boolean(configured && marketToken),
   };
 }

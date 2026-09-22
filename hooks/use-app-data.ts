@@ -100,6 +100,9 @@ export function useAppData() {
   const watchlist = useLiveQuery(() => canQuery ? db.marketWatchlist.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
   const marketAlerts = useLiveQuery(() => canQuery ? db.marketAlerts.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
   const planItems = useLiveQuery(() => canQuery ? db.planItems.toArray() : [], [canQuery]) ?? [];
+  const loans = useLiveQuery(() => canQuery ? db.loans.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
+  const loanPayments = useLiveQuery(() => canQuery ? db.loanPayments.orderBy("paidAt").reverse().toArray() : [], [canQuery]) ?? [];
+  const loanRiskAlerts = useLiveQuery(() => canQuery ? db.loanRiskAlerts.orderBy("updatedAt").reverse().toArray() : [], [canQuery]) ?? [];
 
   return {
     ready,
@@ -119,5 +122,8 @@ export function useAppData() {
     watchlist,
     marketAlerts,
     planItems,
+    loans,
+    loanPayments,
+    loanRiskAlerts,
   };
 }

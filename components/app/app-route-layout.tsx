@@ -17,6 +17,8 @@ import { useBackupSafety } from "@/hooks/use-backup-safety";
 import { useCommunitySupport } from "@/hooks/use-community-support";
 import { useMarket } from "@/hooks/use-market";
 import { useMarketAlerts } from "@/hooks/use-market-alerts";
+import { useLoanReminders } from "@/hooks/use-loan-reminders";
+import { useLoanRiskMonitoring } from "@/hooks/use-loan-risk";
 import { portfolioRelevantAssets } from "@/lib/asset-lifecycle";
 
 export function AppRouteLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +27,20 @@ export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   const marketAssets = portfolioRelevantAssets(data.allAssets, data.transactions);
   const market = useMarket(marketAssets, data.watchlist, data.marketAlerts, data.ready);
   useMarketAlerts(data.marketAlerts, market.quotes, market.mode, data.settings.displayUnit);
-  const backgroundPush = useBackgroundPush(data.marketAlerts, data.ready);
+  const loanReminders = useLoanReminders(data.loans, data.loanPayments, data.ready);
+  const loanRisk = useLoanRiskMonitoring({
+    loans: data.loans,
+    alerts: data.loanRiskAlerts,
+    payments: data.loanPayments,
+    funds: data.funds,
+    assets: data.allAssets,
+    transactions: data.transactions,
+    fundMovements: data.fundMovements,
+    quotes: market.quotes,
+    runtimeReady: data.ready,
+    marketReady: !market.loading,
+  });
+  const backgroundPush = useBackgroundPush(data.marketAlerts, data.ready, data.loans, data.loanPayments, data.loanRiskAlerts, data.allAssets);
   const dateFilter = useAppDateFilter(data);
   const backupSafety = useBackupSafety(data, data.ready);
   const communitySupport = useCommunitySupport(data.ready && data.settings.onboardingComplete);
@@ -45,7 +60,7 @@ export function AppRouteLayout({ children }: { children: React.ReactNode }) {
   if (!data.settings.onboardingComplete) return <Onboarding onDone={() => undefined} />;
 
   return (
-    <AppRuntimeProvider value={{ data, market, dateFilter, backgroundPush, backupSafety }}>
+    <AppRuntimeProvider value={{ data, market, dateFilter, backgroundPush, loanReminders, loanRisk, backupSafety }}>
       <OfflineWorkspaceManager />
       <AppShell settings={data.settings} market={market} onNewMoney={() => setNewMoneyOpen(true)}>{children}</AppShell>
       <BackupReminder backup={backupSafety} />

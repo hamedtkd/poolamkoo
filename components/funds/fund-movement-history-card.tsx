@@ -15,6 +15,8 @@ const sourceLabel: Record<FundMovement["source"], string> = {
   plan: "اجرای برنامه",
   direct: "کنارگذاری مستقیم",
   income_reversal: "برگشت حذف ورودی",
+  loan_reserve: "ذخیره اولیه وام",
+  loan_payment: "پرداخت قسط وام",
   migration: "موجودی قدیمی",
 };
 

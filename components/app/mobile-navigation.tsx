@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   RiAddLine,
   RiBarChartBoxLine,
+  RiBankCardLine,
   RiBookOpenLine,
   RiDashboardLine,
   RiHistoryLine,
@@ -94,6 +95,7 @@ function MobileMenu({ open, onOpenChange, market, onNewMoney, onStartTour, resol
         </button>
 
         <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <SecondaryLink href="/loans" icon={<RiBankCardLine />} label="وام‌ها" description="قسط، ذخیره و سرمایه قرضی" onClick={close} className="col-span-2" />
           <SecondaryLink href="/activity" icon={<RiHistoryLine />} label="تاریخچه" description="رد پول‌های ثبت‌شده" onClick={close} className="col-span-2" />
           <SecondaryLink href="/reports" icon={<RiBarChartBoxLine />} label="گزارش‌ها" description="مرور تصمیم‌ها" onClick={close} />
           <SecondaryLink href="/settings" icon={<RiSettings3Line />} label="تنظیمات" description="ظاهر، قانون و داده" onClick={close} />

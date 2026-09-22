@@ -22,14 +22,14 @@ const BRAND_SOURCES = {
   en: "963971d37d437030a289e9fea26a0496ef22f018d58985ff556b8fba3426a279",
 };
 
-test("v1.2.0 uses one canonical version without a database schema bump", () => {
+test("v1.3.0 uses one canonical version with the schema 9 loan core", () => {
   const pkg = JSON.parse(read("package.json")) as { version: string };
   const lock = JSON.parse(read("package-lock.json")) as { version: string; packages: Record<string, { version?: string }> };
-  assert.equal(APP_VERSION, "1.2.0");
-  assert.equal(pkg.version, "1.2.0");
-  assert.equal(lock.version, "1.2.0");
-  assert.equal(lock.packages[""]?.version, "1.2.0");
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 8);
+  assert.equal(APP_VERSION, "1.3.0");
+  assert.equal(pkg.version, "1.3.0");
+  assert.equal(lock.version, "1.3.0");
+  assert.equal(lock.packages[""]?.version, "1.3.0");
+  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 9);
 });
 
 test("pending investment purchases collapse the repeated card wall without losing exact plan actions", () => {
@@ -71,15 +71,15 @@ test("accepted SVG masters remain pinned while the PWA cache advances", () => {
   assert.equal(brand.includes('/brand/poolamkoo-mark.svg'), true);
   assert.equal(brand.includes("MaskImage"), true);
   assert.equal(manifest.includes('"name": "پولم‌کو"'), true);
-  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v71"'), true);
+  assert.equal(serviceWorker.includes('const CACHE = "poolamkoo-v72"'), true);
 });
 
 test("stable gate composes the full production release gate before v1.1.1 UX acceptance", () => {
   const pkg = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
   const checker = read("scripts/check-v1-stable.mjs");
   assert.equal(pkg.scripts["check:stable"], "npm run check:release && node scripts/check-v1-stable.mjs");
-  assert.equal(checker.includes("v1.2.0 stable metadata gate passed"), true);
-  assert.equal(checker.includes("LOCAL_DATABASE_SCHEMA_VERSION = 8"), true);
+  assert.equal(checker.includes("v1.3.0 stable metadata gate passed"), true);
+  assert.equal(checker.includes("LOCAL_DATABASE_SCHEMA_VERSION = 9"), true);
   assert.equal(checker.includes("MAX_VISIBLE_GROUPS = 4"), true);
   assert.equal(checker.includes("settingsSearchItems.map"), true);
   assert.equal(checker.includes("CustomThemeColorDialog"), true);

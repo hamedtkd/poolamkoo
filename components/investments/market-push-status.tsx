@@ -30,8 +30,8 @@ export function MarketPushStatus({ push }: { push: BackgroundPushControls }) {
       </div>
     </div>
     <div className="mt-3 grid gap-2 text-[10px] leading-5 text-muted-foreground sm:grid-cols-2">
-      <div className="flex gap-2 rounded-xl bg-background/60 p-2.5"><RiShieldCheckLine className="mt-0.5 shrink-0 text-primary" /><span>فقط نماد، شرط هشدار و Push Subscription روی سرور ذخیره می‌شود؛ موجودی سبد، مبلغ خرید و سایر داده‌های مالی ارسال نمی‌شوند.</span></div>
-      <div className="flex gap-2 rounded-xl bg-background/60 p-2.5"><RiInformationLine className="mt-0.5 shrink-0 text-primary" /><span>{enabled ? `${new Intl.NumberFormat("fa-IR").format(push.remoteAlertCount)} هشدار فعال برای Push همگام است. بررسی سرور طبق Cron انجام می‌شود.` : "Push اختیاری است؛ هشدارهای محلی v0.12 بدون آن همچنان هنگام باز بودن اپ کار می‌کنند."}</span></div>
+      <div className="flex gap-2 rounded-xl bg-background/60 p-2.5"><RiShieldCheckLine className="mt-0.5 shrink-0 text-primary" /><span>Push Subscription فقط برای همین دستگاه نگه داشته می‌شود. برای هشدار بازار، فقط نماد و شرط هشدار همگام می‌شود. برای یادآور وام نیز فقط شناسه محلی، شماره قسط، تاریخ سررسید، روزهای یادآوری و منطقه زمانی ارسال می‌شود؛ مبلغ‌ها، نام وام و موجودی‌ها ارسال نمی‌شوند.</span></div>
+      <div className="flex gap-2 rounded-xl bg-background/60 p-2.5"><RiInformationLine className="mt-0.5 shrink-0 text-primary" /><span>{enabled ? `${new Intl.NumberFormat("fa-IR").format(push.remoteAlertCount)} هشدار بازار و ${new Intl.NumberFormat("fa-IR").format(push.remoteLoanReminderCount)} یادآور وام برای Push همگام است. بررسی سرور طبق Cron انجام می‌شود.` : "Push اختیاری است؛ هشدارهای محلی v0.12 بدون آن همچنان هنگام باز بودن اپ کار می‌کنند."}</span></div>
     </div>
     {push.message && <p className="mt-3 rounded-xl bg-muted/45 px-3 py-2 text-xs text-muted-foreground">{push.message}</p>}
   </div>;

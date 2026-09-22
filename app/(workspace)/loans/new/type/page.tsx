@@ -1,0 +1,6 @@
+import { LOAN_TEMPLATES } from '@/lib/loans/templates';
+import Link from 'next/link';
+
+export default function LoanTypePage() {
+  return <main className="mx-auto max-w-5xl space-y-5 p-4"><div><h1 className="type-page-title">انتخاب قالب وام</h1><p className="mt-2 text-muted-foreground">این مقادیر پیشنهادی هستند. قبل از ثبت می‌توانید همه آن‌ها را تغییر دهید.</p></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{LOAN_TEMPLATES.map((item)=><div key={item.id} className="rounded-2xl border p-4"><h2 className="type-card-title">{item.title}</h2><p className="mt-1 text-sm text-muted-foreground">{item.lender || "تامین‌کننده دلخواه"}</p><p className="mt-2 text-sm text-muted-foreground">{item.description}</p><dl className="mt-4 grid grid-cols-3 gap-2 text-sm"><div><dt className="text-muted-foreground">مبلغ</dt><dd>{item.principalToman ? `${item.principalToman.toLocaleString('fa-IR')} تومان` : "دلخواه"}</dd></div><div><dt className="text-muted-foreground">سود</dt><dd>{item.rate.toLocaleString('fa-IR')}٪</dd></div><div><dt className="text-muted-foreground">مدت</dt><dd>{item.term.toLocaleString('fa-IR')} ماه</dd></div></dl><Link className="mt-4 inline-flex rounded-xl bg-primary px-4 py-2 text-primary-foreground" href={`/loans/new?template=${item.id}`}>شروع با این قالب</Link></div>)}</div></main>;
+}

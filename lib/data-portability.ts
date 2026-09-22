@@ -1,6 +1,7 @@
 import { LOCAL_DATABASE_SCHEMA_VERSION } from "./app-version.ts";
 import { assertPortableMarketIdentities } from "./market/identity.ts";
 import { assertPortableFundLedger } from "./fund-ledger.ts";
+import { assertPortableLoanData } from "./loans/portable.ts";
 
 export type PortableDataPreview = {
   incomes: number;
@@ -11,6 +12,9 @@ export type PortableDataPreview = {
   planItems: number;
   watchlist: number;
   alerts: number;
+  loans: number;
+  loanPayments: number;
+  loanRiskAlerts: number;
   total: number;
 };
 
@@ -35,6 +39,7 @@ export function validatePortableData(data: Record<string, unknown>): PortableDat
   }
   assertPortableMarketIdentities(data);
   assertPortableFundLedger(data);
+  assertPortableLoanData(data);
   const settings = data.settings as unknown[];
   if (!settings.some((row) => row && typeof row === "object" && (row as { id?: string }).id === "settings")) {
     throw new Error("داده تنظیمات معتبر پولم‌کو را ندارد.");
@@ -42,8 +47,9 @@ export function validatePortableData(data: Record<string, unknown>): PortableDat
   const preview = {
     incomes: countRows(data, "incomes"), funds: countRows(data, "funds"), fundMovements: countRows(data, "fundMovements"), assets: countRows(data, "assets"),
     transactions: countRows(data, "transactions"), planItems: countRows(data, "planItems"),
-    watchlist: countRows(data, "marketWatchlist"), alerts: countRows(data, "marketAlerts"), total: 0,
+    watchlist: countRows(data, "marketWatchlist"), alerts: countRows(data, "marketAlerts"),
+    loans: countRows(data, "loans"), loanPayments: countRows(data, "loanPayments"), loanRiskAlerts: countRows(data, "loanRiskAlerts"), total: 0,
   };
-  preview.total = preview.incomes + preview.funds + preview.fundMovements + preview.assets + preview.transactions + preview.planItems + preview.watchlist + preview.alerts;
+  preview.total = preview.incomes + preview.funds + preview.fundMovements + preview.assets + preview.transactions + preview.planItems + preview.watchlist + preview.alerts + preview.loans + preview.loanPayments + preview.loanRiskAlerts;
   return preview;
 }

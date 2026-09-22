@@ -57,6 +57,8 @@ test("fund activity keeps source provenance and action semantics", () => {
   assert.equal(deposit?.sourceLabel, "کنارگذاری مستقیم");
   assert.equal(withdraw?.detail, "برداشت از صندوق");
   assert.equal(fundMovementSourceLabel("income_reversal"), "برگشت حذف ورودی");
+  assert.equal(fundMovementSourceLabel("loan_reserve"), "ذخیره اولیه وام");
+  assert.equal(fundMovementSourceLabel("loan_payment"), "پرداخت قسط وام");
 });
 
 test("activity search normalizes Persian variants and respects category filters", () => {
@@ -72,6 +74,7 @@ test("activity summary reports factual recorded volume rather than inferred cash
     incomeTotal: 1000,
     fundTurnover: 350,
     investmentTurnover: 650,
+    loanPaymentsTotal: 0,
   });
 });
 

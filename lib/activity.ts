@@ -1,14 +1,15 @@
 import { normalizeSearchText } from "./search.ts";
-import type { Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction } from "./types.ts";
+import type { Asset, FundMovement, GoalFund, IncomeEvent, InvestmentTransaction, Loan, LoanPayment } from "./types.ts";
 
-export type FinancialActivityCategory = "income" | "fund" | "investment";
+export type FinancialActivityCategory = "income" | "fund" | "investment" | "loan";
 export type FinancialActivityAction =
   | "income_received"
   | "fund_deposit"
   | "fund_withdraw"
   | "fund_opening"
   | "investment_buy"
-  | "investment_sell";
+  | "investment_sell"
+  | "loan_payment";
 
 export interface FinancialActivityItem {
   id: string;
@@ -30,17 +31,21 @@ export interface FinancialActivitySummary {
   incomeTotal: number;
   fundTurnover: number;
   investmentTurnover: number;
+  loanPaymentsTotal: number;
 }
 
-export function buildFinancialActivity({ incomes, funds, fundMovements, assets, transactions }: {
+export function buildFinancialActivity({ incomes, funds, fundMovements, assets, transactions, loans = [], loanPayments = [] }: {
   incomes: IncomeEvent[];
   funds: GoalFund[];
   fundMovements: FundMovement[];
   assets: Asset[];
   transactions: InvestmentTransaction[];
+  loans?: Loan[];
+  loanPayments?: LoanPayment[];
 }) {
   const fundById = new Map(funds.flatMap((fund) => fund.id ? [[fund.id, fund] as const] : []));
   const assetById = new Map(assets.flatMap((asset) => asset.id ? [[asset.id, asset] as const] : []));
+  const loanById = new Map(loans.flatMap((loan) => loan.id ? [[loan.id, loan] as const] : []));
 
   const incomeRows: FinancialActivityItem[] = incomes.map((income) => ({
     id: `income:${income.id ?? income.createdAt}`,
@@ -96,7 +101,26 @@ export function buildFinancialActivity({ incomes, funds, fundMovements, assets, 
     };
   });
 
-  return sortFinancialActivity([...incomeRows, ...fundRows, ...investmentRows]);
+  const loanRows: FinancialActivityItem[] = loanPayments.map((payment) => {
+    const loan = loanById.get(payment.loanId);
+    const sourceLabel = loanPaymentSourceLabel(payment);
+    return {
+      id: `loan:${payment.id ?? `${payment.loanId}:${payment.installmentNo}:${payment.createdAt}`}`,
+      category: "loan",
+      action: "loan_payment",
+      happenedAt: dayKey(payment.paidAt),
+      createdAt: payment.createdAt,
+      title: loan?.name ?? "وام نامشخص",
+      detail: `پرداخت قسط ${payment.installmentNo.toLocaleString("fa-IR")}`,
+      amountToman: safeAmount(payment.amountToman),
+      note: cleanNote(payment.note),
+      sourceLabel,
+      href: loan?.id ? `/loans/${loan.id}` : "/loans",
+      searchText: activitySearchText([loan?.name, loan?.lender, payment.note, sourceLabel, "وام قسط بازپرداخت"]),
+    };
+  });
+
+  return sortFinancialActivity([...incomeRows, ...fundRows, ...investmentRows, ...loanRows]);
 }
 
 export function filterFinancialActivity(rows: FinancialActivityItem[], category: FinancialActivityCategory | "all", query: string) {
@@ -113,8 +137,9 @@ export function summarizeFinancialActivity(rows: FinancialActivityItem[]): Finan
     if (row.category === "income") summary.incomeTotal += row.amountToman;
     if (row.category === "fund") summary.fundTurnover += row.amountToman;
     if (row.category === "investment") summary.investmentTurnover += row.amountToman;
+    if (row.category === "loan") summary.loanPaymentsTotal += row.amountToman;
     return summary;
-  }, { eventCount: 0, incomeTotal: 0, fundTurnover: 0, investmentTurnover: 0 });
+  }, { eventCount: 0, incomeTotal: 0, fundTurnover: 0, investmentTurnover: 0, loanPaymentsTotal: 0 });
 }
 
 export function groupFinancialActivityByDay(rows: FinancialActivityItem[]) {
@@ -134,9 +159,18 @@ export function fundMovementSourceLabel(source: FundMovement["source"]) {
     plan: "اجرای برنامه",
     direct: "کنارگذاری مستقیم",
     income_reversal: "برگشت حذف ورودی",
+    loan_reserve: "ذخیره اولیه وام",
+    loan_payment: "پرداخت قسط وام",
     migration: "انتقال از نسخه قدیمی",
   };
   return labels[source];
+}
+
+function loanPaymentSourceLabel(payment: LoanPayment) {
+  if (payment.source === "reserve") return "ذخیره اقساط";
+  if (payment.source === "external") return "پول شخصی";
+  if (payment.source === "asset_sale") return "فروش دارایی";
+  return "ترکیبی";
 }
 
 function sortFinancialActivity(rows: FinancialActivityItem[]) {

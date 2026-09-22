@@ -9,6 +9,8 @@ const WORKSPACE_ROUTES = [
   "/income",
   "/funds",
   "/investments",
+  "/loans",
+  "/loans/new",
   "/reports",
   "/settings",
   "/settings/general",

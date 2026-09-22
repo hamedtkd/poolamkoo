@@ -9,7 +9,7 @@ import { navigateWorkspace } from "@/lib/workspace-navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { data, market, dateFilter } = useAppRuntime();
+  const { data, market, dateFilter, loanRisk } = useAppRuntime();
   const scope = "dashboard" as const;
   const filtered = dateFilter.filteredFor(scope);
 
@@ -30,6 +30,10 @@ export default function DashboardPage() {
         funds={data.funds}
         assets={data.allAssets}
         transactions={filtered.transactions}
+        fundMovements={data.fundMovements}
+        loans={data.loans}
+        loanPayments={data.loanPayments}
+        loanRisk={loanRisk}
         quotes={market.quotes}
         snapshots={filtered.snapshots}
         marketMode={market.mode}
@@ -42,6 +46,7 @@ export default function DashboardPage() {
         onNewMoney={() => window.dispatchEvent(new CustomEvent("poolyar:new-money"))}
         onOpenInvestments={() => navigateWorkspace(router, "/investments")}
         onOpenFunds={() => navigateWorkspace(router, "/funds")}
+        onOpenLoans={() => navigateWorkspace(router, "/loans")}
       />
     </div>
   );

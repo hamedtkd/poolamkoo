@@ -27,9 +27,13 @@ export default function ReportsPage() {
         allocations={filtered.allocations}
         funds={data.funds}
         fundMovements={filtered.fundMovements}
+        allFundMovements={data.fundMovements}
         assets={data.allAssets}
         transactions={data.transactions}
         periodTransactions={filtered.transactions}
+        loans={data.loans}
+        loanPayments={data.loanPayments}
+        periodLoanPayments={filtered.loanPayments}
         quotes={market.quotes}
         planItems={filtered.planItems}
         range={dateFilter.getRange(scope)}

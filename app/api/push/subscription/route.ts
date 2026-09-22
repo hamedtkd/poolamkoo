@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { pushServerConfig } from "@/lib/push/config";
+import { mergeRemoteLoanReminders } from "@/lib/push/loan-reminders";
+import { mergeRemoteLoanRiskAlerts, remoteLoanRiskStates } from "@/lib/push/loan-risk";
 import { mergeRemoteAlerts, remoteAlertStates } from "@/lib/push/remote-alerts";
 import { getPushDevice, removePushDevice, savePushDevice } from "@/lib/push/store";
-import { parseRemoteAlerts, parseSubscription, sameOrigin, validDeviceToken } from "@/lib/push/server-validation";
+import { parseRemoteAlerts, parseRemoteLoanReminders, parseRemoteLoanRiskAlerts, parseSubscription, sameOrigin, validDeviceToken } from "@/lib/push/server-validation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,17 +17,21 @@ export async function POST(request: Request) {
   if (!config.featureEnabled) return json({ ok: false, error: "Background Push is paused in the public roadmap." }, 404);
   if (!config.configured) return json({ ok: false, error: "Push backend is not configured." }, 503);
   if (!sameOrigin(request) || !validDeviceToken(token(request))) return json({ ok: false, error: "Invalid push request." }, 403);
-  const body = await request.json().catch(() => null) as { subscription?: unknown; alerts?: unknown } | null;
+  const body = await request.json().catch(() => null) as { subscription?: unknown; alerts?: unknown; loanReminders?: unknown; loanRiskAlerts?: unknown } | null;
   const subscription = parseSubscription(body?.subscription);
   const alerts = parseRemoteAlerts(body?.alerts);
-  if (!subscription || !alerts) return json({ ok: false, error: "Invalid push payload." }, 400);
+  const loanReminders = parseRemoteLoanReminders(body?.loanReminders ?? []);
+  const loanRiskAlerts = parseRemoteLoanRiskAlerts(body?.loanRiskAlerts ?? []);
+  if (!subscription || !alerts || !loanReminders || !loanRiskAlerts) return json({ ok: false, error: "Invalid push payload." }, 400);
 
   const deviceToken = token(request) as string;
   const previous = await getPushDevice(deviceToken);
-  const merged = mergeRemoteAlerts(alerts, previous?.alerts);
+  const mergedAlerts = mergeRemoteAlerts(alerts, previous?.alerts);
+  const mergedLoans = mergeRemoteLoanReminders(loanReminders, previous?.loanReminders);
+  const mergedRisk = mergeRemoteLoanRiskAlerts(loanRiskAlerts, previous?.loanRiskAlerts);
   const now = new Date().toISOString();
-  await savePushDevice(deviceToken, { version: 1, subscription, alerts: merged, syncedAt: now });
-  return json({ ok: true, syncedAt: now, states: remoteAlertStates(merged) });
+  await savePushDevice(deviceToken, { version: 3, subscription, alerts: mergedAlerts, loanReminders: mergedLoans, loanRiskAlerts: mergedRisk, syncedAt: now });
+  return json({ ok: true, syncedAt: now, states: remoteAlertStates(mergedAlerts), loanRiskStates: remoteLoanRiskStates(mergedRisk), loanReminderCount: mergedLoans.length, loanRiskCount: mergedRisk.length });
 }
 
 export async function DELETE(request: Request) {

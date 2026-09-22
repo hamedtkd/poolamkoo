@@ -22,7 +22,8 @@ The following pieces are kept so future contributors do not need to rebuild the 
 
 - Web Push subscription hook and UI
 - VAPID sender
-- minimal remote alert mirror
+- minimal remote market-alert mirror
+- privacy-minimized loan reminder schedule mirror with no loan name or amount
 - Upstash REST store adapter
 - protected cron evaluator route
 - Service Worker Push handling
@@ -30,4 +31,4 @@ The following pieces are kept so future contributors do not need to rebuild the 
 
 ## Re-enabling for development
 
-Use `.env.push.example` and explicitly set `NEXT_PUBLIC_EXPERIMENTAL_BACKGROUND_PUSH=1`. No scheduler is shipped by default; an operator must provide one deliberately. Before any public re-enable, redesign quote polling around unique-symbol batching/deduplication and document the operational quota/cost budget.
+Use `.env.push.example` and explicitly set `NEXT_PUBLIC_EXPERIMENTAL_BACKGROUND_PUSH=1`. No scheduler is shipped by default; an operator must provide one deliberately. Loan reminders can run without `TINDEX_API_TOKEN`; that token is needed only if remote market alerts are evaluated too. Before any public re-enable, document the scheduler, storage and operational cost budget. Market quote polling should still be reviewed around unique-symbol batching/deduplication.

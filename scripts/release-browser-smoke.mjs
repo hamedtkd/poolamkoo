@@ -6,10 +6,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createPoolamkooMediaDemoData, POOLAMKOO_MEDIA_ANCHOR } from "./media/demo-data.mjs";
 import {
-  CURRENT_SCHEMA8_NATIVE_VERSION,
+  CURRENT_SCHEMA9_NATIVE_VERSION,
   LEGACY_SCHEMA6_NATIVE_VERSION,
   legacySchema6SeedExpression,
-  migratedSchema8InspectionExpression,
+  migratedSchema9InspectionExpression,
   providerCollisionInsertExpression,
 } from "./fixtures/schema6-idb.mjs";
 
@@ -249,16 +249,20 @@ async function verifyLegacySchemaMigration(client, origin) {
   assert(seededVersion === LEGACY_SCHEMA6_NATIVE_VERSION, "legacy schema 6 fixture must use native IndexedDB version 60");
 
   await navigate(client, `${origin}/dashboard`, "قانون پول فعلی");
-  const migrated = await evaluate(client, migratedSchema8InspectionExpression());
-  assert(migrated?.nativeVersion === CURRENT_SCHEMA8_NATIVE_VERSION, "schema 6 profile must upgrade in place through schema 8");
+  const migrated = await evaluate(client, migratedSchema9InspectionExpression());
+  assert(migrated?.nativeVersion === CURRENT_SCHEMA9_NATIVE_VERSION, "schema 6 profile must upgrade in place through schema 9");
   assert(migrated?.assets?.some((row) => row.marketId === "shared-market-id" && row.marketSource === "tindex"), "legacy linked assets must normalize to Tindex during schema 7 migration");
   assert(migrated?.watchlist?.some((row) => row.marketId === "shared-market-id" && row.source === "tindex"), "legacy watchlist rows must survive migration with Tindex identity");
   assert(migrated?.alerts?.some((row) => row.marketId === "legacy-alert-id" && row.source === "tindex"), "legacy market alerts must survive migration with Tindex identity");
   assert(migrated?.alerts?.some((row) => row.marketId === "explicit-tsetmc-id" && row.source === "tsetmc"), "explicit TSETMC identity must survive schema 7 migration");
   assert(migrated?.watchIndexes?.includes("[source+marketId]") && migrated?.alertIndexes?.includes("[source+marketId]"), "schema 7 must expose provider-scoped market indexes after migration");
   assert(migrated?.watchMarketIdUnique === false, "raw marketId must stop being globally unique after schema 7 migration");
-  assert(migrated?.funds?.some((row) => row.id === 1 && row.currentToman === 2_500_000), "legacy fund balance must survive schema 8 migration");
-  assert(migrated?.fundMovements?.some((row) => row.fundId === 1 && row.type === "opening" && row.source === "migration" && row.amountToman === 2_500_000), "schema 8 migration must create an opening fund-ledger row for legacy balances");
+  assert(migrated?.funds?.some((row) => row.id === 1 && row.currentToman === 2_500_000), "legacy fund balance must survive schema 8 migration on the path to schema 9");
+  assert(migrated?.fundMovements?.some((row) => row.fundId === 1 && row.type === "opening" && row.source === "migration" && row.amountToman === 2_500_000), "schema 8 migration must create an opening fund-ledger row before schema 9 loan stores are added");
+  assert(Array.isArray(migrated?.loans) && migrated.loans.length === 0, "schema 9 migration must create an empty loans store for legacy profiles");
+  assert(Array.isArray(migrated?.loanPayments) && migrated.loanPayments.length === 0, "schema 9 migration must create an empty loan payments store for legacy profiles");
+  assert(Array.isArray(migrated?.loanRiskAlerts) && migrated.loanRiskAlerts.length === 0, "schema 9 migration must create an empty loan risk alerts store for legacy profiles");
+  assert(migrated?.loanPaymentIndexes?.includes("[loanId+installmentNo]"), "schema 9 loan payments must expose the compound installment index");
 
   const collisions = await evaluate(client, providerCollisionInsertExpression(POOLAMKOO_MEDIA_ANCHOR));
   assert(JSON.stringify(collisions) === JSON.stringify([

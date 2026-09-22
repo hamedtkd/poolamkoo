@@ -12,6 +12,8 @@ test("offline workspace verifies the active worker cache and repairs missing rou
   assert.equal(manager.includes('"/funds"'), true);
   assert.equal(manager.includes('"/investments"'), true);
   assert.equal(manager.includes('"/reports"'), true);
+  assert.equal(manager.includes('"/loans"'), true);
+  assert.equal(manager.includes('"/loans/new"'), true);
   assert.equal(manager.includes('"GET_OFFLINE_STATUS"'), true);
   assert.equal(manager.includes('"x-poolamkoo-warm": "1"'), true);
   assert.equal(manager.includes('navigator.serviceWorker.addEventListener("controllerchange"'), true);

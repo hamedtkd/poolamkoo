@@ -11,6 +11,8 @@ export type FundMovementInput = {
   amountToman: number;
   happenedAt: string;
   note?: string;
+  loanId?: number;
+  loanPaymentId?: number;
 };
 
 function movementError() {
@@ -29,6 +31,8 @@ export async function applyFundMovementWithinTransaction(input: FundMovementInpu
     amountToman: Math.round(input.amountToman),
     happenedAt: input.happenedAt,
     note: input.note?.trim() || undefined,
+    loanId: input.loanId,
+    loanPaymentId: input.loanPaymentId,
     createdAt: now,
     updatedAt: now,
   };

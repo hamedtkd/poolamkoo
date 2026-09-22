@@ -1,5 +1,6 @@
 export const LEGACY_SCHEMA6_NATIVE_VERSION = 60;
 export const CURRENT_SCHEMA8_NATIVE_VERSION = 80;
+export const CURRENT_SCHEMA9_NATIVE_VERSION = 90;
 
 export const SCHEMA6_STORES = {
   allocationRules: "++id, preset, updatedAt",
@@ -103,22 +104,25 @@ export function legacySchema6SeedExpression(now) {
   })()`;
 }
 
-export function migratedSchema8InspectionExpression() {
+export function migratedSchema9InspectionExpression() {
   return `(async () => {
     const db = await new Promise((resolve, reject) => {
       const request = indexedDB.open("poolyar-local");
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    const tx = db.transaction(["assets", "funds", "fundMovements", "marketWatchlist", "marketAlerts"], "readonly");
+    const tx = db.transaction(["assets", "funds", "fundMovements", "marketWatchlist", "marketAlerts", "loans", "loanPayments", "loanRiskAlerts"], "readonly");
     const getAll = (name) => new Promise((resolve, reject) => {
       const request = tx.objectStore(name).getAll();
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    const [assets, funds, fundMovements, watchlist, alerts] = await Promise.all([getAll("assets"), getAll("funds"), getAll("fundMovements"), getAll("marketWatchlist"), getAll("marketAlerts")]);
+    const [assets, funds, fundMovements, watchlist, alerts, loans, loanPayments, loanRiskAlerts] = await Promise.all([getAll("assets"), getAll("funds"), getAll("fundMovements"), getAll("marketWatchlist"), getAll("marketAlerts"), getAll("loans"), getAll("loanPayments"), getAll("loanRiskAlerts")]);
     const watchStore = tx.objectStore("marketWatchlist");
     const alertStore = tx.objectStore("marketAlerts");
+    const loanStore = tx.objectStore("loans");
+    const loanPaymentStore = tx.objectStore("loanPayments");
+    const loanRiskAlertStore = tx.objectStore("loanRiskAlerts");
     const result = {
       nativeVersion: db.version,
       assets,
@@ -126,6 +130,12 @@ export function migratedSchema8InspectionExpression() {
       fundMovements,
       watchlist,
       alerts,
+      loans,
+      loanPayments,
+      loanRiskAlerts,
+      loanIndexes: [...loanStore.indexNames],
+      loanPaymentIndexes: [...loanPaymentStore.indexNames],
+      loanRiskAlertIndexes: [...loanRiskAlertStore.indexNames],
       watchIndexes: [...watchStore.indexNames],
       alertIndexes: [...alertStore.indexNames],
       watchMarketIdUnique: watchStore.index("marketId").unique,
