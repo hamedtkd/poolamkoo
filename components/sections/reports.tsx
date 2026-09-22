@@ -11,6 +11,7 @@ import { DecisionInsightsCard } from "@/components/reports/decision-insights-car
 import { InvestmentAnalyticsDashboard } from "@/components/reports/investment-analytics-dashboard";
 import { ReportExportDialog } from "@/components/reports/report-export-dialog";
 import { LoanStrategyReport } from "@/components/reports/loan-strategy-report";
+import { LoanIntelligenceReport } from "@/components/reports/loan-intelligence-report";
 import { ReconciliationCard } from "@/components/reports/reconciliation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ export function ReportsSection({ settings, rule, incomes, allocations, funds, fu
     {pricingIncomplete && <Reveal step={7}><div className="flex gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/7 p-4 text-sm"><RiAlertLine className="mt-0.5 size-5 shrink-0 text-amber-600" /><div><div className="type-strong">بخشی از ارزش سبد با fallback نمایش داده می‌شود</div><p className="mt-1 type-caption leading-6 text-muted-foreground">Snapshot محلی یا بهای خرید می‌تواند برای تداوم نمایش باقی بماند، اما رتبه‌بندی بازده و تصمیم‌های خودکار سبد تا رسیدن قیمت تازه بازار یا قیمت دستی قابل اتکا متوقف می‌شوند.</p></div></div></Reveal>}
 
     <Reveal step={7}><LoanStrategyReport settings={settings} loans={loans} payments={loanPayments} periodPayments={periodLoanPayments} funds={funds} fundMovements={allFundMovements} assets={assets} transactions={transactions} quotes={quotes} /></Reveal>
+    <Reveal step={7}><LoanIntelligenceReport settings={settings} loans={loans} payments={loanPayments} funds={funds} fundMovements={allFundMovements} assets={assets} transactions={transactions} quotes={quotes} incomes={incomes} /></Reveal>
     <Reveal step={7}><DecisionInsightsCard snapshot={decision} unit={settings.displayUnit} /></Reveal>
     <Reveal step={7}><ReconciliationCard snapshot={reconciliation} unit={settings.displayUnit} /></Reveal>
     <Reveal step={7}><InvestmentAnalyticsDashboard settings={settings} assets={assets} transactions={transactions} quotes={quotes} /></Reveal>

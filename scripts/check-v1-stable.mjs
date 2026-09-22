@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 
-const VERSION = "1.3.0";
+const VERSION = "1.5.0";
 const BRAND_HASHES = {
   mark: "fabbfff77baacc3480ada96e505980b1ea879385eda10c034ce6e151fc0c9d4b",
   dark: "9d1f72084f83b7098f302e27cabdaa616fc7ab54c7e8508d411252b588f2bdb1",
@@ -52,9 +52,9 @@ const pkg = JSON.parse(packageSource);
 const lock = JSON.parse(lockSource);
 const categoryRoutes = ["general", "money", "market", "data", "transfer", "privacy", "about"];
 const checks = [
-  [pkg.version === VERSION, "package.json version must match v1.3.0"],
-  [lock.version === VERSION && lock.packages?.[""]?.version === VERSION, "package-lock.json version must match v1.3.0"],
-  [appVersionSource.includes(`APP_VERSION = "${VERSION}"`), "runtime app version must match v1.3.0"],
+  [pkg.version === VERSION, "package.json version must match v1.5.0"],
+  [lock.version === VERSION && lock.packages?.[""]?.version === VERSION, "package-lock.json version must match v1.5.0"],
+  [appVersionSource.includes(`APP_VERSION = "${VERSION}"`), "runtime app version must match v1.5.0"],
   [appVersionSource.includes("LOCAL_DATABASE_SCHEMA_VERSION = 9"), "current release must use IndexedDB schema 9 for the loan core"],
   [releaseSource.includes("Investment queue UX & GitHub showcase") && releaseSource.includes("چهار گروه") && releaseSource.includes("SensitiveValue") && releaseSource.includes("schema 8") && releaseSource.includes("سبز") && releaseSource.includes("comma استاندارد") && releaseSource.includes("Composition سینمایی"), "release note must document compact purchases plus financial semantics, number grouping and landing polish"],
   [globalsSource.includes("--profit: #15803d") && globalsSource.includes("--profit: #4ade80") && globalsSource.includes("--loss: #c62828") && globalsSource.includes("--loss: #f87171") && formatSource.includes('new Intl.NumberFormat("en-US"') && formatSource.includes("formatSignedMoney") && priceInputSource.includes("formatGroupedNumber"), "profit/loss colors and Persian money grouping must remain semantic and palette-independent"],
@@ -91,4 +91,4 @@ for (const [ok, message] of checks) {
   if (!ok) { console.error(`Stable readiness check failed: ${message}`); process.exit(1); }
 }
 
-console.log("v1.3.0 stable metadata gate passed. Full production release gate completed with the schema 9 loan core.");
+console.log("v1.5.0 stable metadata gate passed. Full production release gate completed with the schema 9 loan core.");
