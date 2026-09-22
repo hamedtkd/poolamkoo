@@ -4,7 +4,7 @@ import test from "node:test";
 import { buildLoanView } from "../lib/loans/analytics.ts";
 import { loanContractInstallment } from "../lib/loans/calculations.ts";
 import { nextLoanInstallment } from "../lib/loans/schedule.ts";
-import type { Asset, FundMovement, GoalFund, InvestmentTransaction, Loan, LoanPayment } from "../lib/types.ts";
+import type { Asset, FundMovement, GoalFund, InvestmentTransaction, Loan, LoanPayment, MarketQuote } from "../lib/types.ts";
 
 const now = "2026-09-21T00:00:00.000Z";
 const loan: Loan = {
@@ -65,6 +65,19 @@ test("loan analytics treats over-funded linked buys as personal funding instead 
   assert.equal(view.fundingGapToman, 67_000_000);
   assert.equal(view.externalContributionsToman, 67_000_000);
   assert.ok(Math.abs(view.netStrategyEffectToman) < 1);
+});
+
+test("loan analytics excludes empty positions and snapshot-only valuations from linked asset intelligence", () => {
+  const asset: Asset = { id: 9, name: "سهام", kind: "stock", targetPct: 0, icon: "stock", archived: false, createdAt: now, updatedAt: now };
+  const buy: InvestmentTransaction = { id: 10, assetId: 9, loanId: 1, type: "buy", amountToman: 100_000_000, quantity: 1, unitPriceToman: 100_000_000, happenedAt: "2026-09-10", createdAt: now };
+  const sold: InvestmentTransaction = { id: 11, assetId: 9, loanId: 1, type: "sell", amountToman: 100_000_000, quantity: 1, unitPriceToman: 100_000_000, happenedAt: "2026-09-11", createdAt: now };
+  const snapshot: MarketQuote = { symbol: "سهام", name: "سهام", priceToman: 120_000_000, changePercent: 0, changeValueToman: 0, asOf: "2026-09-21", source: "local", runtimeSource: "snapshot" };
+  const emptyPosition = buildLoanView({ loan, payments: [], funds: [], assets: [asset], transactions: [buy, sold], quotes: [], today: new Date("2026-09-21T12:00:00Z") });
+  const snapshotPosition = buildLoanView({ loan, payments: [], funds: [], assets: [asset], transactions: [buy], quotes: [snapshot], today: new Date("2026-09-21T12:00:00Z") });
+  assert.equal(emptyPosition.linkedAssetValueToman, 0);
+  assert.equal(emptyPosition.positions[0]?.status, "unavailable");
+  assert.equal(snapshotPosition.linkedAssetValueToman, 0);
+  assert.equal(snapshotPosition.positions[0]?.status, "unavailable");
 });
 
 test("phase 3 wires loans into workspace navigation, dashboard and offline shell", () => {

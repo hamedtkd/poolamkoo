@@ -9,6 +9,7 @@ import { nextLoanInstallment, paidLoanInstallmentCount } from "./schedule.ts";
 
 export type LoanAssetPosition = {
   asset: Asset;
+  status: "available" | "unavailable";
   openCostToman: number;
   currentValueToman: number;
   pnlToman: number;
@@ -64,7 +65,8 @@ function loanPositions(loan: Loan, assets: readonly Asset[], transactions: reado
     const quote = marketQuoteForAsset(asset, quotes);
     const valuation = resolveAssetValuation(asset, quotes);
     const freshness = assetMarketFreshness(asset, quote, today);
-    const position = portfolioPosition(asset, rows, valuation.price);
+    const position = portfolioPosition(asset, rows, valuation.decisionReady ? valuation.price : undefined);
+    const status = position.qty > 0 && valuation.decisionReady && Number.isFinite(position.currentValue) ? "available" : "unavailable";
     const terminalAt = freshness.asOf ?? today.toISOString();
     const annualized = position.qty > 1e-10 && freshness.automaticRiskReady
       ? annualizedMoneyWeightedReturn(rows, position.currentValue, terminalAt)
@@ -74,6 +76,7 @@ function loanPositions(loan: Loan, assets: readonly Asset[], transactions: reado
       : undefined;
     return {
       asset,
+      status,
       openCostToman: position.cost,
       currentValueToman: position.currentValue,
       pnlToman: position.unrealized + position.realized,
@@ -92,7 +95,11 @@ function loanPositions(loan: Loan, assets: readonly Asset[], transactions: reado
       annualizedReturnPct: annualized?.annualizedReturnPct,
       returnObservationDays: annualized?.observationDays,
       spreadVsLoanCostPct: spread,
-      priceSourceLabel: valuationPriceSourceLabel(valuation.source),
+      priceSourceLabel: valuation.source === "snapshot-market"
+        ? "قیمت ذخیره‌شده محلی"
+        : valuation.source === "cost-basis"
+          ? "بهای خرید جایگزین"
+          : valuationPriceSourceLabel(valuation.source),
     };
   });
 }
@@ -118,9 +125,10 @@ export function buildLoanView(input: {
   const reserveTargetToman = loanReserveTarget(installmentToman, loan.reserveTargetMonths);
   const reserveRunwayMonths = loanReserveRunway(reserveBalanceToman, installmentToman);
   const positions = loanPositions(loan, assets, transactions, quotes, loanEffectiveCostPct, today);
-  const linkedAssetValueToman = positions.reduce((sum, row) => sum + row.currentValueToman, 0);
-  const linkedAssetCostToman = positions.reduce((sum, row) => sum + row.openCostToman, 0);
-  const linkedAssetPnlToman = positions.reduce((sum, row) => sum + row.pnlToman, 0);
+  const availablePositions = positions.filter((row) => row.status === "available");
+  const linkedAssetValueToman = availablePositions.reduce((sum, row) => sum + row.currentValueToman, 0);
+  const linkedAssetCostToman = availablePositions.reduce((sum, row) => sum + row.openCostToman, 0);
+  const linkedAssetPnlToman = availablePositions.reduce((sum, row) => sum + row.pnlToman, 0);
   const outstandingPrincipalToman = loanOutstandingPrincipal(loan, paidInstallments);
   const linkedTransactions = transactions.filter((row) => row.loanId === loan.id);
   const loanReserveFundingToman = (input.fundMovements ?? [])

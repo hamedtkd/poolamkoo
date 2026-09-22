@@ -22,7 +22,7 @@ export type LoanTimelineEvent = {
   label: string;
   date: string;
   detail: string;
-  status: "complete" | "current" | "upcoming";
+  status: "complete" | "current" | "upcoming" | "blocked";
 };
 
 export type LoanIntelligence = {
@@ -76,7 +76,8 @@ export function buildLoanIntelligence(input: {
     assetCoveragePct: debtCoveragePct,
     overdue: view.overdue,
   });
-  const investmentScenarioValueToman = view.linkedAssetValueToman + view.loanCashToman;
+  const hasAvailableAsset = view.positions.some((position) => position.status === "available");
+  const investmentScenarioValueToman = hasAvailableAsset ? view.linkedAssetValueToman + view.loanCashToman : 0;
   const cashScenarioValueToman = Math.max(0, view.loan.principalToman - view.externalContributionsToman);
   const remainingInterest = loanAmortizationSchedule(view.loan)
     .slice(view.paidInstallments)
@@ -98,7 +99,7 @@ export function buildLoanIntelligence(input: {
     debtCoveragePct,
     cashScenarioValueToman,
     investmentScenarioValueToman,
-    investmentScenarioPnlToman: investmentScenarioValueToman - cashScenarioValueToman,
+    investmentScenarioPnlToman: hasAvailableAsset ? investmentScenarioValueToman - cashScenarioValueToman : 0,
     earlyRepaymentInterestSavingToman: Math.max(0, remainingInterest),
     templates: buildAllocationTemplates(input.settings?.riskTolerance ?? "medium"),
     shocks,
@@ -146,7 +147,7 @@ export function buildAllocationTemplates(riskTolerance: "low" | "medium" | "high
 
 function buildLoanShocks(view: LoanView): LoanShock[] {
   const defaults: Record<string, number> = { gold: -30, stock: -30, currency: -15, crypto: -40, fund: -10, custom: -20 };
-  return view.positions.map((position) => {
+  return view.positions.filter((position) => position.status === "available").map((position) => {
     const percent = defaults[position.asset.kind] ?? -20;
     return { label: position.asset.name, assetKind: position.asset.kind, percent, impactToman: position.currentValueToman * percent / 100 };
   });
@@ -159,8 +160,8 @@ function buildLoanTimeline(view: LoanView, transactions: readonly InvestmentTran
   return [
     { key: "disbursed", label: "دریافت وام", date: view.loan.disbursedAt, detail: "قرارداد وام ثبت شد.", status: "complete" },
     { key: "first-payment", label: "اولین پرداخت", date: view.loan.firstPaymentAt, detail: `${loanContractInstallment(view.loan).toLocaleString("fa-IR")} تومان`, status: view.paidInstallments > 0 ? "complete" : "upcoming" },
-    { key: "investment", label: "سرمایه‌گذاری", date: firstInvestment ?? now, detail: view.positions.length ? `${view.positions.length.toLocaleString("fa-IR")} دارایی متصل` : "هنوز تراکنش متصل ثبت نشده است.", status: view.positions.length ? "complete" : "upcoming" },
-    { key: "growth", label: "رشد دارایی", date: view.positions.find((position) => position.quoteAsOf)?.quoteAsOf ?? now, detail: view.linkedAssetPnlToman >= 0 ? "ارزش دارایی نسبت به بهای خرید مثبت است." : "ارزش دارایی نسبت به بهای خرید منفی است.", status: view.positions.length ? "current" : "upcoming" },
+    { key: "investment", label: "سرمایه‌گذاری", date: firstInvestment ?? now, detail: view.positions.some((position) => position.status === "available") ? `${view.positions.filter((position) => position.status === "available").length.toLocaleString("fa-IR")} دارایی متصل` : "هنوز دارایی‌ای به این وام متصل نشده است.", status: view.positions.length ? (view.positions.some((position) => position.status === "available") ? "complete" : "blocked") : "upcoming" },
+    { key: "growth", label: "رشد دارایی", date: view.positions.find((position) => position.status === "available" && position.quoteAsOf)?.quoteAsOf ?? now, detail: view.positions.some((position) => position.status === "available") ? (view.linkedAssetPnlToman >= 0 ? "ارزش دارایی نسبت به بهای خرید مثبت است." : "ارزش دارایی نسبت به بهای خرید منفی است.") : "برای رشد دارایی، قیمت معتبر لازم است.", status: view.positions.some((position) => position.status === "available") ? "current" : "blocked" },
     { key: "settlement", label: "تسویه", date: view.loan.status === "closed" ? view.loan.updatedAt : view.loan.firstPaymentAt, detail: view.loan.status === "closed" ? "وام بسته شده است." : "پس از تکمیل اقساط.", status: view.loan.status === "closed" ? "complete" : "upcoming" },
   ];
 }
